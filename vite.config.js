@@ -3,7 +3,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import glsl from "vite-plugin-glsl";
 
 export default {
-  base: '/elka-blitz.github.io/',
+  base: '/',
   root: "./src", // Sources files (typically where index.html is)
   publicDir: "../static/", // Path from "root" to static assets (files that are served as they are)
   server: {
