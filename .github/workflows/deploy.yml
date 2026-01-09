@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
-        cache-dependency-path: 'source/package-lock.json'
+        working-directory: source
 
       - name: Build project
         run: npm run build
