@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
         with: 
-          working-directory: /home/runner/work/elka-blitz.github.io/source_code
+          working-directory: /home/runner/work/elka-blitz.github.io/elka-blitz.github.io/source_code
 
       - name: Build project
         run: npm run build
