@@ -14,74 +14,37 @@ import { gsap } from 'gsap';
 import { init } from './init.js';
 
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 'black' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-
+var cubeRotation = 0
+const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x89F336});
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
 function setupScene({ scene, camera, renderer, player, controllers }) {
 
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-	const cubeMaterial = new THREE.MeshStandardMaterial({ color: 'green' });
-	const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+	
 	scene.add(cube);
-	cube.position.set(-0.8, 0.5, -1.5);
-	cube.rotateY(Math.PI / 4);
+	cube.position.set(-2, 1, -1.5);
+	cube.rotateY((Math.PI / 4) + cubeRotation);
 
-	// const gltfLoader = new GLTFLoader();
-
-	// gltfLoader.load('assets/spacestation.glb', (gltf) => {
-	// 	scene.add(gltf.scene);
-	// });
-
-	// gltfLoader.load('assets/blaster.glb', (gltf) => {
-	// 	blasterGroup.add(gltf.scene);
-	// });
-
-	// gltfLoader.load('assets/target.glb', (gltf) => {
-	// 	for (let i = 0; i < 3; i++) {
-	// 		const target = gltf.scene.clone();
-	// 		target.position.set(
-	// 			Math.random() * 10 - 5,
-	// 			i * 2 + 1,
-	// 			-Math.random() * 5 - 5,
-	// 		);
-	// 		scene.add(target);
-	// 		targets.push(target);
-	// 	}
-	// });
-
-	// scene.add(scoreText);
-	// scoreText.position.set(0, 0.67, -1.44);
-	// scoreText.rotateX(-Math.PI / 3.3);
-	// updateScoreDisplay();
-
-	// // Load and set up positional audio
-	// const listener = new THREE.AudioListener();
-	// camera.add(listener);
-
-	// const audioLoader = new THREE.AudioLoader();
-	// laserSound = new THREE.PositionalAudio(listener);
-	// audioLoader.load('assets/laser.ogg', (buffer) => {
-	// 	laserSound.setBuffer(buffer);
-	// 	blasterGroup.add(laserSound);
-	// });
-
-	// scoreSound = new THREE.PositionalAudio(listener);
-	// audioLoader.load('assets/score.ogg', (buffer) => {
-	// 	scoreSound.setBuffer(buffer);
-	// 	scoreText.add(scoreSound);
-	// });
+	const light = new THREE.PointLight(0x89F336, 20, 100, 0.1);
+	light.position.copy(cube.position);
+	scene.add(light);
 }
 
 function onFrame(
 	delta,
 	time,
-	{ scene, camera, renderer, player, controllers },
+	{ scene, camera, renderer, player, controllers }, 
 ) {
-	
+	cubeRotation += 2
+	cube.rotateX(0.01)
+	cube.rotateY (0.01)
 }
 
 init(setupScene, onFrame);
