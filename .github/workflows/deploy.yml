@@ -43,7 +43,7 @@ jobs:
         run: npm ci --force
 
       - name: Audit fix
-      - run: npm audit fix --force
+        run: npm audit fix --force
 
       - name: Build
         run: npm run build
