@@ -14,7 +14,7 @@ import { gsap } from 'gsap';
 import { init } from './init.js';
 
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 'white' });
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
 
@@ -23,11 +23,12 @@ function setupScene({ scene, camera, renderer, player, controllers }) {
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	const coneGeometry = new THREE.ConeGeometry(0.6, 1.5);
-	const coneMaterial = new THREE.MeshStandardMaterial({ color: 'purple' });
-	const cone = new THREE.Mesh(coneGeometry, coneMaterial);
-	scene.add(cone);
-	cone.position.set(0.4, 0.75, -1.5);
+	const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+	const cubeMaterial = new THREE.MeshStandardMaterial({ color: 'green' });
+	const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+	scene.add(cube);
+	cube.position.set(-0.8, 0.5, -1.5);
+	cube.rotateY(Math.PI / 4);
 
 	// const gltfLoader = new GLTFLoader();
 
