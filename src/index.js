@@ -44,7 +44,7 @@ function setupScene({ scene, camera, renderer, player, controllers }) {
 	scene.add(light);
 
 	const text = createText(
-		'Check out my cubes!',
+		'Check out my cubes!!!',
 		0.09,
 	);
 	text.position.set(0, 1.6, -1);
