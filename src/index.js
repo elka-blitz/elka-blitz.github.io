@@ -9,7 +9,6 @@ let camera, scene, renderer;
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 let stylus;
-let painter1;
 let gamepad1;
 let isDrawing = false;
 let prevIsDrawing = false;
@@ -37,6 +36,15 @@ const cube2 = new THREE.Mesh(
 	new THREE.BoxGeometry(0.3, 0.3, 0.3),
 	new THREE.MeshStandardMaterial({ color: '#F54927' }),
 );
+const drawMaterial = new THREE.MeshNormalMaterial({
+	flatShading: true,
+	side: THREE.DoubleSide,
+});
+
+
+let painter1;
+
+
 
 init();
 
@@ -47,7 +55,7 @@ function init() {
 
 	scene.add(cube);
 	cube.position.set(0, 1, -1.5);
-	cube.rotateY((Math.PI / 4) + cubeRotation);
+	cube.rotateY(Math.PI / 4 + cubeRotation);
 
 	scene.add(cube2);
 	cube2.position.set(0, 2, -1.5);
