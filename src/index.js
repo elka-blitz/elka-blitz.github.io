@@ -25,9 +25,15 @@ const sizes = {
   height: window.innerHeight,
 };
 
+// Walls
+const wallGeometry = new THREE.PlaneGeometry(6, 6);
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 'yellow' });
+const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 'black' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
 let cubeRotation = 0
 const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x89F336});
@@ -60,6 +66,10 @@ function init() {
 	scene.add(cube2);
 	cube2.position.set(0, 2, -1.5);
 
+	wall.position.set(0, 2, -3)
+	scene.add(wall)
+	
+
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
@@ -72,8 +82,8 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
-	scene.add(grid);
+	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
+	// scene.add(grid);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
