@@ -56,8 +56,16 @@ let painter1;
 // Stylus info
 let position = new THREE.Vector3();
 
-// Debug var
+// Debugging stuff
 let debugVar = true
+const debugText = new Text();
+debugText.fontsize = 0.52
+debugText.font = 'assets/SpaceMono-Bold.ttf';
+debugText.position.z = -2;
+debugText.color = 0xffffff;
+debugText.anchorX = 'center';
+debugText.anchorY = 'middle';
+debugText.text = 'LiveStylusCoords'
 
 init();
 
@@ -75,6 +83,9 @@ function init() {
 	// wall.position.set(0, 2, -3)
 	// scene.add(wall)
 	
+	scene.add(debugText);
+	debugText.position.set(1, 0.67, -1.44);
+	debugText.rotateX(-Math.PI / 3.3);
 
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
@@ -157,6 +168,7 @@ function init() {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
 });
 
 function onFrame() {
@@ -165,18 +177,11 @@ function onFrame() {
 	cube.rotateY (0.01)
 	cube2.rotateY(0.05)
 	cube2.rotateX(0.05)
-	if (debugVar) {
-		try {
-			// console.log(stylus.userData)
-			console.log(controller1.linearVelocity)
-			} catch (e) {
-				console.log(e)
-			}
-			debugVar = false
-		}
-}
+
+	}
 
 function animate() {
+	debugText.sync()
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
@@ -203,7 +208,7 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-
+	debugText.text = ('x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
