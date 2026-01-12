@@ -1,9 +1,13 @@
 import * as THREE from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
+import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRButton } from "three/examples/jsm/webxr/XRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+
 
 let camera, scene, renderer;
 let controller1, controller2;
@@ -26,15 +30,14 @@ const sizes = {
 };
 
 // Walls
-const wallGeometry = new THREE.PlaneGeometry(6, 6);
-const wallMaterial = new THREE.MeshStandardMaterial({ color: 'yellow' });
-const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+// const wallGeometry = new THREE.PlaneGeometry(6, 6);
+// const wallMaterial = new THREE.MeshStandardMaterial({ color: 'yellow' });
+// const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 'black' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
-let cubeRotation = 0
 const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x89F336});
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
@@ -47,10 +50,7 @@ const drawMaterial = new THREE.MeshNormalMaterial({
 	side: THREE.DoubleSide,
 });
 
-
 let painter1;
-
-
 
 init();
 
@@ -58,16 +58,15 @@ function init() {
 	const canvas = document.querySelector("canvas.webgl");
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x1f0091);
-
+	
 	scene.add(cube);
 	cube.position.set(0, 1, -1.5);
-	cube.rotateY(Math.PI / 4 + cubeRotation);
 
 	scene.add(cube2);
 	cube2.position.set(0, 2, -1.5);
 
-	wall.position.set(0, 2, -3)
-	scene.add(wall)
+	// wall.position.set(0, 2, -3)
+	// scene.add(wall)
 	
 
 	floor.rotateX(-Math.PI / 2);
@@ -76,14 +75,18 @@ function init() {
 	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 50);
 	camera.position.set(0, 1.6, 3);
 
+	const controls = new OrbitControls(camera, canvas);
+	controls.target.set(0, 1.6, 0);
+	controls.update();
+
 	const dracoLoader = new DRACOLoader();
 	dracoLoader.setDecoderPath("/draco/");
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
-	// scene.add(grid);
+	const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
+	scene.add(grid);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -100,9 +103,19 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
-	renderer.setAnimationLoop(animate);
+	
 	renderer.xr.enabled = true;
-	document.body.appendChild(XRButton.createButton(renderer, { optionalFeatures: ["unbounded"] }));
+
+	// const environment = new RoomEnvironment(renderer);
+	// const pmremGenerator = new THREE.PMREMGenerator(renderer);
+	// scene.environment = pmremGenerator.fromScene(environment).texture;
+
+	const player = new THREE.Group();
+	scene.add(player);
+	player.add(camera);
+
+	document.body.appendChild(VRButton.createButton(renderer));
+	renderer.setAnimationLoop(animate);
 
 	const controllerModelFactory = new XRControllerModelFactory();
 
