@@ -3,6 +3,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRButton } from "three/examples/jsm/webxr/XRButton.js";
@@ -51,6 +52,12 @@ const drawMaterial = new THREE.MeshNormalMaterial({
 });
 
 let painter1;
+
+// Stylus info
+let position = new THREE.Vector3();
+
+// Debug var
+let debugVar = true
 
 init();
 
@@ -158,7 +165,15 @@ function onFrame() {
 	cube.rotateY (0.01)
 	cube2.rotateY(0.05)
 	cube2.rotateX(0.05)
-
+	if (debugVar) {
+		try {
+			// console.log(stylus.userData)
+			console.log(controller1.linearVelocity)
+			} catch (e) {
+				console.log(e)
+			}
+			debugVar = false
+		}
 }
 
 function animate() {
