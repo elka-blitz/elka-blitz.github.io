@@ -204,6 +204,7 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
+  console.log("userdata: ", userData)
   const painter = userData.painter;
 
   if (gamepad1) {
