@@ -63,6 +63,7 @@ let painter1;
 
 // Stylus info
 let position = new THREE.Vector3();
+let gamepadInterface;
 
 // Debugging stuff
 let debugVar = true
@@ -244,6 +245,8 @@ function onControllerConnected(e) {
     stylus = e.target;
     stylus.userData.painter = painter1;
     gamepad1 = e.data.gamepad;
+	gamepadInterface = new GamepadWrapper(e.data.gamepad)
+	console.log('gamepadInterfacedump', gamepadInterface)
   }
 }
 
