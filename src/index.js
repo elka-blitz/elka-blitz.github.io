@@ -10,7 +10,6 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRButton } from "three/examples/jsm/webxr/XRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 
-
 let camera, scene, renderer;
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
@@ -96,7 +95,6 @@ function init() {
 	cube3.position.set(0, 1, -0.3)
 	boundingBox_cube3.setFromObject(cube3)
 	console.log(boundingBox_cube3)
-
 
 	// wall.position.set(0, 2, -3)
 	// scene.add(wall)
@@ -227,11 +225,20 @@ function handleDrawing(controller) {
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
 	try {
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\n Is stylus in Cube3?\nAnswer = ' + boundingBox_cube3.containsPoint(stylus.position))
-
+		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\n Stylus in white cube detector:\n Stylus in cube = ' + boundingBox_cube3.containsPoint(stylus.position))
+		if (boundingBox_cube3.containsPoint(stylus.position)) {
+			gamepadInterface.getHapticActuator(0).pulse(0.1, 100)
+		}
 	} catch (e) {
-		debugText.text = e
+		console.log(e)
 	}
+
+	// try {
+	// 	gamepad1.getHapticActuator(0).pulse(0.6, 100);
+	// } catch (e) {
+	// 	console.log(e)
+	// }
+
 	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
