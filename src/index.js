@@ -71,7 +71,7 @@ debugText.fontsize = 0.52
 debugText.font = 'assets/SpaceMono-Bold.ttf';
 debugText.position.z = -2;
 debugText.color = 0xffffff;
-debugText.anchorX = 'center';
+debugText.anchorX = 'left';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
 
@@ -91,8 +91,10 @@ function init() {
 	scene.add(cube2);
 	cube2.position.set(0, 2, -1.5);
 
+	// Pen interaction debug cube
+	// Haptics + drawing on surface
 	scene.add(cube3)
-	cube3.position.set(0, 1, -0.3)
+	cube3.position.set(-0.5, 1, -0.3)
 	boundingBox_cube3.setFromObject(cube3)
 	console.log(boundingBox_cube3)
 
@@ -100,7 +102,7 @@ function init() {
 	// scene.add(wall)
 	
 	scene.add(debugText);
-	debugText.position.set(1, 1, -1.44);
+	debugText.position.set(1, 0.67, -1.44);
 	debugText.rotateX(-Math.PI / 3.3);
 
 	floor.rotateX(-Math.PI / 2);
@@ -225,7 +227,7 @@ function handleDrawing(controller) {
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
 	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\n Stylus in white cube detector:\n Stylus in cube = ' + boundingBox_cube3.containsPoint(stylus.position))
+		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 		if (boundingBox_cube3.containsPoint(stylus.position)) {
 			gamepadInterface.getHapticActuator(0).pulse(0.1, 100)
 		}
@@ -245,7 +247,6 @@ function onControllerConnected(e) {
     stylus.userData.painter = painter1;
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
-	console.log('gamepadInterfacedump', gamepadInterface)
   }
 }
 
