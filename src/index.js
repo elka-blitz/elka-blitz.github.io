@@ -46,10 +46,13 @@ const cube2 = new THREE.Mesh(
 	new THREE.BoxGeometry(0.3, 0.3, 0.3),
 	new THREE.MeshStandardMaterial({ color: '#F54927' }),
 );
-const drawMaterial = new THREE.MeshNormalMaterial({
-	flatShading: true,
-	side: THREE.DoubleSide,
+const lineMaterial = new THREE.LineDashedMaterial({
+	color: 0xffffff,
+	scale: 1,
+	dashSize: 3,
+	gapSize: 1,
 });
+
 
 let painter1;
 
@@ -155,6 +158,24 @@ function init() {
 	scene.add(controllerGrip2);
 	scene.add(controller2);
 	}
+
+	// shapes
+	const points = []
+	const squareSize = 0.4
+	const xPos = 0
+	const yPos = 1.6 // this will have to be height adjusted
+	const userDistance = -0.2
+	const leanTowards = 0.05
+
+	points.push(new THREE.Vector3(xPos - squareSize, yPos - squareSize, userDistance));
+	points.push(new THREE.Vector3(xPos + squareSize, yPos - squareSize, userDistance));
+	points.push(new THREE.Vector3(xPos + squareSize, yPos + squareSize, userDistance - leanTowards));
+	points.push(new THREE.Vector3(xPos - squareSize, yPos + squareSize, userDistance - leanTowards));
+	points.push(new THREE.Vector3(xPos - squareSize, yPos - squareSize, userDistance));
+
+	const geometry = new THREE.BufferGeometry().setFromPoints(points);
+	const line = new THREE.Line(geometry, lineMaterial);
+	scene.add(line);
 
 	window.addEventListener("resize", () => {
 	// Update sizes
