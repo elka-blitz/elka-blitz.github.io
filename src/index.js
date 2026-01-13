@@ -232,14 +232,6 @@ function handleDrawing(controller) {
 	} catch (e) {
 		console.log(e)
 	}
-
-	// try {
-	// 	gamepad1.getHapticActuator(0).pulse(0.6, 100);
-	// } catch (e) {
-	// 	console.log(e)
-	// }
-
-	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
