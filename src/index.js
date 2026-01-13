@@ -46,6 +46,13 @@ const cube2 = new THREE.Mesh(
 	new THREE.BoxGeometry(0.3, 0.3, 0.3),
 	new THREE.MeshStandardMaterial({ color: '#F54927' }),
 );
+
+// Cube to draw on
+const cube3 = new THREE.Mesh(
+	new THREE.BoxGeometry(0.5, 0.3, 0.5),
+	new THREE.MeshStandardMaterial({ color: '#27e7f5ff' }),
+);
+
 const drawMaterial = new THREE.MeshNormalMaterial({
 	flatShading: true,
 	side: THREE.DoubleSide,
@@ -67,6 +74,9 @@ debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
 
+// Cube Bounding box stuff
+let boundingBox_cube3 = new THREE.Box3();
+
 init();
 
 function init() {
@@ -80,11 +90,17 @@ function init() {
 	scene.add(cube2);
 	cube2.position.set(0, 2, -1.5);
 
+	scene.add(cube3)
+	cube3.position.set(0, 1, -0.3)
+	boundingBox_cube3.setFromObject(cube3)
+	console.log(boundingBox_cube3)
+
+
 	// wall.position.set(0, 2, -3)
 	// scene.add(wall)
 	
 	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
+	debugText.position.set(1, 1, -1.44);
 	debugText.rotateX(-Math.PI / 3.3);
 
 	floor.rotateX(-Math.PI / 2);
@@ -208,7 +224,12 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
+	try {
+	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\n Is stylus in Cube3?\nAnswer = ' + boundingBox_cube3.containsPoint(stylus.position))
+
+	} catch (e) {
+		debugText.text = e
+	}
 	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
