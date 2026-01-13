@@ -36,7 +36,7 @@ const sizes = {
 // const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 'black' });
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
 const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
