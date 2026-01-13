@@ -3,6 +3,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRButton } from "three/examples/jsm/webxr/XRButton.js";
@@ -35,7 +36,7 @@ const sizes = {
 // const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 'black' });
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
 const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -51,6 +52,20 @@ const drawMaterial = new THREE.MeshNormalMaterial({
 });
 
 let painter1;
+
+// Stylus info
+let position = new THREE.Vector3();
+
+// Debugging stuff
+let debugVar = true
+const debugText = new Text();
+debugText.fontsize = 0.52
+debugText.font = 'assets/SpaceMono-Bold.ttf';
+debugText.position.z = -2;
+debugText.color = 0xffffff;
+debugText.anchorX = 'center';
+debugText.anchorY = 'middle';
+debugText.text = 'LiveStylusCoords'
 
 init();
 
@@ -68,6 +83,9 @@ function init() {
 	// wall.position.set(0, 2, -3)
 	// scene.add(wall)
 	
+	scene.add(debugText);
+	debugText.position.set(1, 0.67, -1.44);
+	debugText.rotateX(-Math.PI / 3.3);
 
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
@@ -150,6 +168,7 @@ function init() {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
 });
 
 function onFrame() {
@@ -159,9 +178,10 @@ function onFrame() {
 	cube2.rotateY(0.05)
 	cube2.rotateX(0.05)
 
-}
+	}
 
 function animate() {
+	debugText.sync()
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
@@ -188,7 +208,8 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-
+	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
+	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
