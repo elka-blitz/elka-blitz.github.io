@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Text } from 'troika-three-text';
@@ -15,6 +16,7 @@ let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 let stylus;
 let gamepad1;
+let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
 
@@ -76,6 +78,15 @@ let painter1;
 // Stylus info
 let position = new THREE.Vector3();
 
+// Cube to draw on
+const cube3 = new THREE.Mesh(
+	new THREE.BoxGeometry(0.5, 0.3, 0.5),
+	new THREE.MeshStandardMaterial({ color: '#27e7f5ff' }),
+);
+
+// Cube Bounding box stuff
+let boundingBox_cube3 = new THREE.Box3();
+
 // Debugging stuff
 let debugVar = true
 const debugText = new Text();
@@ -106,6 +117,13 @@ function init() {
 	scene.add(debugText);
 	debugText.position.set(1, 0.67, -1.44);
 	debugText.rotateX(-Math.PI / 3.3);
+
+	// Pen interaction debug cube
+	// Haptics + drawing on surface
+	scene.add(cube3)
+	cube3.position.set(-0.5, 1, -0.3)
+	boundingBox_cube3.setFromObject(cube3)
+	console.log(boundingBox_cube3)
 
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
@@ -223,7 +241,14 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
-
+	try {
+		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
+	if (boundingBox_cube3.containsPoint(stylus.position)) {
+		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
+	}
+	} catch (e) {
+		console.log(e)
+	}
     if (isDrawing && !prevIsDrawing) {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
@@ -259,6 +284,7 @@ function onControllerConnected(e) {
     stylus = e.target;
     stylus.userData.painter = painter1;
     gamepad1 = e.data.gamepad;
+	gamepadInterface = new GamepadWrapper(e.data.gamepad)
   }
 }
 
