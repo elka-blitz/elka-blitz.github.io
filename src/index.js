@@ -47,11 +47,25 @@ const cube2 = new THREE.Mesh(
 	new THREE.MeshStandardMaterial({ color: '#F54927' }),
 );
 
-// Cube to draw on
+// Cube to trigger haptics
 const cube3 = new THREE.Mesh(
 	new THREE.BoxGeometry(0.5, 0.3, 0.5),
-	new THREE.MeshStandardMaterial({ color: '#27e7f5ff' }),
+	new THREE.MeshStandardMaterial({ color: '#4d27f52c' }),
 );
+
+// Cube to draw on
+const cube4_material = new THREE.MeshStandardMaterial({ color: 0xfff000 });
+cube4_material.transparent = true
+cube4_material.opacity = 0.5
+// cube4_material.alphaMap = ({ color: 0x414141})
+
+
+const cube4 = new THREE.Mesh(
+	new THREE.BoxGeometry(0.5, 0.01, 0.5),
+	new THREE.MeshStandardMaterial(cube4_material),
+)
+
+let bounding_box_cube4 = new THREE.Box3();
 
 const drawMaterial = new THREE.MeshNormalMaterial({
 	flatShading: true,
@@ -92,14 +106,15 @@ function init() {
 	cube2.position.set(0, 2, -1.5);
 
 	// Pen interaction debug cube
-	// Haptics + drawing on surface
+	// Haptics
 	scene.add(cube3)
 	cube3.position.set(-0.5, 1, -0.3)
 	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
 
-	// wall.position.set(0, 2, -3)
-	// scene.add(wall)
+	// Drawing cube
+	scene.add(cube4)
+	cube4.position.set(0.5, 1, -0.3)
+	bounding_box_cube4.setFromObject(cube4)
 	
 	scene.add(debugText);
 	debugText.position.set(1, 0.67, -1.44);
@@ -229,7 +244,13 @@ function handleDrawing(controller) {
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 		if (boundingBox_cube3.containsPoint(stylus.position)) {
+			gamepadInterface.getHapticActuator(0).pulse(0.99, 100)
+		}
+		if (bounding_box_cube4.containsPoint(stylus.position) && isDrawing) {
+			debugText.text = 'Drawing in cube'
 			gamepadInterface.getHapticActuator(0).pulse(0.1, 100)
+			painter.lineTo(cursor);
+			painter.update();
 		}
 	} catch (e) {
 		console.log(e)
