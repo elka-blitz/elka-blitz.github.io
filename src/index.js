@@ -217,7 +217,8 @@ function animate() {
 	debugText.sync()
   if (gamepad1) {
     prevIsDrawing = isDrawing;
-    isDrawing = gamepad1.buttons[5].value > 0;
+    isDrawing = bounding_box_cube4.containsPoint(stylus.position)
+
     // debugGamepad(gamepad1);
 
     if (isDrawing && !prevIsDrawing) {
@@ -246,19 +247,21 @@ function handleDrawing(controller) {
 		if (boundingBox_cube3.containsPoint(stylus.position)) {
 			gamepadInterface.getHapticActuator(0).pulse(0.99, 100)
 		}
-		if (bounding_box_cube4.containsPoint(stylus.position) && isDrawing) {
+
+		if (bounding_box_cube4.containsPoint(stylus.position)) {
+			cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
 			debugText.text = 'Drawing in cube'
 			gamepadInterface.getHapticActuator(0).pulse(0.1, 100)
-			painter.lineTo(cursor);
+			painter.lineTo(cursor)
 			painter.update();
 		}
 	} catch (e) {
 		console.log(e)
 	}
-    if (userData.isSelecting || isDrawing) {
-      painter.lineTo(cursor);
-      painter.update();
-    }
+    // if (userData.isSelecting || isDrawing) {
+    //   painter.lineTo(cursor);
+    //   painter.update();
+    // }
   }
 }
 
@@ -267,6 +270,7 @@ function onControllerConnected(e) {
     stylus = e.target;
     stylus.userData.painter = painter1;
     gamepad1 = e.data.gamepad;
+	console.log(gamepad1)
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
   }
 }
