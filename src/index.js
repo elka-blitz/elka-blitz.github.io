@@ -1,52 +1,30 @@
 import * as THREE from "three";
+
+import { getController, getControllerGrip } from './controllerFunctions';
+import {
+	getCube,
+	getDashedLine,
+	getFloor,
+	getSquare,
+} from './shapeFunctions';
+
+
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
-import { XRButton } from "three/examples/jsm/webxr/XRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 
-
 let camera, scene, renderer;
-let controller1, controller2;
-let controllerGrip1, controllerGrip2;
 let stylus;
 let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
-
-const getDashedLine = ( points, opt ) => {
-	if ( !points || points.length < 2 ) return null;
-
-	const lineOpt = {
-		color: 'white',
-		linewidth: 2,
-		scale: 4,
-		dashSize: 0.4,
-		gapSize: 0.2,
-	};
-
-	const geometry = new THREE.BufferGeometry();
-	const material = new THREE.LineDashedMaterial( lineOpt );
-
-	const dots = [];
-	for (let i = 0, il = points.length; i < il; i++) {
-		dots.push( points[i] );
-		if ( i > 0 && i < il-1) dots.push( points[i] );  // This repeats the endpoint
-	}
-	geometry.setFromPoints( dots );
-
-	const line = new THREE.LineSegments(geometry, material);
-	line.computeLineDistances();
-
-	return line;
-}
-
+let painter1;
 
 const material = new THREE.MeshNormalMaterial({
   flatShading: true,
@@ -60,29 +38,16 @@ const sizes = {
   height: window.innerHeight,
 };
 
-const floorGeometry = new THREE.PlaneGeometry(6, 6);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-
-const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x89F336});
-const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-const cube2 = new THREE.Mesh(
-	new THREE.BoxGeometry(0.3, 0.3, 0.3),
-	new THREE.MeshStandardMaterial({ color: '#F54927' }),
-);
+// cubes
+const cube = getCube(0.5, 0.5, 0.5, '#27F527');
+const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
+const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
 
-let painter1;
 
 // Stylus info
 let position = new THREE.Vector3();
 
-// Cube to draw on
-const cube3 = new THREE.Mesh(
-	new THREE.BoxGeometry(0.5, 0.3, 0.5),
-	new THREE.MeshStandardMaterial({ color: '#27e7f5ff' }),
-);
 
 // Cube Bounding box stuff
 let boundingBox_cube3 = new THREE.Box3();
@@ -101,42 +66,25 @@ debugText.text = 'LiveStylusCoords'
 init();
 
 function init() {
-	const canvas = document.querySelector("canvas.webgl");
+	// scene setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x1f0091);
-	
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
+	camera = new THREE.PerspectiveCamera(
+		50,
+		window.innerWidth / window.innerHeight,
+		0.01,
+		50,
+	);
 
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
-
-	// wall.position.set(0, 2, -3)
-	// scene.add(wall)
-	
-	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
-	debugText.rotateX(-Math.PI / 3.3);
-
-	// Pen interaction debug cube
-	// Haptics + drawing on surface
-	scene.add(cube3)
-	cube3.position.set(-0.5, 1, -0.3)
-	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
-
-	floor.rotateX(-Math.PI / 2);
-	scene.add(floor);
-
-	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 50);
 	camera.position.set(0, 1.6, 3);
+	const canvas = document.querySelector('canvas.webgl');
 
 	const controls = new OrbitControls(camera, canvas);
 	controls.target.set(0, 1.6, 0);
 	controls.update();
 
 	const dracoLoader = new DRACOLoader();
-	dracoLoader.setDecoderPath("/draco/");
+	dracoLoader.setDecoderPath('/draco/');
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
@@ -150,65 +98,69 @@ function init() {
 	light.position.set(0, 4, 0);
 	scene.add(light);
 
+	const player = new THREE.Group();
+	scene.add(player);
+	player.add(camera);
+
+	// rendering setup
+	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+	renderer.setPixelRatio(window.devicePixelRatio, 2);
+	renderer.setSize(sizes.width, sizes.height);
+
+	renderer.xr.enabled = true;
+
+	document.body.appendChild(VRButton.createButton(renderer));
+	renderer.setAnimationLoop(animate);
+
+	// controller setup
+	const controllerModelFactory = new XRControllerModelFactory();
+	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
+	scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
+
+	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
+	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+}
+
+	// spinning cubes
+	scene.add(cube);
+	cube.position.set(0, 1, -1.5);
+
+	scene.add(cube2);
+	cube2.position.set(0, 2, -1.5);
+
+	// live stylus coords
+	scene.add(debugText);
+	debugText.position.set(1, 0.67, -1.44);
+	debugText.rotateX(-Math.PI / 3.3);
+
+	// Pen interaction debug cube
+	// Haptics + drawing on surface
+	scene.add(cube3)
+	cube3.position.set(-0.5, 1, -0.3)
+	boundingBox_cube3.setFromObject(cube3)
+	console.log(boundingBox_cube3)
+
+	// floor
+	const floor = getFloor(6, 6, 'grey');
+	floor.rotateX(-Math.PI / 2);
+	scene.add(floor);
+
+	// drawing paint
 	painter1 = new TubePainter();
 	painter1.mesh.material = material;
 	painter1.setSize(0.1);
 
 	scene.add(painter1.mesh);
 
-	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-	renderer.setPixelRatio(window.devicePixelRatio, 2);
-	renderer.setSize(sizes.width, sizes.height);
-	
-	renderer.xr.enabled = true;
-
-	// const environment = new RoomEnvironment(renderer);
-	// const pmremGenerator = new THREE.PMREMGenerator(renderer);
-	// scene.environment = pmremGenerator.fromScene(environment).texture;
-
-	const player = new THREE.Group();
-	scene.add(player);
-	player.add(camera);
-
-	document.body.appendChild(VRButton.createButton(renderer));
-	renderer.setAnimationLoop(animate);
-
-	const controllerModelFactory = new XRControllerModelFactory();
-
-	controller1 = renderer.xr.getController(0);
-	controller1.addEventListener("connected", onControllerConnected);
-	controller1.addEventListener("selectstart", onSelectStart);
-	controller1.addEventListener("selectend", onSelectEnd);
-	controllerGrip1 = renderer.xr.getControllerGrip(0);
-	controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
-	scene.add(controllerGrip1);
-	scene.add(controller1);
-
-	controller2 = renderer.xr.getController(1);
-	controller2.addEventListener("connected", onControllerConnected);
-	controller2.addEventListener("selectstart", onSelectStart);
-	controller2.addEventListener("selectend", onSelectEnd);
-	controllerGrip2 = renderer.xr.getControllerGrip(1);
-	controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-	scene.add(controllerGrip2);
-	scene.add(controller2);
-	}
-
 	// square shape
-	const points = []
 	const squareSize = 0.4
 	const xPos = 0
 	const yPos = 1.6 // this will have to be height adjusted
 	const userDistance = -0.2
 	const leanTowards = 0.05
 
-	points.push(new THREE.Vector3(xPos - squareSize, yPos - squareSize, userDistance));
-	points.push(new THREE.Vector3(xPos + squareSize, yPos - squareSize, userDistance));
-	points.push(new THREE.Vector3(xPos + squareSize, yPos + squareSize, userDistance - leanTowards));
-	points.push(new THREE.Vector3(xPos - squareSize, yPos + squareSize, userDistance - leanTowards));
-	points.push(new THREE.Vector3(xPos - squareSize, yPos - squareSize, userDistance));
-
-	scene.add(getDashedLine(points));
+	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
 
 	window.addEventListener("resize", () => {
@@ -226,6 +178,7 @@ function init() {
 
 });
 
+// animation functions
 function onFrame() {
 	
 	cube.rotateX(0.01)
@@ -279,6 +232,7 @@ function handleDrawing(controller) {
   }
 }
 
+// controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
 function onControllerConnected(e) {
   if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
