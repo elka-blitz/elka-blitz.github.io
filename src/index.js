@@ -18,6 +18,34 @@ let gamepad1;
 let isDrawing = false;
 let prevIsDrawing = false;
 
+const getDashedLine = ( points, opt ) => {
+	if ( !points || points.length < 2 ) return null;
+
+	const lineOpt = {
+		color: 'white',
+		linewidth: 2,
+		scale: 4,
+		dashSize: 0.4,
+		gapSize: 0.2,
+	};
+
+	const geometry = new THREE.BufferGeometry();
+	const material = new THREE.LineDashedMaterial( lineOpt );
+
+	const dots = [];
+	for (let i = 0, il = points.length; i < il; i++) {
+		dots.push( points[i] );
+		if ( i > 0 && i < il-1) dots.push( points[i] );  // This repeats the endpoint
+	}
+	geometry.setFromPoints( dots );
+
+	const line = new THREE.LineSegments(geometry, material);
+	line.computeLineDistances();
+
+	return line;
+}
+
+
 const material = new THREE.MeshNormalMaterial({
   flatShading: true,
   side: THREE.DoubleSide,
@@ -30,11 +58,6 @@ const sizes = {
   height: window.innerHeight,
 };
 
-// Walls
-// const wallGeometry = new THREE.PlaneGeometry(6, 6);
-// const wallMaterial = new THREE.MeshStandardMaterial({ color: 'yellow' });
-// const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-
 const floorGeometry = new THREE.PlaneGeometry(6, 6);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 'grey' });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -46,12 +69,6 @@ const cube2 = new THREE.Mesh(
 	new THREE.BoxGeometry(0.3, 0.3, 0.3),
 	new THREE.MeshStandardMaterial({ color: '#F54927' }),
 );
-const lineMaterial = new THREE.LineDashedMaterial({
-	color: 0xffffff,
-	scale: 1,
-	dashSize: 3,
-	gapSize: 1,
-});
 
 
 let painter1;
@@ -159,7 +176,7 @@ function init() {
 	scene.add(controller2);
 	}
 
-	// shapes
+	// square shape
 	const points = []
 	const squareSize = 0.4
 	const xPos = 0
@@ -173,9 +190,8 @@ function init() {
 	points.push(new THREE.Vector3(xPos - squareSize, yPos + squareSize, userDistance - leanTowards));
 	points.push(new THREE.Vector3(xPos - squareSize, yPos - squareSize, userDistance));
 
-	const geometry = new THREE.BufferGeometry().setFromPoints(points);
-	const line = new THREE.Line(geometry, lineMaterial);
-	scene.add(line);
+	scene.add(getDashedLine(points));
+
 
 	window.addEventListener("resize", () => {
 	// Update sizes
