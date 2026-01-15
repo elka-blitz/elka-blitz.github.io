@@ -44,7 +44,13 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
+// Cubes array
+let cube_indentifiers;
 
+// Menu state
+let prevMenuSummon = false
+let menuSummon = false
+let menuSpawned = false
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -192,9 +198,7 @@ function onFrame() {
 	cube2.rotateX(0.05)
 
 	}
-// Button state
-let prevButton1 = false
-let menuSpawned = false;
+
 function animate() {
 	debugText.sync()
   if (gamepad1) {
@@ -214,17 +218,36 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-	if (gamepad1.buttons[1].value > 0) {
+
+	prevMenuSummon = menuSummon
+	menuSummon = gamepad1.buttons[1].value > 0
+
+	if (menuSummon && prevMenuSummon && !menuSpawned) {
+
 		try {
-			// gamepadInterface.getHapticActuator(0).pulse(0.6, 100);
-			// Dev Menu
-			const devMenu = getCube(0.2, 0.2, 0.2, '#000000')
-			const devMenu_bb = new THREE.Box3()
-			scene.add(devMenu)
-			devMenu.position.set(stylus.position.x, stylus.position.y, stylus.position.z)
-			devMenu_bb.setFromObject(devMenu)
+			const surface = getCube(0.2, 0.01, 0.2)
+			const surface_bb = new THREE.Box3()
+
+			scene.add(surface)
+			surface.position.set(stylus.position.x, stylus.position.y, stylus.position.z)
+
+			surface_bb.setFromObject(surface)
+
+			cube_indentifiers = surface.uuid
+
+			menuSpawned = true
+
 			camera.updateProjectionMatrix()
-			console.log('Added devmenu: ', devMenu)
+
+		} catch (e){
+			console.log(e)
+		}
+	} else {
+		try {
+		scene.remove(scene.getObjectByProperty('uuid', cube_indentifiers))
+		console.log('removed cube: ', cube_indentifiers)
+		cube_indentifiers = null
+		menuSpawned = false
 		} catch (e){
 			console.log(e)
 		}
