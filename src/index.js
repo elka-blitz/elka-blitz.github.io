@@ -193,7 +193,7 @@ function animate() {
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
+    debugGamepad(gamepad1);
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
@@ -220,6 +220,7 @@ function handleDrawing(controller) {
 
   const userData = controller.userData;
   const painter = userData.painter;
+  console.log("userdata: ", userData)
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
