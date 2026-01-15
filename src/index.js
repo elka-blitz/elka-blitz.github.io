@@ -21,6 +21,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 let camera, scene, renderer;
 let stylus;
 let gamepad1;
+let gamepad2;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
@@ -123,15 +124,15 @@ function init() {
 }
 
 	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
-
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
+	// scene.add(cube);
+	// cube.position.set(0, 1, -1.5);
+	//
+	// scene.add(cube2);
+	// cube2.position.set(0, 2, -1.5);
 
 	// live stylus coords
 	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
+	debugText.position.set(1, 1, -2.0);
 	debugText.rotateX(-Math.PI / 3.3);
 
 	// Pen interaction debug cube
@@ -208,6 +209,12 @@ function animate() {
     }
   }
 
+	if (gamepad2) {
+		debugText.text = gamepad2.buttons.map(
+			(x, i) => `${i}: ${JSON.stringify(x)}\n`,
+		).toString();
+	}
+
   handleDrawing(stylus);
 
   // Render
@@ -241,6 +248,9 @@ function onControllerConnected(e) {
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
   }
+	else {
+		gamepad2 = e.data.gamepad;
+	}
 }
 
 function onSelectStart(e) {
