@@ -9,6 +9,8 @@ import {
 } from './shapeFunctions';
 
 
+
+
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
@@ -17,6 +19,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { spawnMenu } from './devMenu';
 
 let camera, scene, renderer;
 let stylus;
@@ -62,6 +65,9 @@ debugText.color = 0xffffff;
 debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
+
+// Button state
+let prevButton1 = false
 
 init();
 
@@ -206,7 +212,14 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-  }
+
+	// Spawn dev menu
+	if (gamepad1.buttons[1].value > 0 && !prevButton1) {
+		console.log('Button Pressed')
+			spawnMenu(stylus.position)
+			prevButton1 = gamepad1.buttons[1]
+		}
+	}
 
   handleDrawing(stylus);
 
