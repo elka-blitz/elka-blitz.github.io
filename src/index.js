@@ -64,6 +64,8 @@ debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
 
+
+
 init();
 
 function init() {
@@ -154,6 +156,8 @@ function init() {
 
 	scene.add(painter1.mesh);
 
+
+
 	// square shape
 	const squareSize = 0.4
 	const xPos = 0
@@ -210,12 +214,19 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-	if (gamepad1.buttons[1].value > 0){
+	if (gamepad1.buttons[1].value > 0) {
 		try {
 			// gamepadInterface.getHapticActuator(0).pulse(0.6, 100);
-			devMenuLoader(stylus.position, scene)
-		} catch {
-			// do nothing
+			// Dev Menu
+			const devMenu = getCube(0.2, 0.2, 0.2, '#000000')
+			const devMenu_bb = new THREE.Box3()
+			scene.add(devMenu)
+			devMenu.position.set(stylus.position.x, stylus.position.y, stylus.position.z)
+			devMenu_bb.setFromObject(devMenu)
+			camera.updateProjectionMatrix()
+			console.log('Added devmenu: ', devMenu)
+		} catch (e){
+			console.log(e)
 		}
 	}
 
