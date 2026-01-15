@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
+import { GamepadWrapper, XR_BUTTONS} from 'gamepad-wrapper';
+import { gamePadWrapper, getController, getControllerGrip } from './controllerFunctions';
 import {
 	getCube,
 	getDashedLine,
@@ -8,18 +9,15 @@ import {
 	getSquare,
 } from './shapeFunctions';
 
-
-
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GamepadWrapper } from 'gamepad-wrapper';
+
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { spawnMenu } from './devMenu';
+import { devMenuLoader } from './devMenu';
 
 let camera, scene, renderer;
 let stylus;
@@ -65,9 +63,6 @@ debugText.color = 0xffffff;
 debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
-
-// Button state
-let prevButton1 = false
 
 init();
 
@@ -193,13 +188,16 @@ function onFrame() {
 	cube2.rotateX(0.05)
 
 	}
-
+// Button state
+let prevButton1 = false
+let menuSpawned = false;
 function animate() {
 	debugText.sync()
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
+
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
@@ -212,13 +210,15 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-
-	// Spawn dev menu
-	if (gamepad1.buttons[1].value > 0 && !prevButton1) {
-		console.log('Button Pressed')
-			spawnMenu(stylus.position)
-			prevButton1 = gamepad1.buttons[1]
+	if (gamepad1.buttons[1].value > 0){
+		try {
+			// gamepadInterface.getHapticActuator(0).pulse(0.6, 100);
+			devMenuLoader(stylus.position, scene)
+		} catch {
+			// do nothing
 		}
+	}
+
 	}
 
   handleDrawing(stylus);
@@ -226,6 +226,9 @@ function animate() {
   // Render
   onFrame();
   renderer.render(scene, camera);
+
+
+
 }
 
 function handleDrawing(controller) {
