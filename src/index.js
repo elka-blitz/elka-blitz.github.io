@@ -30,6 +30,7 @@ let painter1;
 const material = new THREE.MeshNormalMaterial({
   flatShading: true,
   side: THREE.DoubleSide,
+	color: "yellow",
 });
 
 const cursor = new THREE.Vector3();
@@ -216,6 +217,7 @@ function animate() {
 	}
 
   handleDrawing(stylus);
+	moveDrawing(stylus)
 
   // Render
   onFrame();
@@ -238,6 +240,21 @@ function handleDrawing(controller) {
       painter.update();
     }
   }
+}
+
+// move paint
+function moveDrawing(controller) {
+	if (!controller) return;
+
+	const userData = controller.userData;
+	const painter = userData.painter;
+
+	if (gamepad2) {
+		// pressing y button on left controller
+		if (gamepad2.buttons[5].value > 0) {
+			painter.moveTo(stylus.position.x, stylus.position.y, stylus.position.z + 2);
+		}
+	}
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
