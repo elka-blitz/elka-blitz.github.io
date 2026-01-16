@@ -6,6 +6,7 @@ import {
 	getCube,
 	getDashedLine,
 	getFloor,
+	getPngCube,
 	getSquare,
 } from './shapeFunctions';
 
@@ -53,6 +54,7 @@ let menuSummon = false
 let menuSummonRelease = false
 let buttonPressed = false
 let flipBit = false
+
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -189,6 +191,8 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+
+	
 });
 
 // animation functions
@@ -235,7 +239,7 @@ function animate() {
 		flipBit = !flipBit
 
 		if (flipBit && cube_indentifiers == null) {
-			const menu_surface = getCube(0.2, 0.01, 0.2, '#4e4e4e')
+			const menu_surface = getPngCube(0.3, 0.01, 0.3, 'assets/survey_frame.png')
 			const menu_surface_bb = new THREE.Box3()
 			scene.add(menu_surface)
 			menu_surface.position.set(stylus.position.x, stylus.position.y - 0.02, stylus.position.z)
