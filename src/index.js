@@ -1,22 +1,24 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
+import { GamepadWrapper, XR_BUTTONS} from 'gamepad-wrapper';
+import { gamePadWrapper, getController, getControllerGrip } from './controllerFunctions';
 import {
 	getCube,
 	getDashedLine,
 	getFloor,
+	getPngCube,
 	getSquare,
 } from './shapeFunctions';
 
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GamepadWrapper } from 'gamepad-wrapper';
+
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { devMenuLoader } from './devMenu';
 
 let camera, scene, renderer;
 let stylus;
@@ -43,6 +45,15 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
+// Cubes array
+let cube_indentifiers = null
+
+// Menu state
+let prevMenuSummon = false
+let menuSummon = false
+let menuSummonRelease = false
+let buttonPressed = false
+let flipBit = false
 
 
 // Stylus info
@@ -62,6 +73,8 @@ debugText.color = 0xffffff;
 debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
+
+
 
 init();
 
@@ -153,6 +166,8 @@ function init() {
 
 	scene.add(painter1.mesh);
 
+
+
 	// square shape
 	const squareSize = 0.4
 	const xPos = 0
@@ -176,6 +191,8 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+
+	
 });
 
 // animation functions
@@ -194,6 +211,7 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
+
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
@@ -206,13 +224,48 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-  }
+
+	prevMenuSummon = menuSummon
+	menuSummon = gamepad1.buttons[1].value > 0
+	menuSummonRelease = menuSummon && prevMenuSummon
+	
+	if (!menuSummonRelease && !menuSummon && prevMenuSummon && !buttonPressed) {
+		// Spawn Menu
+		buttonPressed = true
+	}
+
+	if (menuSummonRelease && menuSummon && prevMenuSummon && buttonPressed) {
+		buttonPressed = false
+		flipBit = !flipBit
+
+		if (flipBit && cube_indentifiers == null) {
+			const menu_surface = getPngCube(0.3, 0.01, 0.3, 'assets/survey_frame.png')
+			const menu_surface_bb = new THREE.Box3()
+			scene.add(menu_surface)
+			menu_surface.position.set(stylus.position.x, stylus.position.y - 0.02, stylus.position.z)
+			menu_surface_bb.setFromObject(menu_surface)
+			cube_indentifiers = menu_surface.uuid
+			camera.updateProjectionMatrix()
+		}
+
+		if (!flipBit && cube_indentifiers != null) {
+			scene.remove(scene.getObjectByProperty('uuid', cube_indentifiers))
+			cube_indentifiers = null
+		}
+	}
+
+	
+
+	}
 
   handleDrawing(stylus);
 
   // Render
   onFrame();
   renderer.render(scene, camera);
+
+
+
 }
 
 function handleDrawing(controller) {

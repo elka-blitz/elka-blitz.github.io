@@ -83,3 +83,16 @@ export const getCube = (width, height, depth, color) => {
 		new THREE.MeshStandardMaterial({ color: color }),
 	);
 }
+
+
+export const getPngCube = (width, height, depth, png_url) => {
+	// Menu appearance
+	const loader = new THREE.TextureLoader();
+
+	return new THREE.Mesh(
+		new THREE.BoxGeometry(width, height, depth),
+		new THREE.MeshBasicMaterial({
+		map: loader.load(png_url),
+		})
+	);
+}
