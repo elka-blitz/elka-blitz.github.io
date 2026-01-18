@@ -234,12 +234,12 @@ function handleDrawing(controller) {
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
 function onControllerConnected(e) {
-  if (e.data.profiles.includes("logitech-mx-ink")) {
-    stylus = e.target;
-    stylus.userData.painter = painter1;
-    gamepad1 = e.data.gamepad;
+  // if (e.data.profiles.includes("logitech-mx-ink")) {
+	stylus = e.target;
+	stylus.userData.painter = painter1;
+	gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
-  }
+  // }
 }
 
 function onSelectStart(e) {
