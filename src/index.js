@@ -340,22 +340,36 @@ function onSelectStart(e) {
   if (e.target !== stylus){
 	try {
 		raycaster.setFromXRController(e.target);
-		const intersections = raycaster.intersectObjects(scene.children);
+		const intersections = raycaster.intersectObjects([cube3]);
 		if (intersections.length > 0) {
-			console.log('hit object', intersections[0].object)
-			debugText.text = intersections[0].object.uuid
-		} else {
-			console.log(intersections[0].object)
-			debugText.text = intersections[0].object
+			try {
+				console.log('hit object', intersections[0].point)
+				// debugText.text = intersections[0].object.uuid
+				debugText.text = ('Intersection' + (intersections[0].point.x), (intersections[0].point.y), (intersections[0].point.z))
+				// debugText.text = intersections[0].object.uuid
+				line.scale.z = intersections[0].object.distance;
+				if (gamepad1) {
+					gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
+				}
+			} catch (e) {
+				console.log(e)
+			}
 		}
 	} catch (error) {
 		console.log(error)
 		return;
 	}
-  };
-  const painter = stylus.userData.painter;
-  painter.moveTo(stylus.position);
-  this.userData.isSelecting = true;
+  }
+
+  else {
+	try {
+	const painter = stylus.userData.painter;
+	painter.moveTo(stylus.position);
+	this.userData.isSelecting = true;
+	} catch {
+		return
+	}
+  }
 }
 
 function onSelectEnd() {
