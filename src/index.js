@@ -46,7 +46,8 @@ const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
 // Cubes array
-let cube_indentifiers = null
+let menu_uuid_holder = null
+let menu_bb_uuid_holder = null
 
 // Menu state
 let prevMenuSummon = false
@@ -74,11 +75,26 @@ debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
 
+// Raycast stuff
+const tempMatrix = new THREE.Matrix4();
+let reticle;
+const raycaster = new THREE.Raycaster();
+
+const geometry = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(0, 0, 0),
+  new THREE.Vector3(0, 0, -1)
+]);
+const line = new THREE.Line(geometry);
+line.scale.z = 10; // Initial length
 
 
 init();
 
 function init() {
+
+
+
+
 	// scene setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x1f0091);
@@ -125,6 +141,15 @@ function init() {
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
+	// Reticle (visual indicator)
+	reticle = new THREE.Mesh(
+        new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+	);
+	reticle.matrixAutoUpdate = false;
+	reticle.visible = false;
+	scene.add(reticle);
+
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
@@ -132,6 +157,8 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+
 
 }
 
@@ -168,6 +195,7 @@ function init() {
 
 
 
+
 	// square shape
 	const squareSize = 0.4
 	const xPos = 0
@@ -190,8 +218,6 @@ function init() {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-
 	
 });
 
@@ -225,6 +251,15 @@ function animate() {
       painter.moveTo(stylus.position);
     }
 
+
+	// Menu logic / hacky event listener
+
+	if (menu_uuid_holder != null) {
+		if (new THREE.Box3().setFromObject(scene.getObjectByProperty('uuid', menu_uuid_holder)).containsPoint(stylus.position)) {
+			gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
+		}
+	}
+
 	prevMenuSummon = menuSummon
 	menuSummon = gamepad1.buttons[1].value > 0
 	menuSummonRelease = menuSummon && prevMenuSummon
@@ -238,25 +273,31 @@ function animate() {
 		buttonPressed = false
 		flipBit = !flipBit
 
-		if (flipBit && cube_indentifiers == null) {
+		if (flipBit && menu_uuid_holder == null) {
 			const menu_surface = getPngCube(0.3, 0.01, 0.3, 'assets/survey_frame.png')
 			const menu_surface_bb = new THREE.Box3()
+			
 			scene.add(menu_surface)
 			menu_surface.position.set(stylus.position.x, stylus.position.y - 0.02, stylus.position.z)
+			menu_surface.rotateX(-50)
+
 			menu_surface_bb.setFromObject(menu_surface)
-			cube_indentifiers = menu_surface.uuid
+
+			menu_uuid_holder = menu_surface.uuid
+			menu_bb_uuid_holder = menu_surface_bb.uuid
 			camera.updateProjectionMatrix()
 		}
 
-		if (!flipBit && cube_indentifiers != null) {
-			scene.remove(scene.getObjectByProperty('uuid', cube_indentifiers))
-			cube_indentifiers = null
+		if (!flipBit && menu_uuid_holder != null) {
+			scene.remove(scene.getObjectByProperty('uuid', menu_uuid_holder))
+			menu_uuid_holder = null
+			menu_bb_uuid_holder = null
+
 		}
 	}
 
-	
-
 	}
+
 
   handleDrawing(stylus);
 
@@ -296,7 +337,22 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
-  if (e.target !== stylus) return;
+  if (e.target !== stylus){
+	try {
+		raycaster.setFromXRController(e.target);
+		const intersections = raycaster.intersectObjects(scene.children);
+		if (intersections.length > 0) {
+			console.log('hit object', intersections[0].object)
+			debugText.text = intersections[0].object.uuid
+		} else {
+			console.log(intersections[0].object)
+			debugText.text = intersections[0].object
+		}
+	} catch (error) {
+		console.log(error)
+		return;
+	}
+  };
   const painter = stylus.userData.painter;
   painter.moveTo(stylus.position);
   this.userData.isSelecting = true;
@@ -304,6 +360,15 @@ function onSelectStart(e) {
 
 function onSelectEnd() {
   this.userData.isSelecting = false;
+}
+
+function onSelect() {
+	if (reticle.visible) {
+	const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+	const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.05), material);
+	mesh.position.setFromMatrixPosition(reticle.matrix);
+	scene.add(mesh);
+	}
 }
 
 function debugGamepad(gamepad) {
