@@ -25,10 +25,17 @@ let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
 let painter1;
+let painter2;
+let isYellow = false;
 
 const material = new THREE.MeshNormalMaterial({
   flatShading: true,
   side: THREE.DoubleSide,
+});
+
+const yellowMaterial = new THREE.MeshBasicMaterial({
+	color: 'yellow',
+	wireframeLinewidth: '2',
 });
 
 const cursor = new THREE.Vector3();
@@ -151,7 +158,12 @@ function init() {
 	painter1.mesh.material = material;
 	painter1.setSize(0.1);
 
+	painter2 = new TubePainter();
+	painter2.mesh.material = yellowMaterial;
+	painter2.setSize(0.1);
+
 	scene.add(painter1.mesh);
+	scene.add(painter2.mesh);
 
 	// square shape
 	const squareSize = 0.4
@@ -207,6 +219,7 @@ function animate() {
       painter.moveTo(stylus.position);
     }
   }
+  changeColor(stylus);
 
   handleDrawing(stylus);
 
@@ -219,7 +232,7 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = userData.painter;
+  const painter = isYellow ? painter2 : painter1;
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
@@ -230,6 +243,15 @@ function handleDrawing(controller) {
       painter.update();
     }
   }
+}
+
+function changeColor(controller) {
+	if (!controller) return;
+
+	// y button
+	if (gamepad1.buttons[5].pressed) {
+		isYellow = !isYellow;
+	}
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
