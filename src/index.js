@@ -1,22 +1,24 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
+import { GamepadWrapper, XR_BUTTONS} from 'gamepad-wrapper';
+import { gamePadWrapper, getController, getControllerGrip } from './controllerFunctions';
 import {
 	getCube,
 	getDashedLine,
 	getFloor,
+	getPngCube,
 	getSquare,
 } from './shapeFunctions';
 
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GamepadWrapper } from 'gamepad-wrapper';
+
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { devMenuLoader } from './devMenu';
 
 let camera, scene, renderer;
 let stylus;
@@ -43,6 +45,16 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
+// Cubes array
+let menu_uuid_holder = null
+let menu_bb_uuid_holder = null
+
+// Menu state
+let prevMenuSummon = false
+let menuSummon = false
+let menuSummonRelease = false
+let buttonPressed = false
+let flipBit = false
 
 
 // Stylus info
@@ -63,9 +75,26 @@ debugText.anchorX = 'center';
 debugText.anchorY = 'middle';
 debugText.text = 'LiveStylusCoords'
 
+// Raycast stuff
+const tempMatrix = new THREE.Matrix4();
+let reticle;
+const raycaster = new THREE.Raycaster();
+
+const geometry = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(0, 0, 0),
+  new THREE.Vector3(0, 0, -1)
+]);
+const line = new THREE.Line(geometry);
+line.scale.z = 10; // Initial length
+
+
 init();
 
 function init() {
+
+
+
+
 	// scene setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x1f0091);
@@ -112,6 +141,15 @@ function init() {
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
+	// Reticle (visual indicator)
+	reticle = new THREE.Mesh(
+        new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+	);
+	reticle.matrixAutoUpdate = false;
+	reticle.visible = false;
+	scene.add(reticle);
+
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
@@ -119,6 +157,8 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+
 
 }
 
@@ -153,6 +193,9 @@ function init() {
 
 	scene.add(painter1.mesh);
 
+
+
+
 	// square shape
 	const squareSize = 0.4
 	const xPos = 0
@@ -175,7 +218,7 @@ function init() {
 	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
+	
 });
 
 // animation functions
@@ -194,6 +237,7 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
+
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
@@ -206,13 +250,63 @@ function animate() {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
     }
-  }
+
+
+	// Menu logic / hacky event listener
+
+	if (menu_uuid_holder != null) {
+		if (new THREE.Box3().setFromObject(scene.getObjectByProperty('uuid', menu_uuid_holder)).containsPoint(stylus.position)) {
+			gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
+		}
+	}
+
+	prevMenuSummon = menuSummon
+	menuSummon = gamepad1.buttons[1].value > 0
+	menuSummonRelease = menuSummon && prevMenuSummon
+	
+	if (!menuSummonRelease && !menuSummon && prevMenuSummon && !buttonPressed) {
+		// Spawn Menu
+		buttonPressed = true
+	}
+
+	if (menuSummonRelease && menuSummon && prevMenuSummon && buttonPressed) {
+		buttonPressed = false
+		flipBit = !flipBit
+
+		if (flipBit && menu_uuid_holder == null) {
+			const menu_surface = getPngCube(0.3, 0.01, 0.3, 'assets/survey_frame.png')
+			const menu_surface_bb = new THREE.Box3()
+			
+			scene.add(menu_surface)
+			menu_surface.position.set(stylus.position.x, stylus.position.y - 0.02, stylus.position.z)
+			menu_surface.rotateX(-50)
+
+			menu_surface_bb.setFromObject(menu_surface)
+
+			menu_uuid_holder = menu_surface.uuid
+			menu_bb_uuid_holder = menu_surface_bb.uuid
+			camera.updateProjectionMatrix()
+		}
+
+		if (!flipBit && menu_uuid_holder != null) {
+			scene.remove(scene.getObjectByProperty('uuid', menu_uuid_holder))
+			menu_uuid_holder = null
+			menu_bb_uuid_holder = null
+
+		}
+	}
+
+	}
+
 
   handleDrawing(stylus);
 
   // Render
   onFrame();
   renderer.render(scene, camera);
+
+
+
 }
 
 function handleDrawing(controller) {
@@ -243,14 +337,52 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
-  if (e.target !== stylus) return;
-  const painter = stylus.userData.painter;
-  painter.moveTo(stylus.position);
-  this.userData.isSelecting = true;
+  if (e.target !== stylus){
+	try {
+		raycaster.setFromXRController(e.target);
+		const intersections = raycaster.intersectObjects([cube3]);
+		if (intersections.length > 0) {
+			try {
+				console.log('hit object', intersections[0].point)
+				// debugText.text = intersections[0].object.uuid
+				debugText.text = ('Intersection' + (intersections[0].point.x), (intersections[0].point.y), (intersections[0].point.z))
+				// debugText.text = intersections[0].object.uuid
+				line.scale.z = intersections[0].object.distance;
+				if (gamepad1) {
+					gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
+				}
+			} catch (e) {
+				console.log(e)
+			}
+		}
+	} catch (error) {
+		console.log(error)
+		return;
+	}
+  }
+
+  else {
+	try {
+	const painter = stylus.userData.painter;
+	painter.moveTo(stylus.position);
+	this.userData.isSelecting = true;
+	} catch {
+		return
+	}
+  }
 }
 
 function onSelectEnd() {
   this.userData.isSelecting = false;
+}
+
+function onSelect() {
+	if (reticle.visible) {
+	const material = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+	const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.05), material);
+	mesh.position.setFromMatrixPosition(reticle.matrix);
+	scene.add(mesh);
+	}
 }
 
 function debugGamepad(gamepad) {
