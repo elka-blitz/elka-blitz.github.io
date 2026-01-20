@@ -251,6 +251,25 @@ function changeColor(controller) {
 	// y button
 	if (gamepad1.buttons[5].pressed) {
 		isYellow = !isYellow;
+
+		if (isYellow) {
+			painter1.mesh.layers.set(2);
+			painter2.mesh.layers.set(0);
+			painter1.update();
+			painter2.update();
+		} else {
+			painter1.mesh.layers.set(0);
+			painter2.mesh.layers.set(2);
+			painter1.update();
+			painter2.update();
+		}
+
+	}
+
+	// x button
+	if (gamepad1.buttons[4].pressed) {
+		painter1.mesh.layers.set(0);
+		painter2.mesh.layers.set(0);
 	}
 }
 
