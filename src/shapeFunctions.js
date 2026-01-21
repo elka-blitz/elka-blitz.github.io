@@ -7,8 +7,8 @@ export const getDashedLine = (points, color) => {
 		color: color,
 		linewidth: 2,
 		scale: 4,
-		dashSize: 0.4,
-		gapSize: 0.2,
+		dashSize: 0.02,
+		gapSize: 0.02,
 	};
 
 	const geometry = new THREE.BufferGeometry();
@@ -69,6 +69,58 @@ export const getSquare = (squareSize, xPos, yPos, userDistance, leanTowards, isD
 
 	return isDashed ? getDashedLine(points, color) : getLine(points, color);
 }
+
+export const getRect = (width, height, xPos, yPos, userDistance, leanTowards, isDashed, color) => {
+	const points = []
+	points.push(
+		new THREE.Vector3(xPos - width, yPos - height, userDistance),
+	);
+	points.push(
+		new THREE.Vector3(xPos + width, yPos - height, userDistance),
+	);
+	points.push(
+		new THREE.Vector3(
+			xPos + width,
+			yPos + height,
+			userDistance - leanTowards,
+		),
+	);
+	points.push(
+		new THREE.Vector3(
+			xPos - width,
+			yPos + height,
+			userDistance - leanTowards,
+		),
+	);
+	points.push(
+		new THREE.Vector3(xPos - width, yPos - height, userDistance),
+	);
+
+	return isDashed ? getDashedLine(points, color) : getLine(points, color);
+}
+
+export const getCircle = (radius) => {
+
+	const segments = 64;
+
+	const points = [];
+
+	for (let i = 0; i <= segments; i++) {
+		const theta = (i / segments) * Math.PI * 2;
+		points.push(
+			new THREE.Vector3(Math.cos(theta) * radius, Math.sin(theta) * radius, 0),
+		);
+	}
+
+	const geometry = new THREE.BufferGeometry().setFromPoints(points);
+	const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+
+	const circle = new THREE.LineLoop(geometry, material);
+	return getDashedLine(points, "white")
+
+
+}
+
 
 
 export const getFloor = (width, height, color) => {

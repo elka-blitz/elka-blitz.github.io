@@ -1,12 +1,13 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
 import {
+	getCircle,
 	getCube,
-	getDashedLine,
 	getFloor,
+	getRect,
 	getSquare,
 } from './shapeFunctions';
+import { getController, getControllerGrip } from './controllerFunctions';
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -184,20 +185,54 @@ function init() {
 
 	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
 
-
+	console.log(squarePaint)
 	scene.add(squarePaint.mesh);
 	scene.add(circlePaint1.mesh);
 	scene.add(circlePaint2.mesh);
 	scene.add(rectPaint.mesh);
 
 	// square shape
-	const squareSize = 0.4
+	const squareSize = 0.1
 	const xPos = 0
 	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.2
-	const leanTowards = 0.05
+	const userDistance = -0.4
+	const leanTowards = 0.01
 
-	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
+	const square = getSquare(
+		squareSize,
+		xPos,
+		yPos,
+		userDistance,
+		leanTowards,
+		true,
+		'white',
+	);
+
+	scene.add(square);
+
+	const circle1 = getCircle(0.02);
+	const circle2 = getCircle(0.02);
+	scene.add(circle1)
+	const distanceFromCenter = 0.06
+	circle1.position.set(xPos - distanceFromCenter, yPos + 0.04, userDistance);
+
+	scene.add(circle2)
+	circle2.visible = true;
+	circle2.position.set(xPos + distanceFromCenter, yPos + 0.04, userDistance);
+
+	const rect = getRect(0.08, 0.02, xPos, yPos - 0.035, userDistance, 0, true, 'white')
+
+	scene.add(rect);
+
+	const shapeOutlineArray = [square, circle1, circle2, rect];
+
+	shapeOutlineArray.forEach((shape, i) => {
+		if (i !== 0) {
+			shape.visible = false;
+		}
+	})
+
+
 
 
 	window.addEventListener("resize", () => {
@@ -285,9 +320,13 @@ function changeDrawing(controller) {
 		shapeArray.forEach((paint) => {
 			paint.mesh.layers.set(2);
 		});
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = false
+		});
 
 
 		shapeArray[shapeIndex].mesh.layers.set(0)
+		shapeOutlineArray[shapeIndex].visible = true
 
 	}
 	wasYPressed = gamepad1.buttons[5].pressed;
@@ -296,6 +335,9 @@ function changeDrawing(controller) {
 	if (gamepad1.buttons[4].pressed) {
 		shapeArray.forEach((paint) => {
 			paint.mesh.layers.set(0);
+		});
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = true
 		});
 	}
 }
