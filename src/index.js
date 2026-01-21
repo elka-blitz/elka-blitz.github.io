@@ -44,22 +44,31 @@ const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
 // Desk
-const desk = getCube(0.5, 0.1, 1, '#616161ff')
-const deskFly = -5 // Starting position for desk to fly in from
+let desk
+let deskSummoned = false
+let desk_start_position = new THREE.Vector3(0, 5, 0) // Starting position for desk to fly in from
+let desk_end_position = new THREE.Vector3()
+let desk_is_flying = false
+let desk_left_set = false
+let desk_right_set = false
+let desk_left_coord = new THREE.Vector3()
+let desk_right_coord = new THREE.Vector3()
+let left_coord_confirm = false
+let right_coord_confirm  = false
 
 // Stylus info
 let position = new THREE.Vector3();
 
 // Debugging stuff
 let debugVar = true
-const debugText = new Text();
-debugText.fontsize = 0.52
-debugText.font = 'assets/SpaceMono-Bold.ttf';
-debugText.position.z = -2;
-debugText.color = 0xffffff;
-debugText.anchorX = 'center';
-debugText.anchorY = 'middle';
-debugText.text = 'LiveStylusCoords'
+const UIText = new Text();
+UIText.fontsize = 0.52
+UIText.font = 'assets/SpaceMono-Bold.ttf';
+UIText.position.z = -2;
+UIText.color = 0xffffff;
+UIText.anchorX = 'center';
+UIText.anchorY = 'middle';
+UIText.text = 'LiveStylusCoords'
 
 init();
 
@@ -120,10 +129,10 @@ function init() {
 
 }
 	// Debugging text
-	scene.add(debugText);
-	debugText.position.set(0, 1, -2.5);
-	debugText.rotateX(-Math.PI / 3.3);
-	debugText.text = 'Instructions:\nFor stylus: Tap surface with pen\nFor controller: Place at desk level and pull trigger'
+	scene.add(UIText);
+	UIText.position.set(0, 1, -2.5);
+	UIText.rotateX(-Math.PI / 3.3);
+	UIText.text = 'Tap desk with stylus to start'
 
 	// Getting rid of floor
 	// // floor
@@ -165,15 +174,66 @@ function init() {
 
 // animation functions
 function onFrame() {
-	
-	}
+
+}
 
 function animate() {
-	debugText.sync()
+	UIText.sync()
+
+
+
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
+
+	// Summon and define desk area
+	// Can be supplemented using png graphics, using debugtext as UI for now
+	if (!deskSummoned){
+		// scene.add(desk)
+
+		if (!desk_left_set) {
+			UIText.text = 'Step 1: Define your desk\nListening for left set...'
+			if (gamepad1.buttons[5].value > 0) {
+				
+				desk_left_coord = stylus.position
+				UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nClick front button to confirm'
+				const leftcube = getCube(0.01, 0.01, 0.01, '#00ff22ff')
+				scene.add(leftcube)
+				leftcube.position.set(desk_left_coord)
+
+
+
+			}
+
+			if (gamepad1.buttons[1].value > 0) {
+				desk_left_set = true
+			}
+		}
+		
+		if (desk_left_set && !desk_right_set) {
+			UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nListening for right...'
+			if (gamepad1.buttons[5].value > 0) {
+
+				desk_right_coord = stylus.position
+				UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nRight set at: ' + 
+				desk_right_coord.x.toString() + desk_right_coord.y.toString() + desk_right_coord.z.toString()
+				const rightcube = getCube(0.01, 0.01, 0.01, '#ff0000')
+				scene.add(rightcube)
+				rightcube.position.set(desk_right_coord)
+			}
+
+			if (gamepad1.buttons[1].value > 0) {
+				desk_right_set = true
+			}
+
+		}
+
+		if (desk_left_set && desk_right_set) {
+			UIText.text = 'Both bounds set!' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + desk_right_coord.x.toString() + desk_right_coord.y.toString() + desk_right_coord.z.toString()
+		}
+
+	}
 
     if (isDrawing && !prevIsDrawing) {
       const painter = stylus.userData.painter;
@@ -217,8 +277,6 @@ function onControllerConnected(e) {
 
 function onSelectStart(e) {
 //   if (e.target !== stylus) return;
-	scene.add(desk)
-	desk.position.set(e.target.position.x, e.target.position.y, e.target.position.z)
   const painter = stylus.userData.painter;
   painter.moveTo(stylus.position);
   this.userData.isSelecting = true;
