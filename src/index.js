@@ -24,17 +24,29 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
-let painter1;
-let painter2;
-let isYellow = false;
 
-const material = new THREE.MeshNormalMaterial({
-  flatShading: true,
-  side: THREE.DoubleSide,
-});
+let wasYPressed = false;
+
+let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let shapeIndex = 0;
 
 const yellowMaterial = new THREE.MeshBasicMaterial({
 	color: 'yellow',
+	wireframeLinewidth: '2',
+});
+
+const blackMaterial = new THREE.MeshBasicMaterial({
+	color: 'black',
+	wireframeLinewidth: '2',
+});
+
+const greenMaterial = new THREE.MeshBasicMaterial({
+	color: 'green',
+	wireframeLinewidth: '2',
+});
+
+const redMaterial = new THREE.MeshBasicMaterial({
+	color: 'red',
 	wireframeLinewidth: '2',
 });
 
@@ -153,17 +165,30 @@ function init() {
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	// drawing paint
-	painter1 = new TubePainter();
-	painter1.mesh.material = material;
-	painter1.setSize(0.1);
+	// paints - might be able to make a loop
+	squarePaint = new TubePainter();
+	squarePaint.mesh.material = blackMaterial;
+	squarePaint.setSize(0.1);
 
-	painter2 = new TubePainter();
-	painter2.mesh.material = yellowMaterial;
-	painter2.setSize(0.1);
+	circlePaint1 = new TubePainter();
+	circlePaint1.mesh.material = redMaterial;
+	circlePaint1.setSize(0.1);
 
-	scene.add(painter1.mesh);
-	scene.add(painter2.mesh);
+	circlePaint2 = new TubePainter();
+	circlePaint2.mesh.material = greenMaterial;
+	circlePaint2.setSize(0.1);
+
+	rectPaint = new TubePainter();
+	rectPaint.mesh.material = yellowMaterial;
+	rectPaint.setSize(0.1);
+
+	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
+
+
+	scene.add(squarePaint.mesh);
+	scene.add(circlePaint1.mesh);
+	scene.add(circlePaint2.mesh);
+	scene.add(rectPaint.mesh);
 
 	// square shape
 	const squareSize = 0.4
@@ -219,7 +244,8 @@ function animate() {
       painter.moveTo(stylus.position);
     }
   }
-  changeColor(stylus);
+
+  changeDrawing(stylus);
 
   handleDrawing(stylus);
 
@@ -232,12 +258,11 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = isYellow ? painter2 : painter1;
+  const painter = shapeArray[shapeIndex]
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
 	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
-	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -245,39 +270,43 @@ function handleDrawing(controller) {
   }
 }
 
-function changeColor(controller) {
+function changeDrawing(controller) {
 	if (!controller) return;
 
 	// y button
-	if (gamepad1.buttons[5].pressed) {
-		isYellow = !isYellow;
+	if (gamepad1.buttons[5].pressed && !wasYPressed) {
 
-		if (isYellow) {
-			painter1.mesh.layers.set(2);
-			painter2.mesh.layers.set(0);
-			painter1.update();
-			painter2.update();
-		} else {
-			painter1.mesh.layers.set(0);
-			painter2.mesh.layers.set(2);
-			painter1.update();
-			painter2.update();
+		// todo add fix for line going straight down
+
+		if (shapeIndex < shapeArray.length - 1) {
+			shapeIndex += 1
 		}
 
+		shapeArray.forEach((paint) => {
+			paint.mesh.layers.set(2);
+		});
+
+
+		shapeArray[shapeIndex].mesh.layers.set(0)
+
 	}
+	wasYPressed = gamepad1.buttons[5].pressed;
 
 	// x button
 	if (gamepad1.buttons[4].pressed) {
-		painter1.mesh.layers.set(0);
-		painter2.mesh.layers.set(0);
+		shapeArray.forEach((paint) => {
+			paint.mesh.layers.set(0);
+		});
 	}
 }
 
-// controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
+
+// controller functions
+
 function onControllerConnected(e) {
   // if (e.data.profiles.includes("logitech-mx-ink")) {
 	stylus = e.target;
-	stylus.userData.painter = painter1;
+	stylus.userData.painter = shapeArray[0];
 	gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
   // }
