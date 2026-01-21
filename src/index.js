@@ -104,7 +104,7 @@ function init() {
 	controls.update();
 
 	const dracoLoader = new DRACOLoader();
-	dracoLoader.setDecoderPath('/draco/');
+	dracoLoader.setDecoderPath("/draco/");
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
@@ -185,7 +185,6 @@ function init() {
 
 	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
 
-	console.log(squarePaint)
 	scene.add(squarePaint.mesh);
 	scene.add(circlePaint1.mesh);
 	scene.add(circlePaint2.mesh);
@@ -318,15 +317,15 @@ function changeDrawing(controller) {
 		}
 
 		shapeArray.forEach((paint) => {
-			paint.mesh.layers.set(2);
+			paint.mesh.visible = false;
 		});
 		shapeOutlineArray.forEach((outline) => {
-			outline.visible = false
+			outline.visible = false;
 		});
 
 
-		shapeArray[shapeIndex].mesh.layers.set(0)
-		shapeOutlineArray[shapeIndex].visible = true
+		shapeArray[shapeIndex].mesh.visible = true;
+		shapeOutlineArray[shapeIndex].visible = true;
 
 	}
 	wasYPressed = gamepad1.buttons[5].pressed;
@@ -334,10 +333,10 @@ function changeDrawing(controller) {
 	// x button
 	if (gamepad1.buttons[4].pressed) {
 		shapeArray.forEach((paint) => {
-			paint.mesh.layers.set(0);
+			paint.mesh.visible = true;
 		});
 		shapeOutlineArray.forEach((outline) => {
-			outline.visible = true
+			outline.visible = true;
 		});
 	}
 }
