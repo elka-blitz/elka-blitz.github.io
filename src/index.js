@@ -43,14 +43,12 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
-
+// Desk
+const desk = getCube(0.5, 0.1, 1, '#616161ff')
+const deskFly = -5 // Starting position for desk to fly in from
 
 // Stylus info
 let position = new THREE.Vector3();
-
-
-// Cube Bounding box stuff
-let boundingBox_cube3 = new THREE.Box3();
 
 // Debugging stuff
 let debugVar = true
@@ -89,8 +87,8 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
-	scene.add(grid);
+	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
+	// scene.add(grid);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -121,30 +119,17 @@ function init() {
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
 }
-
-	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
-
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
-
-	// live stylus coords
+	// Debugging text
 	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
+	debugText.position.set(0, 1, -2.5);
 	debugText.rotateX(-Math.PI / 3.3);
+	debugText.text = 'Instructions:\nFor stylus: Tap surface with pen\nFor controller: Place at desk level and pull trigger'
 
-	// Pen interaction debug cube
-	// Haptics + drawing on surface
-	scene.add(cube3)
-	cube3.position.set(-0.5, 1, -0.3)
-	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
-
-	// floor
-	const floor = getFloor(6, 6, 'grey');
-	floor.rotateX(-Math.PI / 2);
-	scene.add(floor);
+	// Getting rid of floor
+	// // floor
+	// const floor = getFloor(6, 6, 'grey');
+	// floor.rotateX(-Math.PI / 2);
+	// scene.add(floor);
 
 	// drawing paint
 	painter1 = new TubePainter();
@@ -153,14 +138,14 @@ function init() {
 
 	scene.add(painter1.mesh);
 
-	// square shape
-	const squareSize = 0.4
-	const xPos = 0
-	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.2
-	const leanTowards = 0.05
+	// // square shape
+	// const squareSize = 0.4
+	// const xPos = 0
+	// const yPos = 1.6 // this will have to be height adjusted
+	// const userDistance = -0.2
+	// const leanTowards = 0.05
 
-	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
+	// scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
 
 	window.addEventListener("resize", () => {
@@ -181,11 +166,6 @@ function init() {
 // animation functions
 function onFrame() {
 	
-	cube.rotateX(0.01)
-	cube.rotateY (0.01)
-	cube2.rotateY(0.05)
-	cube2.rotateX(0.05)
-
 	}
 
 function animate() {
@@ -194,14 +174,7 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
     // debugGamepad(gamepad1);
-	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
-	if (boundingBox_cube3.containsPoint(stylus.position)) {
-		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
-	}
-	} catch (e) {
-		console.log(e)
-	}
+
     if (isDrawing && !prevIsDrawing) {
       const painter = stylus.userData.painter;
       painter.moveTo(stylus.position);
@@ -223,7 +196,7 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
+	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
 	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
@@ -243,7 +216,9 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
-  if (e.target !== stylus) return;
+//   if (e.target !== stylus) return;
+	scene.add(desk)
+	desk.position.set(e.target.position.x, e.target.position.y, e.target.position.z)
   const painter = stylus.userData.painter;
   painter.moveTo(stylus.position);
   this.userData.isSelecting = true;
