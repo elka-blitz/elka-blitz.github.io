@@ -1,12 +1,13 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
 import {
+	getCircle,
 	getCube,
-	getDashedLine,
 	getFloor,
+	getRect,
 	getSquare,
 } from './shapeFunctions';
+import { getController, getControllerGrip } from './controllerFunctions';
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -26,9 +27,30 @@ let isDrawing = false;
 let prevIsDrawing = false;
 let painter1;
 
-const material = new THREE.MeshNormalMaterial({
-  flatShading: true,
-  side: THREE.DoubleSide,
+
+let wasChangeButtonPressed = false;
+
+let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let shapeIndex = 0;
+
+const yellowMaterial = new THREE.MeshBasicMaterial({
+	color: 'yellow',
+	wireframeLinewidth: '2',
+});
+
+const blackMaterial = new THREE.MeshBasicMaterial({
+	color: 'black',
+	wireframeLinewidth: '2',
+});
+
+const greenMaterial = new THREE.MeshBasicMaterial({
+	color: 'green',
+	wireframeLinewidth: '2',
+});
+
+const redMaterial = new THREE.MeshBasicMaterial({
+	color: 'red',
+	wireframeLinewidth: '2',
 });
 
 const cursor = new THREE.Vector3();
@@ -146,21 +168,71 @@ function init() {
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	// drawing paint
-	painter1 = new TubePainter();
-	painter1.mesh.material = material;
-	painter1.setSize(0.1);
-
-	scene.add(painter1.mesh);
+	// paints - might be able to make a loop
+	squarePaint = new TubePainter();
+	squarePaint.mesh.material = blackMaterial;
+	squarePaint.setSize(0.1);
+	
+	circlePaint1 = new TubePainter();
+	circlePaint1.mesh.material = redMaterial;
+	circlePaint1.setSize(0.1);
+	
+	circlePaint2 = new TubePainter();
+	circlePaint2.mesh.material = greenMaterial;
+	circlePaint2.setSize(0.1);
+	
+	rectPaint = new TubePainter();
+	rectPaint.mesh.material = yellowMaterial;
+	rectPaint.setSize(0.1);
+	
+	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
+	
+	scene.add(squarePaint.mesh);
+	scene.add(circlePaint1.mesh);
+	scene.add(circlePaint2.mesh);
+	scene.add(rectPaint.mesh);
 
 	// square shape
-	const squareSize = 0.4
+	const squareSize = 0.1
 	const xPos = 0
 	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.2
-	const leanTowards = 0.05
+	const userDistance = -0.4
+	const leanTowards = 0.01
+	
+	const square = getSquare(
+		squareSize,
+		xPos,
+		yPos,
+		userDistance,
+		leanTowards,
+		true,
+		'white',
+	);
+	
+	scene.add(square);
+	
+	const circle1 = getCircle(0.02);
+	const circle2 = getCircle(0.02);
+	scene.add(circle1)
+	const distanceFromCenter = 0.06
+	circle1.position.set(xPos - distanceFromCenter, yPos + 0.04, userDistance);
+	
+	scene.add(circle2)
+	circle2.visible = true;
+	circle2.position.set(xPos + distanceFromCenter, yPos + 0.04, userDistance);
+	
+	const rect = getRect(0.08, 0.02, xPos, yPos - 0.035, userDistance, 0, true, 'white')
+	
+	scene.add(rect);
+	
+	const shapeOutlineArray = [square, circle1, circle2, rect];
+	
+	shapeOutlineArray.forEach((shape, i) => {
+		if (i !== 0) {
+			shape.visible = false;
+		}
+})
 
-	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
 
 	window.addEventListener("resize", () => {
@@ -207,7 +279,7 @@ function animate() {
       painter.moveTo(stylus.position);
     }
   }
-
+	changeDrawing(stylus)
   handleDrawing(stylus);
 
   // Render
@@ -231,6 +303,42 @@ function handleDrawing(controller) {
     }
   }
 }
+
+function changeDrawing(controller) {
+	if (!controller) return;
+	/*
+	if (controller.buttons[4].pressed && !wasChangeButtonPressed) {
+		if (shapeIndex < shapeArray.length - 1) {
+			shapeIndex += 1;
+		}
+
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = false;
+		})
+
+		shapeOutlineArray[shapeIndex].visible = true;
+	}
+
+	wasChangeButtonPressed = controller.buttons[4].pressed;
+	*/
+
+	if (controller.buttons[1].pressed) {
+		shapeIndex = 0;
+	} else if (controller.buttons[2].pressed) {
+		shapeIndex = 1;
+	} else if (controller.buttons[3].pressed) {
+		shapeIndex = 2;
+	} else if (controller.buttons[4].pressed) {
+		shapeIndex = 3;
+	}
+	shapeOutlineArray.forEach((outline) => {
+		outline.visible = false;
+	});
+
+	shapeOutlineArray[shapeIndex].visible = true;
+
+}
+
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
 function onControllerConnected(e) {
