@@ -51,6 +51,7 @@ let tempVector = new THREE.Vector3();
 let tempBox = new THREE.Box3();
 let prevPressed = false
 let cube_identifier 
+const tableGroup = new THREE.Group()
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -113,6 +114,14 @@ function init() {
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
+
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+		tableGroup.add(gltf.scene);
+	});
+
+	scene.add(tableGroup)
+
+	tableGroup.position.set(1, 1, 0)
 
 	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
 	// scene.add(grid);
