@@ -33,25 +33,11 @@ let wasChangeButtonPressed = false;
 let squarePaint, circlePaint1, circlePaint2, rectPaint;
 let shapeIndex = 0;
 
-const yellowMaterial = new THREE.MeshBasicMaterial({
-	color: 'yellow',
-	wireframeLinewidth: '2',
+const material = new THREE.MeshNormalMaterial({
+	flatShading: true,
+	side: THREE.DoubleSide,
 });
 
-const blackMaterial = new THREE.MeshBasicMaterial({
-	color: 'black',
-	wireframeLinewidth: '2',
-});
-
-const greenMaterial = new THREE.MeshBasicMaterial({
-	color: 'green',
-	wireframeLinewidth: '2',
-});
-
-const redMaterial = new THREE.MeshBasicMaterial({
-	color: 'red',
-	wireframeLinewidth: '2',
-});
 
 const cursor = new THREE.Vector3();
 
@@ -168,29 +154,12 @@ function init() {
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	// paints - might be able to make a loop
-	squarePaint = new TubePainter();
-	squarePaint.mesh.material = blackMaterial;
-	squarePaint.setSize(0.1);
-	
-	circlePaint1 = new TubePainter();
-	circlePaint1.mesh.material = redMaterial;
-	circlePaint1.setSize(0.1);
-	
-	circlePaint2 = new TubePainter();
-	circlePaint2.mesh.material = greenMaterial;
-	circlePaint2.setSize(0.1);
-	
-	rectPaint = new TubePainter();
-	rectPaint.mesh.material = yellowMaterial;
-	rectPaint.setSize(0.1);
-	
-	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
-	
-	scene.add(squarePaint.mesh);
-	scene.add(circlePaint1.mesh);
-	scene.add(circlePaint2.mesh);
-	scene.add(rectPaint.mesh);
+	// drawing paint
+	painter1 = new TubePainter();
+	painter1.mesh.material = material;
+	painter1.setSize(0.1);
+
+	scene.add(painter1.mesh);
 
 	// square shape
 	const squareSize = 0.1
@@ -265,7 +234,7 @@ function animate() {
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
+    debugGamepad(gamepad1);
 	try {
 		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
