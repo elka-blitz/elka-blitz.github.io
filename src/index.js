@@ -322,18 +322,7 @@ function changeDrawing(controller) {
 	wasChangeButtonPressed = controller.buttons[4].pressed;
 	*/
 
-	if (controller.buttons[1].pressed) {
-		shapeIndex = 0;
-	} else if (controller.buttons[2].pressed) {
-		shapeIndex = 1;
-	} else if (controller.buttons[3].pressed) {
-		shapeIndex = 2;
-	} else if (controller.buttons[4].pressed) {
-		shapeIndex = 3;
-	}
-	shapeOutlineArray.forEach((outline) => {
-		outline.visible = false;
-	});
+	console.log(controller);
 
 	shapeOutlineArray[shapeIndex].visible = true;
 
