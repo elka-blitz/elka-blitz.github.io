@@ -47,10 +47,6 @@ const sizes = {
 };
 
 // cubes
-const cube = getCube(0.5, 0.5, 0.5, '#27F527');
-const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
-const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
-
 const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
 
 
@@ -60,7 +56,6 @@ let position = new THREE.Vector3();
 
 
 // Cube Bounding box stuff
-let boundingBox_cube3 = new THREE.Box3();
 let boundingBoxButton = new THREE.Box3();
 
 // Debugging stuff
@@ -133,24 +128,6 @@ function init() {
 
 }
 
-	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
-
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
-
-	// live stylus coords
-	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
-	debugText.rotateX(-Math.PI / 3.3);
-
-	// Pen interaction debug cube
-	// Haptics + drawing on surface
-	scene.add(cube3)
-	cube3.position.set(-0.5, 1, -0.3)
-	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
 
 	// button
 	scene.add(cubeButton)
@@ -158,7 +135,7 @@ function init() {
 	boundingBoxButton.setFromObject(cubeButton);
 
 	const nextButtonText = createText('Next', 0.02);
-	nextButtonText.position.set(0.15, 1.55, -0.24)
+	nextButtonText.position.set(0.15, 1.55, -0.235)
 	scene.add(nextButtonText);
 
 
@@ -234,14 +211,6 @@ function init() {
 });
 
 // animation functions
-function onFrame() {
-	
-	cube.rotateX(0.01)
-	cube.rotateY (0.01)
-	cube2.rotateY(0.05)
-	cube2.rotateX(0.05)
-
-	}
 
 function animate() {
 	debugText.sync()
@@ -250,14 +219,10 @@ function animate() {
     isDrawing = gamepad1.buttons[5].value > 0;
     debugGamepad(gamepad1);
 	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
-	if (boundingBox_cube3.containsPoint(stylus.position)) {
-		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
-	}
-	if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
-		handleButton(stylus)
-	}
-	wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
+		if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
+			handleButton(stylus)
+		}
+		wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
 
 	} catch (e) {
 		console.log(e)
@@ -271,7 +236,7 @@ function animate() {
   handleDrawing(stylus);
 
   // Render
-  onFrame();
+  // onFrame();
   renderer.render(scene, camera);
 }
 
