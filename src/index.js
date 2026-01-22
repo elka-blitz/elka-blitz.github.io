@@ -45,16 +45,12 @@ const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
 // Desk
 let desk
-let deskSummoned = false
-let desk_start_position = new THREE.Vector3(0, 5, 0) // Starting position for desk to fly in from
-let desk_end_position = new THREE.Vector3()
-let desk_is_flying = false
-let desk_left_set = false
-let desk_right_set = false
-let desk_left_coord = new THREE.Vector3()
-let desk_right_coord = new THREE.Vector3()
-let left_coord_confirm = false
-let right_coord_confirm  = false
+let desk_set = false
+let positions = []; // Store two corner positions
+let tempVector = new THREE.Vector3();
+let tempBox = new THREE.Box3();
+let prevPressed = false
+let cube_identifier 
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -69,6 +65,28 @@ UIText.color = 0xffffff;
 UIText.anchorX = 'center';
 UIText.anchorY = 'middle';
 UIText.text = 'LiveStylusCoords'
+
+function createCubeFromCorners(p1, p2) {
+    const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+    const size = new THREE.Vector3().subVectors(p2, p1);
+
+    const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const material = new THREE.MeshBasicMaterial({ color: 0x27e7f5, transparent: true, opacity: 0.5 });
+    const cuboid = new THREE.Mesh(geometry, material);
+    cuboid.position.copy(center);
+
+    // Get camera's horizontal direction (project on XZ plane)
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    direction.y = 0; // Ignore vertical component
+    direction.normalize();
+
+    // Rotate cuboid around Y-axis to face camera direction
+    cuboid.lookAt(center.clone().add(direction));
+    cuboid.rotateY(Math.PI / 2); // Adjust alignment if needed
+
+    scene.add(cuboid);
+}
 
 init();
 
@@ -115,6 +133,8 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 
 	renderer.xr.enabled = true;
+
+	
 
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
@@ -183,65 +203,31 @@ function animate() {
 
 
   if (gamepad1) {
+
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
 
-	// Summon and define desk area
-	// Can be supplemented using png graphics, using debugtext as UI for now
-	if (!deskSummoned){
-		// scene.add(desk)
+	if (!desk_set && (isDrawing && !prevIsDrawing)) {
+		tempVector = stylus.position
+		positions.push(tempVector.clone())
+		console.log('Captured: ', tempVector)
 
-		if (!desk_left_set) {
-			UIText.text = 'Step 1: Define your desk\nListening for left set...'
-			if (gamepad1.buttons[5].value > 0) {
-				
-				desk_left_coord = stylus.position
-				UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nClick front button to confirm'
-				const leftcube = getCube(0.01, 0.01, 0.01, '#00ff22ff')
-				scene.add(leftcube)
-				leftcube.position.set(desk_left_coord)
-
-
-
-			}
-
-			if (gamepad1.buttons[1].value > 0) {
-				desk_left_set = true
-			}
+		if (positions.length === 2) {
+			createCubeFromCorners(positions[0], positions[1]);
+			positions = []; // Reset for next use
 		}
-		
-		if (desk_left_set && !desk_right_set) {
-			UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nListening for right...'
-			if (gamepad1.buttons[5].value > 0) {
-
-				desk_right_coord = stylus.position
-				UIText.text = '\nLeft set at: ' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + '\nRight set at: ' + 
-				desk_right_coord.x.toString() + desk_right_coord.y.toString() + desk_right_coord.z.toString()
-				const rightcube = getCube(0.01, 0.01, 0.01, '#ff0000')
-				scene.add(rightcube)
-				rightcube.position.set(desk_right_coord)
-			}
-
-			if (gamepad1.buttons[1].value > 0) {
-				desk_right_set = true
-			}
-
-		}
-
-		if (desk_left_set && desk_right_set) {
-			UIText.text = 'Both bounds set!' + desk_left_coord.x.toString() + desk_left_coord.y.toString() + desk_left_coord.z.toString() + desk_right_coord.x.toString() + desk_right_coord.y.toString() + desk_right_coord.z.toString()
-		}
-
 	}
 
-    if (isDrawing && !prevIsDrawing) {
-      const painter = stylus.userData.painter;
-      painter.moveTo(stylus.position);
-    }
+	if (desk_set) {
+    // debugGamepad(gamepad1);
+		if (isDrawing && !prevIsDrawing) {
+		const painter = stylus.userData.painter;
+		painter.moveTo(stylus.position);
+		}
+	}
   }
 
-  handleDrawing(stylus);
+//   handleDrawing(stylus);
 
   // Render
   onFrame();
@@ -265,6 +251,8 @@ function handleDrawing(controller) {
   }
 }
 
+
+
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
 function onControllerConnected(e) {
   if (e.data.profiles.includes("logitech-mx-ink")) {
@@ -277,9 +265,14 @@ function onControllerConnected(e) {
 
 function onSelectStart(e) {
 //   if (e.target !== stylus) return;
-  const painter = stylus.userData.painter;
-  painter.moveTo(stylus.position);
-  this.userData.isSelecting = true;
+	if (desk_set) {
+		const painter = stylus.userData.painter;
+		painter.moveTo(stylus.position);
+		this.userData.isSelecting = true;
+	}
+	else {
+		return
+	}
 }
 
 function onSelectEnd() {
