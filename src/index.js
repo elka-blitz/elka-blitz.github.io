@@ -1,12 +1,13 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
 import {
+	getCircle,
 	getCube,
-	getDashedLine,
 	getFloor,
+	getRect,
 	getSquare,
 } from './shapeFunctions';
+import { getController, getControllerGrip } from './controllerFunctions';
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -17,6 +18,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { createText } from 'three/examples/jsm/webxr/Text2D';
 
 let camera, scene, renderer;
 let stylus;
@@ -26,10 +28,16 @@ let isDrawing = false;
 let prevIsDrawing = false;
 let painter1;
 
+let wasButtonEntered = false;
+
+let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let shapeIndex = 0;
+
 const material = new THREE.MeshNormalMaterial({
-  flatShading: true,
-  side: THREE.DoubleSide,
+	flatShading: true,
+	side: THREE.DoubleSide,
 });
+
 
 const cursor = new THREE.Vector3();
 
@@ -39,9 +47,7 @@ const sizes = {
 };
 
 // cubes
-const cube = getCube(0.5, 0.5, 0.5, '#27F527');
-const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
-const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
+const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
 
 
 
@@ -50,7 +56,7 @@ let position = new THREE.Vector3();
 
 
 // Cube Bounding box stuff
-let boundingBox_cube3 = new THREE.Box3();
+let boundingBoxButton = new THREE.Box3();
 
 // Debugging stuff
 let debugVar = true
@@ -122,24 +128,17 @@ function init() {
 
 }
 
-	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
 
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
+	// button
+	scene.add(cubeButton)
+	cubeButton.position.set(0.15, 1.55, -0.25)
+	boundingBoxButton.setFromObject(cubeButton);
 
-	// live stylus coords
-	scene.add(debugText);
-	debugText.position.set(1, 0.67, -1.44);
-	debugText.rotateX(-Math.PI / 3.3);
+	const nextButtonText = createText('Next', 0.02);
+	nextButtonText.position.set(0.15, 1.55, -0.235)
+	scene.add(nextButtonText);
 
-	// Pen interaction debug cube
-	// Haptics + drawing on surface
-	scene.add(cube3)
-	cube3.position.set(-0.5, 1, -0.3)
-	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
+
 
 	// floor
 	const floor = getFloor(6, 6, 'grey');
@@ -154,13 +153,46 @@ function init() {
 	scene.add(painter1.mesh);
 
 	// square shape
-	const squareSize = 0.4
+	const squareSize = 0.1
 	const xPos = 0
 	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.2
-	const leanTowards = 0.05
+	const userDistance = -0.4
+	const leanTowards = 0.01
+	
+	const square = getSquare(
+		squareSize,
+		xPos,
+		yPos,
+		userDistance,
+		leanTowards,
+		true,
+		'white',
+	);
+	
+	scene.add(square);
+	
+	const circle1 = getCircle(0.02);
+	const circle2 = getCircle(0.02);
+	scene.add(circle1)
+	const distanceFromCenter = 0.06
+	circle1.position.set(xPos - distanceFromCenter, yPos + 0.04, userDistance);
+	
+	scene.add(circle2)
+	circle2.visible = true;
+	circle2.position.set(xPos + distanceFromCenter, yPos + 0.04, userDistance);
+	
+	const rect = getRect(0.08, 0.02, xPos, yPos - 0.035, userDistance, 0, true, 'white')
+	
+	scene.add(rect);
+	
+	const shapeOutlineArray = [square, circle1, circle2, rect];
+	
+	shapeOutlineArray.forEach((shape, i) => {
+		if (i !== 0) {
+			shape.visible = false;
+		}
+})
 
-	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
 
 	window.addEventListener("resize", () => {
@@ -179,26 +211,19 @@ function init() {
 });
 
 // animation functions
-function onFrame() {
-	
-	cube.rotateX(0.01)
-	cube.rotateY (0.01)
-	cube2.rotateY(0.05)
-	cube2.rotateX(0.05)
-
-	}
 
 function animate() {
 	debugText.sync()
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
+    debugGamepad(gamepad1);
 	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
-	if (boundingBox_cube3.containsPoint(stylus.position)) {
-		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
-	}
+		if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
+			handleButton(stylus)
+		}
+		wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
+
 	} catch (e) {
 		console.log(e)
 	}
@@ -211,7 +236,7 @@ function animate() {
   handleDrawing(stylus);
 
   // Render
-  onFrame();
+  // onFrame();
   renderer.render(scene, camera);
 }
 
@@ -230,6 +255,30 @@ function handleDrawing(controller) {
       painter.update();
     }
   }
+}
+
+function handleButton(controller) {
+	if (!controller) return;
+
+	if (shapeIndex < shapeOutlineArray.length - 1) {
+		shapeIndex += 1;
+		// shapeArray.forEach((paint) => {
+		// 	paint.mesh.visible = false;
+		// });
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = false;
+		});
+
+		// shapeArray[shapeIndex].mesh.visible = true;
+		shapeOutlineArray[shapeIndex].visible = true;
+	} else {
+		// shapeArray.forEach((paint) => {
+		// 	paint.mesh.visible = true;
+		// });
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = true;
+		});
+	}
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
