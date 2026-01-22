@@ -143,11 +143,11 @@ function init() {
 }
 
 	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
-
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
+	// scene.add(cube);
+	// cube.position.set(0, 1, -1.5);
+	//
+	// scene.add(cube2);
+	// cube2.position.set(0, 2, -1.5);
 
 	// live stylus coords
 	scene.add(debugText);
@@ -156,10 +156,10 @@ function init() {
 
 	// Pen interaction debug cube
 	// Haptics + drawing on surface
-	scene.add(cube3)
-	cube3.position.set(-0.5, 1, -0.3)
-	boundingBox_cube3.setFromObject(cube3)
-	console.log(boundingBox_cube3)
+	// scene.add(cube3)
+	// cube3.position.set(-0.5, 1, -0.3)
+	// boundingBox_cube3.setFromObject(cube3)
+	// console.log(boundingBox_cube3)
 
 	// floor
 	const floor = getFloor(6, 6, 'grey');
@@ -264,9 +264,9 @@ function animate() {
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
+    debugGamepad(gamepad1);
 	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
+		// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
 		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
 	}
@@ -278,8 +278,13 @@ function animate() {
       painter.moveTo(stylus.position);
     }
   }
+	if (gamepad1) {
+		debugText.text = gamepad1.buttons
+			.map((x, i) => `${i}: ${JSON.stringify(x)}\n`)
+			.toString();
+	}
 
-  changeDrawing(stylus);
+	changeDrawing(stylus);
 
   handleDrawing(stylus);
 
@@ -296,7 +301,7 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
+	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
