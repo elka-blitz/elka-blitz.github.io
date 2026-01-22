@@ -18,6 +18,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { createText } from 'three/examples/jsm/webxr/Text2D';
 
 let camera, scene, renderer;
 let stylus;
@@ -26,7 +27,7 @@ let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
 
-let wasYPressed = false;
+let wasButtonEntered = false;
 
 let squarePaint, circlePaint1, circlePaint2, rectPaint;
 let shapeIndex = 0;
@@ -63,6 +64,8 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
+const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
+
 
 
 // Stylus info
@@ -71,6 +74,7 @@ let position = new THREE.Vector3();
 
 // Cube Bounding box stuff
 let boundingBox_cube3 = new THREE.Box3();
+let boundingBoxButton = new THREE.Box3();
 
 // Debugging stuff
 let debugVar = true
@@ -156,10 +160,21 @@ function init() {
 
 	// Pen interaction debug cube
 	// Haptics + drawing on surface
-	// scene.add(cube3)
-	// cube3.position.set(-0.5, 1, -0.3)
-	// boundingBox_cube3.setFromObject(cube3)
-	// console.log(boundingBox_cube3)
+	scene.add(cube3)
+	cube3.position.set(-0.5, 1, -0.3)
+	boundingBox_cube3.setFromObject(cube3)
+	console.log(boundingBox_cube3)
+
+	// button
+	scene.add(cubeButton)
+	cubeButton.position.set(0.15, 1.55, -0.25)
+	boundingBoxButton.setFromObject(cubeButton);
+
+	const nextButtonText = createText('Next', 0.02);
+	nextButtonText.position.set(0.15, 1.55, -0.24)
+	scene.add(nextButtonText);
+
+
 
 	// floor
 	const floor = getFloor(6, 6, 'grey');
@@ -270,6 +285,11 @@ function animate() {
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
 		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
 	}
+	if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
+		handleButton(stylus)
+	}
+	wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
+
 	} catch (e) {
 		console.log(e)
 	}
@@ -284,7 +304,6 @@ function animate() {
 			.toString();
 	}
 
-	changeDrawing(stylus);
 
   handleDrawing(stylus);
 
@@ -309,18 +328,11 @@ function handleDrawing(controller) {
   }
 }
 
-function changeDrawing(controller) {
+function handleButton(controller) {
 	if (!controller) return;
 
-	// y button
-	if (gamepad1.buttons[5].pressed && !wasYPressed) {
-
-		// todo add fix for line going straight down
-
-		if (shapeIndex < shapeArray.length - 1) {
-			shapeIndex += 1
-		}
-
+	if (shapeIndex < shapeArray.length - 1) {
+		shapeIndex += 1
 		shapeArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
@@ -328,15 +340,9 @@ function changeDrawing(controller) {
 			outline.visible = false;
 		});
 
-
 		shapeArray[shapeIndex].mesh.visible = true;
 		shapeOutlineArray[shapeIndex].visible = true;
-
-	}
-	wasYPressed = gamepad1.buttons[5].pressed;
-
-	// x button
-	if (gamepad1.buttons[4].pressed) {
+	} else {
 		shapeArray.forEach((paint) => {
 			paint.mesh.visible = true;
 		});
@@ -345,7 +351,6 @@ function changeDrawing(controller) {
 		});
 	}
 }
-
 
 // controller functions
 
