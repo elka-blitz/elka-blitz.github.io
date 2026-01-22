@@ -291,7 +291,19 @@ function changeDrawing(controller) {
 	wasChangeButtonPressed = controller.buttons[4].pressed;
 	*/
 
-	console.log(controller);
+	if (gamepad1.buttons[1].pressed) {
+		shapeIndex = 0;
+	} else if (gamepad1.buttons[2].pressed) {
+		shapeIndex = 1;
+	} else if (gamepad1.buttons[3].pressed) {
+		shapeIndex = 2;
+	} else if (gamepad1.buttons[4].pressed) {
+		shapeIndex = 3;
+	}
+	shapeOutlineArray.forEach((outline) => {
+		outline.visible = false;
+	});
+
 
 	shapeOutlineArray[shapeIndex].visible = true;
 
