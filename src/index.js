@@ -1,12 +1,13 @@
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
 import {
+	getCircle,
 	getCube,
-	getDashedLine,
 	getFloor,
+	getRect,
 	getSquare,
 } from './shapeFunctions';
+import { getController, getControllerGrip } from './controllerFunctions';
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -17,6 +18,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { createText } from 'three/examples/jsm/webxr/Text2D';
 
 let camera, scene, renderer;
 let stylus;
@@ -24,11 +26,30 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
-let painter1;
 
-const material = new THREE.MeshNormalMaterial({
-  flatShading: true,
-  side: THREE.DoubleSide,
+let wasButtonEntered = false;
+
+let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let shapeIndex = 0;
+
+const yellowMaterial = new THREE.MeshBasicMaterial({
+	color: 'yellow',
+	wireframeLinewidth: '2',
+});
+
+const blackMaterial = new THREE.MeshBasicMaterial({
+	color: 'black',
+	wireframeLinewidth: '2',
+});
+
+const greenMaterial = new THREE.MeshBasicMaterial({
+	color: 'green',
+	wireframeLinewidth: '2',
+});
+
+const redMaterial = new THREE.MeshBasicMaterial({
+	color: 'red',
+	wireframeLinewidth: '2',
 });
 
 const cursor = new THREE.Vector3();
@@ -43,6 +64,8 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
+const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
+
 
 
 // Stylus info
@@ -51,6 +74,7 @@ let position = new THREE.Vector3();
 
 // Cube Bounding box stuff
 let boundingBox_cube3 = new THREE.Box3();
+let boundingBoxButton = new THREE.Box3();
 
 // Debugging stuff
 let debugVar = true
@@ -84,7 +108,7 @@ function init() {
 	controls.update();
 
 	const dracoLoader = new DRACOLoader();
-	dracoLoader.setDecoderPath('/draco/');
+	dracoLoader.setDecoderPath("/draco/");
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
@@ -123,11 +147,11 @@ function init() {
 }
 
 	// spinning cubes
-	scene.add(cube);
-	cube.position.set(0, 1, -1.5);
-
-	scene.add(cube2);
-	cube2.position.set(0, 2, -1.5);
+	// scene.add(cube);
+	// cube.position.set(0, 1, -1.5);
+	//
+	// scene.add(cube2);
+	// cube2.position.set(0, 2, -1.5);
 
 	// live stylus coords
 	scene.add(debugText);
@@ -141,26 +165,88 @@ function init() {
 	boundingBox_cube3.setFromObject(cube3)
 	console.log(boundingBox_cube3)
 
+	// button
+	scene.add(cubeButton)
+	cubeButton.position.set(0.15, 1.55, -0.25)
+	boundingBoxButton.setFromObject(cubeButton);
+
+	const nextButtonText = createText('Next', 0.02);
+	nextButtonText.position.set(0.15, 1.55, -0.24)
+	scene.add(nextButtonText);
+
+
+
 	// floor
 	const floor = getFloor(6, 6, 'grey');
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	// drawing paint
-	painter1 = new TubePainter();
-	painter1.mesh.material = material;
-	painter1.setSize(0.1);
+	// paints - might be able to make a loop
+	squarePaint = new TubePainter();
+	squarePaint.mesh.material = blackMaterial;
+	squarePaint.setSize(0.1);
 
-	scene.add(painter1.mesh);
+	circlePaint1 = new TubePainter();
+	circlePaint1.mesh.material = redMaterial;
+	circlePaint1.setSize(0.1);
+
+	circlePaint2 = new TubePainter();
+	circlePaint2.mesh.material = greenMaterial;
+	circlePaint2.setSize(0.1);
+
+	rectPaint = new TubePainter();
+	rectPaint.mesh.material = yellowMaterial;
+	rectPaint.setSize(0.1);
+
+	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
+
+	scene.add(squarePaint.mesh);
+	scene.add(circlePaint1.mesh);
+	scene.add(circlePaint2.mesh);
+	scene.add(rectPaint.mesh);
 
 	// square shape
-	const squareSize = 0.4
+	const squareSize = 0.1
 	const xPos = 0
 	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.2
-	const leanTowards = 0.05
+	const userDistance = -0.4
+	const leanTowards = 0.01
 
-	scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
+	const square = getSquare(
+		squareSize,
+		xPos,
+		yPos,
+		userDistance,
+		leanTowards,
+		true,
+		'white',
+	);
+
+	scene.add(square);
+
+	const circle1 = getCircle(0.02);
+	const circle2 = getCircle(0.02);
+	scene.add(circle1)
+	const distanceFromCenter = 0.06
+	circle1.position.set(xPos - distanceFromCenter, yPos + 0.04, userDistance);
+
+	scene.add(circle2)
+	circle2.visible = true;
+	circle2.position.set(xPos + distanceFromCenter, yPos + 0.04, userDistance);
+
+	const rect = getRect(0.08, 0.02, xPos, yPos - 0.035, userDistance, 0, true, 'white')
+
+	scene.add(rect);
+
+	const shapeOutlineArray = [square, circle1, circle2, rect];
+
+	shapeOutlineArray.forEach((shape, i) => {
+		if (i !== 0) {
+			shape.visible = false;
+		}
+	})
+
+
 
 
 	window.addEventListener("resize", () => {
@@ -193,12 +279,17 @@ function animate() {
   if (gamepad1) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    // debugGamepad(gamepad1);
+    debugGamepad(gamepad1);
 	try {
-		debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
+		// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100) + '\nStylus detect = ' + boundingBox_cube3.containsPoint(stylus.position))
 	if (boundingBox_cube3.containsPoint(stylus.position)) {
 		gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
 	}
+	if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
+		handleButton(stylus)
+	}
+	wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
+
 	} catch (e) {
 		console.log(e)
 	}
@@ -207,6 +298,12 @@ function animate() {
       painter.moveTo(stylus.position);
     }
   }
+	if (gamepad1) {
+		debugText.text = gamepad1.buttons
+			.map((x, i) => `${i}: ${JSON.stringify(x)}\n`)
+			.toString();
+	}
+
 
   handleDrawing(stylus);
 
@@ -219,12 +316,11 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = userData.painter;
+  const painter = shapeArray[shapeIndex]
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
-	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
+	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -232,14 +328,39 @@ function handleDrawing(controller) {
   }
 }
 
-// controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
+function handleButton(controller) {
+	if (!controller) return;
+
+	if (shapeIndex < shapeArray.length - 1) {
+		shapeIndex += 1
+		shapeArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = false;
+		});
+
+		shapeArray[shapeIndex].mesh.visible = true;
+		shapeOutlineArray[shapeIndex].visible = true;
+	} else {
+		shapeArray.forEach((paint) => {
+			paint.mesh.visible = true;
+		});
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = true;
+		});
+	}
+}
+
+// controller functions
+
 function onControllerConnected(e) {
-  if (e.data.profiles.includes("logitech-mx-ink")) {
-    stylus = e.target;
-    stylus.userData.painter = painter1;
-    gamepad1 = e.data.gamepad;
+  // if (e.data.profiles.includes("logitech-mx-ink")) {
+	stylus = e.target;
+	stylus.userData.painter = shapeArray[0];
+	gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
-  }
+  // }
 }
 
 function onSelectStart(e) {
