@@ -26,18 +26,31 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
-let painter1;
 
 let wasButtonEntered = false;
 
 let squarePaint, circlePaint1, circlePaint2, rectPaint;
 let shapeIndex = 0;
 
-const material = new THREE.MeshNormalMaterial({
-	flatShading: true,
-	side: THREE.DoubleSide,
+const yellowMaterial = new THREE.MeshBasicMaterial({
+	color: 'yellow',
+	wireframeLinewidth: '2',
 });
 
+const blackMaterial = new THREE.MeshBasicMaterial({
+	color: 'black',
+	wireframeLinewidth: '2',
+});
+
+const greenMaterial = new THREE.MeshBasicMaterial({
+	color: 'green',
+	wireframeLinewidth: '2',
+});
+
+const redMaterial = new THREE.MeshBasicMaterial({
+	color: 'red',
+	wireframeLinewidth: '2',
+});
 
 const cursor = new THREE.Vector3();
 
@@ -145,12 +158,29 @@ function init() {
 	floor.rotateX(-Math.PI / 2);
 	scene.add(floor);
 
-	// drawing paint
-	painter1 = new TubePainter();
-	painter1.mesh.material = material;
-	painter1.setSize(0.1);
+	// paints - might be able to make a loop
+	squarePaint = new TubePainter();
+	squarePaint.mesh.material = blackMaterial;
+	squarePaint.setSize(0.1);
 
-	scene.add(painter1.mesh);
+	circlePaint1 = new TubePainter();
+	circlePaint1.mesh.material = redMaterial;
+	circlePaint1.setSize(0.1);
+
+	circlePaint2 = new TubePainter();
+	circlePaint2.mesh.material = greenMaterial;
+	circlePaint2.setSize(0.1);
+
+	rectPaint = new TubePainter();
+	rectPaint.mesh.material = yellowMaterial;
+	rectPaint.setSize(0.1);
+
+	const shapeArray = [squarePaint, circlePaint1, circlePaint2, rectPaint];
+
+	scene.add(squarePaint.mesh);
+	scene.add(circlePaint1.mesh);
+	scene.add(circlePaint2.mesh);
+	scene.add(rectPaint.mesh);
 
 	// square shape
 	const squareSize = 0.1
@@ -244,7 +274,7 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = userData.painter;
+  const painter = shapeArray[shapeIndex]
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
@@ -262,19 +292,19 @@ function handleButton(controller) {
 
 	if (shapeIndex < shapeOutlineArray.length - 1) {
 		shapeIndex += 1;
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = false;
-		// });
+		shapeArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
 		shapeOutlineArray.forEach((outline) => {
 			outline.visible = false;
 		});
 
-		// shapeArray[shapeIndex].mesh.visible = true;
+		shapeArray[shapeIndex].mesh.visible = true;
 		shapeOutlineArray[shapeIndex].visible = true;
 	} else {
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = true;
-		// });
+		shapeArray.forEach((paint) => {
+			paint.mesh.visible = true;
+		});
 		shapeOutlineArray.forEach((outline) => {
 			outline.visible = true;
 		});
@@ -285,7 +315,7 @@ function handleButton(controller) {
 function onControllerConnected(e) {
   if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
-    stylus.userData.painter = painter1;
+    stylus.userData.painter = shapeArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
   }
