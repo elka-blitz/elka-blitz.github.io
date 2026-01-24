@@ -301,6 +301,7 @@ function handleButton(controller) {
 
 		shapeArray[shapeIndex].mesh.visible = true;
 		shapeOutlineArray[shapeIndex].visible = true;
+		stylus.userData.painter = shapeArray[shapeIndex];
 	} else {
 		shapeArray.forEach((paint) => {
 			paint.mesh.visible = true;
