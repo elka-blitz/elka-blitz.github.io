@@ -293,10 +293,7 @@ function animate() {
 	} catch (e) {
 		console.log(e)
 	}
-    if (isDrawing && !prevIsDrawing) {
-      const painter = stylus.userData.painter;
-      painter.moveTo(stylus.position);
-    }
+
   }
 	if (gamepad1) {
 		debugText.text = gamepad1.buttons
@@ -342,6 +339,7 @@ function handleButton(controller) {
 
 		shapeArray[shapeIndex].mesh.visible = true;
 		shapeOutlineArray[shapeIndex].visible = true;
+		stylus.userData.painter = shapeArray[shapeIndex];
 	} else {
 		shapeArray.forEach((paint) => {
 			paint.mesh.visible = true;
