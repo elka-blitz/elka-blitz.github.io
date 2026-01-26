@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+import { csvMaker, downloadCSV } from './csvFunctions';
 import {
 	getCircle,
 	getCube,
@@ -28,6 +29,7 @@ let isDrawing = false;
 let prevIsDrawing = false;
 
 let wasButtonEntered = false;
+let wasFinishButtonEntered = false;
 
 let squarePaint, circlePaint1, circlePaint2, rectPaint;
 let shapeIndex = 0;
@@ -52,6 +54,13 @@ const redMaterial = new THREE.MeshBasicMaterial({
 	wireframeLinewidth: '2',
 });
 
+const sampleData = {
+	id: 1,
+	name: 'Sandra',
+	job: 'developer',
+};
+
+
 const cursor = new THREE.Vector3();
 
 const sizes = {
@@ -61,6 +70,7 @@ const sizes = {
 
 // cubes
 const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
+const finishButton = getCube(0.07, 0.05, 0.02, '#040082')
 
 
 
@@ -70,6 +80,7 @@ let position = new THREE.Vector3();
 
 // Cube Bounding box stuff
 let boundingBoxButton = new THREE.Box3();
+let boundingBoxFinish = new THREE.Box3();
 
 // Debugging stuff
 let debugVar = true
@@ -147,9 +158,17 @@ function init() {
 	cubeButton.position.set(0.15, 1.55, -0.25)
 	boundingBoxButton.setFromObject(cubeButton);
 
+	scene.add(finishButton)
+	finishButton.position.set(0.15, 1.3, -0.25)
+	boundingBoxFinish.setFromObject(finishButton);
+
 	const nextButtonText = createText('Next', 0.02);
 	nextButtonText.position.set(0.15, 1.55, -0.235)
 	scene.add(nextButtonText);
+
+	const finishButtonText = createText('Finish', 0.02);
+	finishButtonText.position.set(0.15, 1.3, -0.235);
+	scene.add(finishButtonText);
 
 
 
@@ -252,7 +271,17 @@ function animate() {
 		if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
 			handleButton(stylus)
 		}
+		if (
+			boundingBoxFinish.containsPoint(stylus.position) && !wasFinishButtonEntered
+		) {
+			const csvdata = csvMaker(sampleData);
+			downloadCSV(csvdata);
+		}
 		wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
+
+		wasFinishButtonEntered = boundingBoxFinish.containsPoint(stylus.position);
+
+
 
 	} catch (e) {
 		console.log(e)
