@@ -14,6 +14,7 @@ import Desk from './vDesk.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import TWEEN from '@tweenjs/tween.js';   
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -60,7 +61,9 @@ UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
 let desk_set = false
-let virtual_desk = Desk('./src/Desk.glb')
+let tableGroup = new THREE.Group()
+let prevBack = false
+let backPushed = false
 
 init();
 
@@ -88,9 +91,11 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	// gltfLoader.load('./assets/Desk.glb', (gltf) => {
-	// 	tableGroup.add(gltf.scene);
-	// });
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+		tableGroup.add(gltf.scene);
+	});
+
+	let virtual_desk = new Desk(scene, tableGroup)
 
 	// scene.add(tableGroup)
 
@@ -129,6 +134,7 @@ function init() {
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
+	
 }
 	// Debugging text
 	scene.add(UIText);
@@ -189,12 +195,16 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
 
+	prevBack = backPushed
+	backPushed = gamepad1.buttons[1].value > 0
+
   }
 
 //   handleDrawing(stylus);
 
   // Render
   onFrame();
+  TWEEN.update()
   renderer.render(scene, camera);
 }
 
