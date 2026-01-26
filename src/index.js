@@ -14,7 +14,6 @@ import Desk from './vDesk.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import TWEEN from '@tweenjs/tween.js';   
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -60,6 +59,7 @@ UIText.anchorY = 'middle';
 UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
+let v_desk_instace
 let desk_set = false
 let tableGroup = new THREE.Group()
 let prevBack = false
@@ -95,8 +95,10 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	let virtual_desk = new Desk(scene, tableGroup)
+	v_desk_instace = new Desk(scene, tableGroup)
 
+	let start_desk_coords = new THREE.Vector3(0, 0, 0)
+	v_desk_instace.setDesk(start_desk_coords)
 	// scene.add(tableGroup)
 
 	// tableGroup.position.set(1, 1, 0)
@@ -198,13 +200,17 @@ function animate() {
 	prevBack = backPushed
 	backPushed = gamepad1.buttons[1].value > 0
 
+	if (prevBack && !backPushed) { 
+		v_desk_instace.animateMoveTo((stylus.position.x, stylus.position.y, stylus.position.z))
+		UIText.text = 'Moved to ' + (stylus.position.x).toString()
+	}
+
   }
 
 //   handleDrawing(stylus);
 
   // Render
   onFrame();
-  TWEEN.update()
   renderer.render(scene, camera);
 }
 

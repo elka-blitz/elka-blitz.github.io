@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import TWEEN from '@tweenjs/tween.js';   
+
+import { gsap } from 'gsap';   
 
 export default class Desk {
 	constructor(scene, desk_asset) {
@@ -16,16 +17,18 @@ export default class Desk {
 
 	setDesk(coordinates) {
 		// Move to vector coordinates
-		this.desk_asset.position.set(coordinates)
+		console.log(coordinates)
+		this.desk_asset.position.set(coordinates.x, coordinates.y, coordinates.z)
 	}
 
 	animateMoveTo(coordinates) {
-		// Include Tween.js library
-		new TWEEN.Tween(this.desk_asset.position)
-		.to({ x: coordinates.x, y: coordinates.y, z: coordinates.z }, 1000) // Move to (10, 0, 0) over 1 second
-		.easing(TWEEN.Easing.Quadratic.Out)
-		.onComplete(() => console.log("Animation complete"))
-		.start();
+		gsap.to(this.desk_asset.position, {
+			x: coordinates.x,
+			y: coordinates.y,
+			z: coordinates.z,
+			duration: 2,
+			ease: 'power2.out'
+		});   
 	}
 }
 
