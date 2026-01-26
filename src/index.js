@@ -18,6 +18,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { gsap } from 'gsap';   
 
 let camera, scene, renderer;
 let stylus;
@@ -64,6 +65,9 @@ let desk_set = false
 let tableGroup = new THREE.Group()
 let prevBack = false
 let backPushed = false
+let flyFlip = false
+const clock = new THREE.Clock()
+let lastTime = 0;
 
 init();
 
@@ -95,13 +99,14 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	v_desk_instace = new Desk(scene, tableGroup)
+	// v_desk_instace = new Desk(scene, tableGroup)
 
 	let start_desk_coords = new THREE.Vector3(0, 0, 0)
-	v_desk_instace.setDesk(start_desk_coords)
-	// scene.add(tableGroup)
+	// v_desk_instace.setDesk(start_desk_coords)
 
-	// tableGroup.position.set(1, 1, 0)
+	scene.add(tableGroup)
+
+	tableGroup.position.set(1, 1, 0)
 
 	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
 	// scene.add(grid);
@@ -128,6 +133,7 @@ function init() {
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
+
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
@@ -136,6 +142,7 @@ function init() {
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
+	// gsap.to(tableGroup.position, { duration: 10, x: -5 });
 	
 }
 	// Debugging text
@@ -180,17 +187,12 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+	gsap.ticker.remove(gsap.updateRoot);
+
 });
 
 // animation functions
 function onFrame() {
-
-}
-
-function animate() {
-	UIText.sync()
-
-
 
   if (gamepad1) {
 
@@ -201,14 +203,25 @@ function animate() {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (prevBack && !backPushed) { 
-		v_desk_instace.animateMoveTo((stylus.position.x, stylus.position.y, stylus.position.z))
-		UIText.text = 'Moved to ' + (stylus.position.x).toString()
+		// let stylus_coordinate_vector = new THREE.Vector3(stylus.position.x, stylus.position.y, stylus.position.z)
+		// v_desk_instace.animateMoveTo(stylus_coordinate_vector)
+		// camera.updateProjectionMatrix()
+		// // v_desk_instace.setDesk(stylus.position)
+		// UIText.text = 'Moved to ' + v_desk_instace.getDeskCoordinates()
+
+		// camera.updateProjectionMatrix()
+		// UIText.text = 'Moved to: ' + stylus.position.toString() + 'Asset at: ' + tableGroup.position.toString()
 	}
 
   }
 
-//   handleDrawing(stylus);
+}
 
+function animate() {
+	UIText.sync()
+
+//   handleDrawing(stylus);
+	gsap.ticker.tick()
   // Render
   onFrame();
   renderer.render(scene, camera);
@@ -244,6 +257,13 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
+		gsap.to(tableGroup.position, {
+		x: stylus.position.x,
+		y: stylus.position.y,
+		z: stylus.position.z,
+		duration: 2,
+		// ease: 'power2.out'
+	});
 //   if (e.target !== stylus) return;
 	if (desk_set) {
 		const painter = stylus.userData.painter;
@@ -257,6 +277,7 @@ function onSelectStart(e) {
 
 function onSelectEnd() {
   this.userData.isSelecting = false;
+  gsap.to(tableGroup.position, { duration: 10, x: 5 });
 }
 
 function debugGamepad(gamepad) {
