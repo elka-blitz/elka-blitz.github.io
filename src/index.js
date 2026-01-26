@@ -10,6 +10,7 @@ import {
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import Desk from './vDesk.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -43,16 +44,6 @@ const cube = getCube(0.5, 0.5, 0.5, '#27F527');
 const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
 const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
 
-// Desk
-let desk
-let desk_set = false
-let positions = []; // Store two corner positions
-let tempVector = new THREE.Vector3();
-let tempBox = new THREE.Box3();
-let prevPressed = false
-let cube_identifier 
-const tableGroup = new THREE.Group()
-
 // Stylus info
 let position = new THREE.Vector3();
 
@@ -67,27 +58,9 @@ UIText.anchorX = 'center';
 UIText.anchorY = 'middle';
 UIText.text = 'LiveStylusCoords'
 
-function createCubeFromCorners(p1, p2) {
-    const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-    const size = new THREE.Vector3().subVectors(p2, p1);
-
-    const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
-    const material = new THREE.MeshBasicMaterial({ color: 0x27e7f5, transparent: true, opacity: 0.5 });
-    const cuboid = new THREE.Mesh(geometry, material);
-    cuboid.position.copy(center);
-
-    // Get camera's horizontal direction (project on XZ plane)
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
-    direction.y = 0; // Ignore vertical component
-    direction.normalize();
-
-    // Rotate cuboid around Y-axis to face camera direction
-    cuboid.lookAt(center.clone().add(direction));
-    cuboid.rotateY(Math.PI / 2); // Adjust alignment if needed
-
-    scene.add(cuboid);
-}
+// Desk stuff
+let desk_set = false
+let virtual_desk = Desk('./src/Desk.glb')
 
 init();
 
@@ -115,13 +88,13 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
-		tableGroup.add(gltf.scene);
-	});
+	// gltfLoader.load('./assets/Desk.glb', (gltf) => {
+	// 	tableGroup.add(gltf.scene);
+	// });
 
-	scene.add(tableGroup)
+	// scene.add(tableGroup)
 
-	tableGroup.position.set(1, 1, 0)
+	// tableGroup.position.set(1, 1, 0)
 
 	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
 	// scene.add(grid);
@@ -216,24 +189,6 @@ function animate() {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
 
-	if (!desk_set && (isDrawing && !prevIsDrawing)) {
-		tempVector = stylus.position
-		positions.push(tempVector.clone())
-		console.log('Captured: ', tempVector)
-
-		if (positions.length === 2) {
-			createCubeFromCorners(positions[0], positions[1]);
-			positions = []; // Reset for next use
-		}
-	}
-
-	if (desk_set) {
-    // debugGamepad(gamepad1);
-		if (isDrawing && !prevIsDrawing) {
-		const painter = stylus.userData.painter;
-		painter.moveTo(stylus.position);
-		}
-	}
   }
 
 //   handleDrawing(stylus);
