@@ -10,7 +10,7 @@ import {
 
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import Desk from './vDesk.js'
+import DeskManager from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -99,7 +99,7 @@ function init() {
 	scene.add(tableGroup)
 
 	// Initialise desk manager
-	desk_manager = new Desk(scene, tableGroup)
+	desk_manager = new DeskManager(scene, tableGroup)
 
 	tableGroup.position.set(0, 0, -3)
 
