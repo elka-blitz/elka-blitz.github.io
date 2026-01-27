@@ -200,14 +200,47 @@ function onFrame() {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (prevBack && !backPushed) { 
-		// let stylus_coordinate_vector = new THREE.Vector3(stylus.position.x, stylus.position.y, stylus.position.z)
-		// v_desk_instace.animateMoveTo(stylus_coordinate_vector)
-		// camera.updateProjectionMatrix()
-		// // v_desk_instace.setDesk(stylus.position)
-		// UIText.text = 'Moved to ' + v_desk_instace.getDeskCoordinates()
 
-		// camera.updateProjectionMatrix()
-		// UIText.text = 'Moved to: ' + stylus.position.toString() + 'Asset at: ' + tableGroup.position.toString()
+		const position = new THREE.Vector3();
+		const rotation = new THREE.Quaternion();
+		const scale = new THREE.Vector3();
+
+		camera.matrixWorld.decompose(position, rotation, scale)
+
+
+		// Need to rotate glb model 90deg
+		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+			new THREE.Vector3(0, 1, 0),
+			Math.PI / 2  // 90 degrees in radians
+		);
+
+		// Quaternion modify according to hmd position
+		const quaternion_mod = new THREE.Quaternion();
+		const euler = new THREE.Euler(0, 0, 0, 'YXZ')
+		const yOnlyQuaternion = new THREE.Quaternion()
+
+		quaternion_mod.copy(rotation)
+
+		euler.setFromQuaternion(quaternion_mod)
+
+		euler.x = 0
+		euler.z = 0
+
+		yOnlyQuaternion.setFromEuler(euler)
+		yOnlyQuaternion.multiply(offsetQuaternion)
+
+		// Animate move to stylus position (pending offset fix)
+		gsap.to(tableGroup.position, {
+			x: stylus.position.x - 0.25,
+			y: stylus.position.y - 0.76,
+			z: stylus.position.z + 1.6,
+			duration: 2,
+			// ease: 'power2.out'
+		});
+
+		// Apply modified quaternion to the table
+		tableGroup.quaternion.copy(yOnlyQuaternion)
+
 	}
 
   }
