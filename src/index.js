@@ -103,6 +103,8 @@ function init() {
 
 	tableGroup.position.set(0, 0, -3)
 
+
+
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -170,12 +172,12 @@ function init() {
 
 	gsap.ticker.remove(gsap.updateRoot);
 
+	desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 });
 
 
 // animation functions
 function onFrame(timestamp, frame) {
-
 
   if (gamepad1) {
 
@@ -186,8 +188,9 @@ function onFrame(timestamp, frame) {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (prevBack && !backPushed) { 
-
 		desk_manager.slideToCamera(camera, stylus, tableGroup)
+
+		desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 	}
 
   }
