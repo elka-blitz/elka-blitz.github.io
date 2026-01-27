@@ -7,6 +7,7 @@ import {
 	getSquare,
 } from './shapeFunctions';
 
+import { ThreeMFLoader } from 'three/examples/jsm/Addons.js';
 import { gsap } from 'gsap';   
 
 export default class DeskManager {
@@ -14,10 +15,43 @@ export default class DeskManager {
 	constructor(scene, desk_asset_instance) {
 		this.coordinates; 
 		this.scene = scene
-		this.identifier = desk_asset_instance.uuid // defined after placement
 		this.desk_asset_instance = desk_asset_instance // Of THREE.group() nature
-		console.log(this.identifier)
+		desk_asset_instance.visible = false
+
+		// Get model height
+		const box = new THREE.Box3().setFromObject(desk_asset_instance)
+		const size = box.getSize(new THREE.Vector3())
+		this.height = size.y
+
+		// 3D drawing zone instance variables
 		this.drawingzone_identifier = ''
+		this.current_desk_quaternion = new THREE.Quaternion()
+		this.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff', desk_asset_instance)
+		console.log(desk_asset_instance.position)
+
+		// Sequence control variables
+		this.desk_positioned = false
+		this.desk_positioning_confirmed = false
+		this.desk_locked_in_place = false
+
+		// Set up drawing zone
+		// Transparent cube
+		const drawing_zone = new THREE.Mesh(
+			new THREE.BoxGeometry(0.5, 0.5, 0.5),
+			new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.3 }),
+		);
+		drawing_zone.position.y = 1
+		drawing_zone.name = 'drawing_zone'
+		desk_asset_instance.add(drawing_zone)
+		
+
+		// Set up a button
+		const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
+		const material = new THREE.MeshBasicMaterial({ color: '#b30000'});
+		const cylinder = new THREE.Mesh(geometry, material);
+		cylinder.name = 'button'
+		desk_asset_instance.add(cylinder)
+		cylinder.position.y = 0.77 // On top of desk
 	}
 
 	setDesk(coordinates) {
@@ -26,11 +60,17 @@ export default class DeskManager {
 		this.desk_asset_instance.position.set(coordinates.x, coordinates.y, coordinates.z)
 	}
 
+	isDeskPositioned(){
+		return this.desk_positioned
+	}
+
 	getDeskCoordinates() {
 		return (this.desk_asset_instance.position).toString()
 	}
 
 	slideToCamera(camera, stylus, table_group) {
+
+		table_group.visible = true
 
 		const position = new THREE.Vector3();
 		const rotation = new THREE.Quaternion();
@@ -68,23 +108,30 @@ export default class DeskManager {
 		});
 
 		// Apply modified quaternion to the table
+		this.current_desk_quaternion = yOnlyQuaternion
 		table_group.quaternion.copy(yOnlyQuaternion)
+		this.desk_asset_instance = table_group // Update instance
 	}
 
-	spawnDrawingAreaOnDesk(width, height, depth, colour) {
+	spawnDrawingAreaOnDesk(width, height, depth, colour, desk_model) {
 		// Spawn a 3D area on desk wherein the user may draw
 		// Possibly follow with the object to trace within the drawing zone
-		const table = this.desk_asset_instance
 		
-		// Transparent cube, log uuid
+		// Transparent cube
 		const drawing_zone = new THREE.Mesh(
-		new THREE.BoxGeometry(width, height, depth),
-		new THREE.MeshStandardMaterial({ color: colour, transparent: true, opacity: 0.3 }),
-	);
+			new THREE.BoxGeometry(width, height, depth),
+			new THREE.MeshStandardMaterial({ color: colour, transparent: true, opacity: 0.3 }),
+		);
+
+		// Store uuid of drawing zone for visibility toggle
+		this.drawingzone_identifier = drawing_zone.uuid
 
 		this.scene.add(drawing_zone)
-		drawing_zone.position.set(table.position.x, table.position.y + 0.7, table.position.z)
-	
+		drawing_zone.position.set(desk_model.position.x, desk_model.position.y + 1, desk_model.position.z -3)
+
+		// Rotate the cube in accordance with the desk's rotation
+		drawing_zone.quaternion.copy(this.current_desk_quaternion)
+		drawing_zone.visible = false
 	}
 }
 
