@@ -187,7 +187,8 @@ function init() {
 
 
 // animation functions
-function onFrame() {
+function onFrame(timestamp, frame) {
+
 
   if (gamepad1) {
 
