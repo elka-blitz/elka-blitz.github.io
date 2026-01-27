@@ -19,6 +19,7 @@ import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { gsap } from 'gsap';   
+import { update } from "three/examples/jsm/libs/tween.module.js";
 
 let camera, scene, renderer;
 let stylus;
@@ -180,15 +181,46 @@ function init() {
 function onFrame(timestamp, frame) {
 
   if (gamepad1) {
+	console.log(stylus.position)
+
+	desk_manager.updateButton(stylus.position)
+
+	// if (this.scene.getObjectByProperty('uuid', desk_manager.getButton()).containsPoint(stylus.position)) {
+
+	
+
+	if (desk_manager.isDeskPositioned()) {
+		// desk_manager.updateButton()
+	}
 
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
 	// Before allowing draw, desk must be set up
-	if (!prevIsDrawing && isDrawing ){
+	if (prevIsDrawing && isDrawing ){
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup)
 		}
+	}
+
+
+
+	if (!prevIsDrawing && isDrawing) {
+		tableGroup.traverse((child) => {
+			if (child.material) {
+				child.material.transparent = true
+				child.material.opacity = 0.5
+			}
+		})
+	}
+
+	if (prevIsDrawing && !isDrawing) {
+		tableGroup.traverse((child) => {
+			if (child.material) {
+				child.material.transparent = false 
+				// child.material.opacity = 0.5
+			}
+		})
 	}
 
 	prevBack = backPushed

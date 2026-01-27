@@ -42,23 +42,32 @@ export default class DeskManager {
 		);
 		drawing_zone.position.y = 1
 		drawing_zone.name = 'drawing_zone'
+		drawing_zone.visible = false
 		desk_asset_instance.add(drawing_zone)
 		
 
 		// Set up a button
 		const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
 		const material = new THREE.MeshBasicMaterial({ color: '#b30000'});
-		const cylinder = new THREE.Mesh(geometry, material);
-		cylinder.name = 'button'
-		this.button_id = cylinder.uuid
-		desk_asset_instance.add(cylinder)
-		cylinder.position.y = 0.77 // On top of desk
+		const button1 = new THREE.Mesh(geometry, material);
+		button1.name = 'button'
+		button1.updateMatrixWorld()
+		this.button_bb = new THREE.Box3().setFromObject(button1) // Button bounding box
+		this.button_id = button1.uuid
+		desk_asset_instance.add(button1)
+		button1.position.y = 0.77 // On top of desk
 	}
 
 	setDesk(coordinates) {
 		// Place at vector coordinates
 		console.log(coordinates)
 		this.desk_asset_instance.position.set(coordinates.x, coordinates.y, coordinates.z)
+	}
+
+	updateButton(stylusposition) {
+		if (this.button_bb.containsPoint(stylusposition.x, stylusposition.y, stylusposition.z)){
+			this.scene.getObjectByProperty('uuid', this.button_id).position.y = stylusposition.y
+		}
 	}
 
 	getButton() {
@@ -107,9 +116,9 @@ export default class DeskManager {
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
 			x: stylus.position.x,
-			y: stylus.position.y - 0.78, // Model height
+			y: stylus.position.y - 0.75, // Model height
 			z: stylus.position.z - 0.25,
-			duration: 2,
+			duration: 1,
 		});
 
 		// Apply modified quaternion to the table
