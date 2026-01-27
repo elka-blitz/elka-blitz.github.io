@@ -1,15 +1,23 @@
 import * as THREE from 'three';
 
+import {
+	getCube,
+	getDashedLine,
+	getFloor,
+	getSquare,
+} from './shapeFunctions';
+
 import { gsap } from 'gsap';   
 
 export default class DeskManager {
-	// Class to manage desk movement
+	// Class to manage desk movement, drawzone spawning and interaction
 	constructor(scene, desk_asset_instance) {
 		this.coordinates; 
 		this.scene = scene
 		this.identifier = desk_asset_instance.uuid // defined after placement
 		this.desk_asset_instance = desk_asset_instance // Of THREE.group() nature
 		console.log(this.identifier)
+		this.drawingzone_identifier = ''
 	}
 
 	setDesk(coordinates) {
@@ -61,6 +69,22 @@ export default class DeskManager {
 
 		// Apply modified quaternion to the table
 		table_group.quaternion.copy(yOnlyQuaternion)
+	}
+
+	spawnDrawingAreaOnDesk(width, height, depth, colour) {
+		// Spawn a 3D area on desk wherein the user may draw
+		// Possibly follow with the object to trace within the drawing zone
+		const table = this.desk_asset_instance
+		
+		// Transparent cube, log uuid
+		const drawing_zone = new THREE.Mesh(
+		new THREE.BoxGeometry(width, height, depth),
+		new THREE.MeshStandardMaterial({ color: colour, transparent: true, opacity: 0.3 }),
+	);
+
+		this.scene.add(drawing_zone)
+		drawing_zone.position.set(table.position.x, table.position.y + 0.7, table.position.z)
+	
 	}
 }
 
