@@ -101,7 +101,7 @@ function init() {
 
 	scene.add(tableGroup)
 
-	tableGroup.position.set(1, 1, 0)
+	tableGroup.position.set(0, 0, -3)
 
 	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
 	// scene.add(grid);
@@ -232,9 +232,9 @@ function onFrame(timestamp, frame) {
 
 		// Animate move to stylus position (pending offset fix)
 		gsap.to(tableGroup.position, {
-			x: stylus.position.x - 0.25,
-			y: stylus.position.y - 0.76,
-			z: stylus.position.z + 1.6,
+			x: stylus.position.x,
+			y: stylus.position.y - 0.78, // Model height
+			z: stylus.position.z - 0.25,
 			duration: 2,
 			// ease: 'power2.out'
 		});
