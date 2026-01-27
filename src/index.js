@@ -60,14 +60,11 @@ UIText.anchorY = 'middle';
 UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
-let v_desk_instace
 let desk_set = false
 let tableGroup = new THREE.Group()
 let prevBack = false
 let backPushed = false
-let flyFlip = false
-const clock = new THREE.Clock()
-let lastTime = 0;
+let desk_manager
 
 init();
 
@@ -101,10 +98,10 @@ function init() {
 
 	scene.add(tableGroup)
 
-	tableGroup.position.set(0, 0, -3)
+	// Initialise desk manager
+	desk_manager = new Desk(scene, tableGroup)
 
-	// const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
-	// scene.add(grid);
+	tableGroup.position.set(0, 0, -3)
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -123,8 +120,6 @@ function init() {
 
 	renderer.xr.enabled = true;
 
-	
-
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
@@ -136,8 +131,6 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
-
-	// gsap.to(tableGroup.position, { duration: 10, x: -5 });
 	
 }
 	// Debugging text
@@ -145,12 +138,6 @@ function init() {
 	UIText.position.set(0, 1, -2.5);
 	UIText.rotateX(-Math.PI / 3.3);
 	UIText.text = 'Tap desk with stylus to start'
-
-	// Getting rid of floor
-	// // floor
-	// const floor = getFloor(6, 6, 'grey');
-	// floor.rotateX(-Math.PI / 2);
-	// scene.add(floor);
 
 	// drawing paint
 	painter1 = new TubePainter();
@@ -192,8 +179,6 @@ function onFrame(timestamp, frame) {
 
   if (gamepad1) {
 
-
-
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
 
@@ -202,46 +187,7 @@ function onFrame(timestamp, frame) {
 
 	if (prevBack && !backPushed) { 
 
-		const position = new THREE.Vector3();
-		const rotation = new THREE.Quaternion();
-		const scale = new THREE.Vector3();
-
-		camera.matrixWorld.decompose(position, rotation, scale)
-
-
-		// Need to rotate glb model 90deg
-		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
-			new THREE.Vector3(0, 1, 0),
-			Math.PI / 2  // 90 degrees in radians
-		);
-
-		// Quaternion modify according to hmd position
-		const quaternion_mod = new THREE.Quaternion();
-		const euler = new THREE.Euler(0, 0, 0, 'YXZ')
-		const yOnlyQuaternion = new THREE.Quaternion()
-
-		quaternion_mod.copy(rotation)
-
-		euler.setFromQuaternion(quaternion_mod)
-
-		euler.x = 0
-		euler.z = 0
-
-		yOnlyQuaternion.setFromEuler(euler)
-		yOnlyQuaternion.multiply(offsetQuaternion)
-
-		// Animate move to stylus position (pending offset fix)
-		gsap.to(tableGroup.position, {
-			x: stylus.position.x,
-			y: stylus.position.y - 0.78, // Model height
-			z: stylus.position.z - 0.25,
-			duration: 2,
-			// ease: 'power2.out'
-		});
-
-		// Apply modified quaternion to the table
-		tableGroup.quaternion.copy(yOnlyQuaternion)
-
+		desk_manager.slideToCamera(camera, stylus, tableGroup)
 	}
 
   }
@@ -273,8 +219,6 @@ function handleDrawing(controller) {
     }
   }
 }
-
-
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
 function onControllerConnected(e) {
