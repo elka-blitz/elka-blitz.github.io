@@ -99,11 +99,6 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	// v_desk_instace = new Desk(scene, tableGroup)
-
-	let start_desk_coords = new THREE.Vector3(0, 0, 0)
-	// v_desk_instace.setDesk(start_desk_coords)
-
 	scene.add(tableGroup)
 
 	tableGroup.position.set(1, 1, 0)
@@ -173,7 +168,6 @@ function init() {
 
 	// scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
-
 	window.addEventListener("resize", () => {
 	// Update sizes
 	sizes.width = window.innerWidth;
@@ -191,10 +185,13 @@ function init() {
 
 });
 
+
 // animation functions
 function onFrame() {
 
   if (gamepad1) {
+
+
 
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
@@ -219,7 +216,6 @@ function onFrame() {
 
 function animate() {
 	UIText.sync()
-
 //   handleDrawing(stylus);
 	gsap.ticker.tick()
   // Render
@@ -257,13 +253,7 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
-		gsap.to(tableGroup.position, {
-		x: stylus.position.x,
-		y: stylus.position.y,
-		z: stylus.position.z,
-		duration: 2,
-		// ease: 'power2.out'
-	});
+
 //   if (e.target !== stylus) return;
 	if (desk_set) {
 		const painter = stylus.userData.painter;
@@ -277,7 +267,6 @@ function onSelectStart(e) {
 
 function onSelectEnd() {
   this.userData.isSelecting = false;
-  gsap.to(tableGroup.position, { duration: 10, x: 5 });
 }
 
 function debugGamepad(gamepad) {
