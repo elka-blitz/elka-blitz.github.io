@@ -133,7 +133,7 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
-	
+
 }
 	// Debugging text
 	scene.add(UIText);
@@ -172,7 +172,7 @@ function init() {
 
 	gsap.ticker.remove(gsap.updateRoot);
 
-	desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
+	// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 });
 
 
@@ -183,6 +183,13 @@ function onFrame(timestamp, frame) {
 
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
+	// Before allowing draw, desk must be set up
+	if (prevIsDrawing && !isDrawing ){
+		if (!desk_manager.isDeskPositioned()) {
+			// Desk fly-in
+			desk_manager.slideToCamera(camera, stylus, tableGroup)
+		}
+	}
 
 	prevBack = backPushed
 	backPushed = gamepad1.buttons[1].value > 0
@@ -190,7 +197,7 @@ function onFrame(timestamp, frame) {
 	if (prevBack && !backPushed) { 
 		desk_manager.slideToCamera(camera, stylus, tableGroup)
 
-		desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
+		// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 	}
 
   }
