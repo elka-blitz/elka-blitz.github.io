@@ -184,7 +184,7 @@ function onFrame(timestamp, frame) {
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
 	// Before allowing draw, desk must be set up
-	if (prevIsDrawing && !isDrawing ){
+	if (!prevIsDrawing && isDrawing ){
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup)
@@ -195,7 +195,7 @@ function onFrame(timestamp, frame) {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (prevBack && !backPushed) { 
-		desk_manager.slideToCamera(camera, stylus, tableGroup)
+		// desk_manager.slideToCamera(camera, stylus, tableGroup)
 
 		// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 	}

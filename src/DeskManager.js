@@ -50,6 +50,7 @@ export default class DeskManager {
 		const material = new THREE.MeshBasicMaterial({ color: '#b30000'});
 		const cylinder = new THREE.Mesh(geometry, material);
 		cylinder.name = 'button'
+		this.button_id = cylinder.uuid
 		desk_asset_instance.add(cylinder)
 		cylinder.position.y = 0.77 // On top of desk
 	}
@@ -58,6 +59,10 @@ export default class DeskManager {
 		// Place at vector coordinates
 		console.log(coordinates)
 		this.desk_asset_instance.position.set(coordinates.x, coordinates.y, coordinates.z)
+	}
+
+	getButton() {
+		return this.scene.getObjectByProperty('uuid', this.button_id)
 	}
 
 	isDeskPositioned(){
