@@ -8,8 +8,8 @@ import {
 	getSquare,
 } from './shapeFunctions';
 
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import DeskButton from "./DeskButtons.js";
 import DeskManager from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
@@ -67,13 +67,8 @@ let prevBack = false
 let backPushed = false
 let desk_manager
 
-// const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
-// geometry.computeBoundingBox()
-// const cyl_material = new THREE.MeshBasicMaterial({ color: '#b30000'});
-// const cylinder = new THREE.Mesh(geometry, cyl_material);
-
-// let cylinder_bb = geometry.boundingBox 
-// let boxHelper = new THREE.BoxHelper(cylinder, '#ffff00')
+// Button stuff
+let red_button;
 
 init();
 
@@ -112,22 +107,8 @@ function init() {
 
 	tableGroup.position.set(0, 0, -3)
 
-	// scene.add(cylinder)
-	// // cube.rotateY(45)
-	// gsap.to(cylinder.position, {
-	// 	x: 0.25,
-	// 	y: 0.25,
-	// 	z: 0.25,
-	// 	duration: 2,
-	// 	onComplete: () => {
-	// 		cylinder_bb = new THREE.Box3().setFromObject(cylinder)
-	// 		boxHelper.update()
-	// 	}
-	// })	
-	
-	// // cube.updateMatrixWorld()
-
-	// scene.add(boxHelper)
+	red_button = new DeskButton(scene)
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000')
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -254,6 +235,7 @@ function onFrame(timestamp, frame) {
 
 	if (prevBack && !backPushed) { 
 		// desk_manager.slideToCamera(camera, stylus, tableGroup)
+		red_button.createButton(stylus.position, '#ffffff')
 
 		// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 	}
