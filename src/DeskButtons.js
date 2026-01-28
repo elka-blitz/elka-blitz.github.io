@@ -4,6 +4,12 @@ import { gsap } from 'gsap';
 export default class DeskButton {
     constructor (scene){
         this.scene = scene
+        this.exists = true
+        console.log('Red button initialised')
+    }
+
+    returnExists() {
+        return this.exists
     }
 
     createButton(position, colour) {
@@ -12,11 +18,13 @@ export default class DeskButton {
     this.cyl_material = new THREE.MeshBasicMaterial({ color: colour});
     this.cylinder = new THREE.Mesh(this.geometry, this.cyl_material);
 
-    this.cylinder_bb = this.geometry.boundingBox 
-    this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+
 
 	this.scene.add(this.cylinder)
     this.cylinder.position.set(position.x, position.y, position.z)
+ 
+    this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)//this.geometry.boundingBox 
+    this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
 	// cube.rotateY(45)
     // gsap.to(this.cylinder.position, {
     //     x: 0.25,
@@ -46,8 +54,16 @@ export default class DeskButton {
             onComplete: () => {
                 this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)
                 this.boxHelper.update()
+                this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
                 this.cylinder.updateMatrixWorld()
             }
         })	
+    }
+
+    pressCheck(stylus_position_vector) {
+        if (this.cylinder_bb.containsPoint(stylus_position_vector)) {
+            console.log('Point in box')
+            return true
+        }
     }
 }

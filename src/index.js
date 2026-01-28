@@ -69,6 +69,7 @@ let desk_manager
 
 // Button stuff
 let red_button;
+let white_button;
 
 init();
 
@@ -109,7 +110,11 @@ function init() {
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000')
+	red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
 
+	// white_button = new DeskButton(scene)
+	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
+	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -139,7 +144,6 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
-
 }
 	// Debugging text
 	scene.add(UIText);
@@ -184,8 +188,13 @@ function init() {
 
 // animation functions
 function onFrame(timestamp, frame) {
-	
+
+
   if (gamepad1) {
+
+	if (red_button.returnExists() == true) {
+		red_button.pressCheck(stylus.position)	
+	}
 
 	// if (cylinder_bb.containsPoint(stylus.position)) {
 	// 	console.log('Secondary buttonpress')
