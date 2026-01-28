@@ -67,6 +67,14 @@ let prevBack = false
 let backPushed = false
 let desk_manager
 
+// const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
+// geometry.computeBoundingBox()
+// const cyl_material = new THREE.MeshBasicMaterial({ color: '#b30000'});
+// const cylinder = new THREE.Mesh(geometry, cyl_material);
+
+// let cylinder_bb = geometry.boundingBox 
+// let boxHelper = new THREE.BoxHelper(cylinder, '#ffff00')
+
 init();
 
 function init() {
@@ -104,6 +112,22 @@ function init() {
 
 	tableGroup.position.set(0, 0, -3)
 
+	// scene.add(cylinder)
+	// // cube.rotateY(45)
+	// gsap.to(cylinder.position, {
+	// 	x: 0.25,
+	// 	y: 0.25,
+	// 	z: 0.25,
+	// 	duration: 2,
+	// 	onComplete: () => {
+	// 		cylinder_bb = new THREE.Box3().setFromObject(cylinder)
+	// 		boxHelper.update()
+	// 	}
+	// })	
+	
+	// // cube.updateMatrixWorld()
+
+	// scene.add(boxHelper)
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -179,18 +203,20 @@ function init() {
 
 // animation functions
 function onFrame(timestamp, frame) {
-
+	
   if (gamepad1) {
-	console.log(stylus.position)
 
-	desk_manager.updateButton(stylus.position)
+	// if (cylinder_bb.containsPoint(stylus.position)) {
+	// 	console.log('Secondary buttonpress')
+	// }
+	// desk_manager.updateButton(stylus.position)
 
 	// if (this.scene.getObjectByProperty('uuid', desk_manager.getButton()).containsPoint(stylus.position)) {
 
 	
 
 	if (desk_manager.isDeskPositioned()) {
-		// desk_manager.updateButton()
+		desk_manager.updateButton(stylus.position)
 	}
 
     prevIsDrawing = isDrawing;

@@ -7,7 +7,6 @@ import {
 	getSquare,
 } from './shapeFunctions';
 
-import { ThreeMFLoader } from 'three/examples/jsm/Addons.js';
 import { gsap } from 'gsap';   
 
 export default class DeskManager {
@@ -27,7 +26,6 @@ export default class DeskManager {
 		this.drawingzone_identifier = ''
 		this.current_desk_quaternion = new THREE.Quaternion()
 		this.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff', desk_asset_instance)
-		console.log(desk_asset_instance.position)
 
 		// Sequence control variables
 		this.desk_positioned = false
@@ -47,15 +45,18 @@ export default class DeskManager {
 		
 
 		// Set up a button
-		const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
-		const material = new THREE.MeshBasicMaterial({ color: '#b30000'});
-		const button1 = new THREE.Mesh(geometry, material);
-		button1.name = 'button'
-		button1.updateMatrixWorld()
-		this.button_bb = new THREE.Box3().setFromObject(button1) // Button bounding box
-		this.button_id = button1.uuid
-		desk_asset_instance.add(button1)
-		button1.position.y = 0.77 // On top of desk
+		// const geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
+		// geometry.computeBoundingBox()
+		// const material = new THREE.MeshBasicMaterial({ color: '#b30000'});
+		// const button1 = new THREE.Mesh(geometry, material);
+		// button1.name = 'button'
+		// this.button_bb = geometry.boundingBox //new THREE.Box3().setFromObject(button1) // Button bounding box
+		// this.boxHelper = new THREE.BoxHelper(button1, '#ffff00')
+		// scene.add(this.boxHelper)
+		// desk_asset_instance.add(button1)
+		// button1.position.y = 0.77 // On top of desk
+		// this.button1 = button1
+		// this.prevDeskPositioned = false // Framediff
 	}
 
 	setDesk(coordinates) {
@@ -65,8 +66,9 @@ export default class DeskManager {
 	}
 
 	updateButton(stylusposition) {
-		if (this.button_bb.containsPoint(stylusposition.x, stylusposition.y, stylusposition.z)){
-			this.scene.getObjectByProperty('uuid', this.button_id).position.y = stylusposition.y
+		// Not update, just checking if stylus is in bounding box
+		if (this.button_bb.containsPoint(stylusposition)) {
+			console.log('Buttonpress')
 		}
 	}
 
