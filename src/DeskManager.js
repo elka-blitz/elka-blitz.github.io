@@ -15,7 +15,7 @@ export default class DeskManager {
 		this.coordinates; 
 		this.scene = scene
 		this.desk_asset_instance = desk_asset_instance // Of THREE.group() nature
-		desk_asset_instance.visible = false
+		desk_asset_instance.visible = true
 
 		// Get model height
 		const box = new THREE.Box3().setFromObject(desk_asset_instance)
@@ -69,6 +69,43 @@ export default class DeskManager {
 		// Not update, just checking if stylus is in bounding box
 		if (this.button_bb.containsPoint(stylusposition)) {
 			console.log('Buttonpress')
+		}
+	}
+
+	getPositionForButton() {
+		try{
+			// Return the location, relative to the desk, where the button should be
+			// As a vector 3
+			console.log(this.desk_asset_instance.position)
+			let desk_x_pos = this.desk_asset_instance.position.x
+			let desk_y_pos = this.desk_asset_instance.position.y
+			let desk_z_pos = this.desk_asset_instance.position.z
+
+			// Get current desk centerpoint
+			const current_desk_vector = new THREE.Vector3(desk_x_pos, desk_y_pos, desk_z_pos)
+			console.log(current_desk_vector)
+			// Place coordpoint on desk surface
+			current_desk_vector.y = current_desk_vector.y + 0.8 // Assuming that the centerpoint is actually the centre of the model 
+
+			console.log(current_desk_vector)
+			// Identify button location to left of desk
+			current_desk_vector.x = current_desk_vector.x +0.2 
+			current_desk_vector.z = current_desk_vector.z + 0.5
+
+			console.log(current_desk_vector)
+
+			// Apply quaternion
+			current_desk_vector.applyQuaternion(this.current_desk_quaternion)//this.desk_asset_instance.quaternion)
+			
+			// I mean, generate a new quaternion and apply the deskual translation
+			let button_position_quaternion = new THREE.Quaternion()
+
+			// Return vector
+			console.log(this.desk_asset_instance.quaternion)
+			return current_desk_vector
+
+		} catch (e) {
+			console.log(e)
 		}
 	}
 

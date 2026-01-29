@@ -70,6 +70,7 @@ let desk_manager
 // Button stuff
 let red_button;
 let white_button;
+let red_button_object
 
 init();
 
@@ -102,19 +103,25 @@ function init() {
 	});
 
 	scene.add(tableGroup)
-
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
 	tableGroup.position.set(0, 0, -3)
+	// tableGroup.rotateY(-30)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000')
-	red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
+	
+	// red_button.moveButton(desk_manager.getPositionForButton())
+	// console.log('result', desk_manager.getPositionForButton())
 
+	// tableGroup.add(red_button_object)
+	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
+	
 	// white_button = new DeskButton(scene)
 	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
 	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
+
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -206,7 +213,7 @@ function onFrame(timestamp, frame) {
 	
 
 	if (desk_manager.isDeskPositioned()) {
-		desk_manager.updateButton(stylus.position)
+		// desk_manager.updateButton(stylus.position)
 	}
 
     prevIsDrawing = isDrawing;
@@ -216,6 +223,7 @@ function onFrame(timestamp, frame) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup)
+			red_button.moveButton(red_button.moveToStylus(camera, stylus))
 		}
 	}
 
@@ -244,7 +252,7 @@ function onFrame(timestamp, frame) {
 
 	if (prevBack && !backPushed) { 
 		// desk_manager.slideToCamera(camera, stylus, tableGroup)
-		red_button.createButton(stylus.position, '#ffffff')
+		// red_button.createButton(stylus.position, '#ffffff')
 
 		// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 	}
