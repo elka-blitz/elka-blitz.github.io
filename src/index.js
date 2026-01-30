@@ -11,12 +11,12 @@ import {
 	getRect,
 	getSquare,
 } from './shapeFunctions';
+
 import { getController, getControllerGrip } from './controllerFunctions';
 
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import DeskButton from "./DeskButtons.js";
-import DeskManager from './DeskManager.js'
+import  DeskButton  from "./DeskButtons.js";
+import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -24,9 +24,9 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
-import { createText } from 'three/examples/jsm/webxr/Text2D';
 
 let camera, scene, renderer;
 let stylus;
@@ -276,7 +276,7 @@ function animate() {
 //   handleDrawing(stylus);
 	gsap.ticker.tick()
   // Render
-  // onFrame();
+  onFrame();
   renderer.render(scene, camera);
 }
 
@@ -300,25 +300,25 @@ function handleDrawing(controller) {
 function handleButton(controller) {
 	if (!controller) return;
 
-	if (shapeIndex < shapeOutlineArray.length - 1) {
-		shapeIndex += 1;
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = false;
-		// });
-		shapeOutlineArray.forEach((outline) => {
-			outline.visible = false;
-		});
+	// if (shapeIndex < shapeOutlineArray.length - 1) {
+	// 	shapeIndex += 1;
+	// 	// shapeArray.forEach((paint) => {
+	// 	// 	paint.mesh.visible = false;
+	// 	// });
+	// 	shapeOutlineArray.forEach((outline) => {
+	// 		outline.visible = false;
+	// 	});
 
-		// shapeArray[shapeIndex].mesh.visible = true;
-		shapeOutlineArray[shapeIndex].visible = true;
-	} else {
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = true;
-		// });
-		shapeOutlineArray.forEach((outline) => {
-			outline.visible = true;
-		});
-	}
+	// 	// shapeArray[shapeIndex].mesh.visible = true;
+	// 	shapeOutlineArray[shapeIndex].visible = true;
+	// } else {
+	// 	// shapeArray.forEach((paint) => {
+	// 	// 	paint.mesh.visible = true;
+	// 	// });
+	// 	shapeOutlineArray.forEach((outline) => {
+	// 		outline.visible = true;
+	// 	});
+	// }
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
