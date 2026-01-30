@@ -17,7 +17,8 @@ export default class DeskButton {
     }
 
     returnExists() {
-        return this.exists
+        // return this.exists
+        return this.cylinder.visible
     }
 
     createButton(position, colour, label) {
@@ -34,7 +35,9 @@ export default class DeskButton {
         this.inititial_height = this.cylinder.position.y
 
         this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)//this.geometry.boundingBox 
-        this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+
+        // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+        
         // cube.rotateY(45)
         // gsap.to(this.cylinder.position, {
         //     x: 0.25,
@@ -47,7 +50,8 @@ export default class DeskButton {
         //         this.cylinder.updateMatrixWorld()
         //     }
         // })	
-        this.scene.add(this.boxHelper)
+
+        // this.scene.add(this.boxHelper)
         this.cylinder.updateMatrixWorld()
         console.log(this.cylinder)
         
@@ -77,8 +81,8 @@ export default class DeskButton {
             duration: 0.5,
             onComplete: () => {
                 this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)
-                this.boxHelper.update()
-                this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+                // this.boxHelper.update()
+                // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
                 this.cylinder.updateMatrixWorld()
             }
         })	
@@ -89,10 +93,11 @@ export default class DeskButton {
             end_position.y, end_position.z))
             this.cylinder_bb.setFromObject(this.cylinder)
             // this.cylinder.updateMatrixWorld()
-            scene.remove(this.boxHelper)
-            this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
-            scene.add(this.boxHelper)
-            this.boxHelper.update()
+            
+            // scene.remove(this.boxHelper)
+            // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+            // scene.add(this.boxHelper)
+            // this.boxHelper.update()
 
             // Update button attrs
             this.max_height = this.cylinder.position.y + (this.cylinder.geometry.boundingBox.max.y / 2)
@@ -118,10 +123,10 @@ export default class DeskButton {
         // Update button attrs
         this.cylinder_bb.setFromObject(this.cylinder)
         // this.cylinder.updateMatrixWorld()
-        scene.remove(this.boxHelper)
-        this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
-        scene.add(this.boxHelper)
-        this.boxHelper.update()
+        // scene.remove(this.boxHelper)
+        // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+        // scene.add(this.boxHelper)
+        // this.boxHelper.update()
         
         // Pseudo bounding logic? For press detect
         this.max_height = this.cylinder.position.y + (this.cylinder.geometry.boundingBox.max.y / 2)
@@ -153,14 +158,19 @@ export default class DeskButton {
         return position_for_button
     }
 
+    makeInvisible() {
+        this.exists = false
+        this.cylinder.visible = false
+    }
+
     pressCheck(stylus_position_vector, scene) {
 
         this.cylinder_bb.setFromObject(this.cylinder)
         // this.cylinder.updateMatrixWorld()
         scene.remove(this.boxHelper)
-        this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
-        scene.add(this.boxHelper)
-        this.boxHelper.update()
+        // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+        // scene.add(this.boxHelper)
+        // this.boxHelper.update()
 
         if (this.cylinder_bb.containsPoint(stylus_position_vector) && stylus_position_vector.y < this.max_height) {
             console.log('Point in box');
@@ -183,8 +193,8 @@ export default class DeskButton {
             // So trigger desk lock at 50% depression
             // Feature/ play a noise? 
 
-            if (stylus_position_vector.y < this.inititial_height) { // cyl pos is mid i.e 50%
-                // this.cylinder.visible = false;
+            if (stylus_position_vector.y < this.inititial_height - 0.02) { // cyl pos is mid i.e 50%
+                this.cylinder.visible = false;
                 return true;
             }
 

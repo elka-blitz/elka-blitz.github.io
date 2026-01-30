@@ -1,3 +1,7 @@
+window.addEventListener('unload', function () {
+  document.documentElement.innerHTML = '';
+});   
+
 import * as THREE from "three";
 
 import { getController, getControllerGrip } from './controllerFunctions';
@@ -66,6 +70,7 @@ let tableGroup = new THREE.Group()
 let prevBack = false
 let backPushed = false
 let desk_manager
+let green = new THREE.Color('#0d9b00')
 
 // Button stuff
 let red_button;
@@ -106,7 +111,7 @@ function init() {
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
-	tableGroup.position.set(0, 0, -3)
+	// tableGroup.position.set(0, 0, -3)
 	// tableGroup.rotateY(-30)
 
 	red_button = new DeskButton(scene)
@@ -204,6 +209,7 @@ function onFrame(timestamp, frame) {
 		if (red_button.pressCheck(stylus.position, scene) == true){
 			console.log('Desklock')
 			desk_manager.lock()
+			scene.background = green
 		}
 	}
 

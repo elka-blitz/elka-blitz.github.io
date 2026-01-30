@@ -178,6 +178,15 @@ export default class DeskManager {
 		this.desk_asset_instance = table_group // Update instance
 	}
 
+	animateMove(end_position_vector) {
+		gsap.to(this.desk_asset_instance.position, {
+			x: end_position_vector.x,
+			y: end_position_vector.y,
+			z: end_position_vector.z,
+			duration: 0.25
+		})
+	}
+
 	spawnDrawingAreaOnDesk(width, height, depth, colour, desk_model) {
 		// Spawn a 3D area on desk wherein the user may draw
 		// Possibly follow with the object to trace within the drawing zone
