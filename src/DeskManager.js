@@ -15,7 +15,7 @@ export default class DeskManager {
 		this.coordinates; 
 		this.scene = scene
 		this.desk_asset_instance = desk_asset_instance // Of THREE.group() nature
-		desk_asset_instance.visible = true
+		desk_asset_instance.visible = false
 
 		// Get model height
 		const box = new THREE.Box3().setFromObject(desk_asset_instance)
@@ -63,6 +63,18 @@ export default class DeskManager {
 		// Place at vector coordinates
 		console.log(coordinates)
 		this.desk_asset_instance.position.set(coordinates.x, coordinates.y, coordinates.z)
+	}
+
+	lock() {
+		this.desk_locked_in_place = true
+	}
+
+	getLock() {
+		return this.desk_locked_in_place
+	}
+
+	getDesk() {
+		return this.desk_asset_instance
 	}
 
 	updateButton(stylusposition) {
@@ -118,7 +130,7 @@ export default class DeskManager {
 	}
 
 	getDeskCoordinates() {
-		return (this.desk_asset_instance.position).toString()
+		return this.desk_asset_instance.position
 	}
 
 	slideToCamera(camera, stylus, table_group) {
