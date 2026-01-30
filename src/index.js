@@ -214,8 +214,8 @@ function onFrame(timestamp, frame) {
 
   if (gamepad1) {
 
-	if (red_button.returnExists() == true) {
-		if (red_button.pressCheck(stylus.position, scene) == true){
+	if (red_button.returnExists() === true) {
+		if (red_button.pressCheck(stylus.position, scene) === true){
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
@@ -273,7 +273,10 @@ function onFrame(timestamp, frame) {
 
 function animate() {
 	UIText.sync()
-//   handleDrawing(stylus);
+	if (!red_button.returnExists()) {
+		handleDrawing(stylus);
+	}
+	//
 	gsap.ticker.tick()
   // Render
   onFrame();
