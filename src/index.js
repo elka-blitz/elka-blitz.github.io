@@ -110,9 +110,10 @@ function init() {
 	// tableGroup.rotateY(-30)
 
 	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000')
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 	
-	// red_button.moveButton(desk_manager.getPositionForButton())
+	// red_button.moveButton(new THREE.Vector3(0,2,1))
+	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
 	// console.log('result', desk_manager.getPositionForButton())
 
 	// tableGroup.add(red_button_object)
@@ -200,36 +201,34 @@ function onFrame(timestamp, frame) {
   if (gamepad1) {
 
 	if (red_button.returnExists() == true) {
-		red_button.pressCheck(stylus.position)	
-	}
-
-	// if (cylinder_bb.containsPoint(stylus.position)) {
-	// 	console.log('Secondary buttonpress')
-	// }
-	// desk_manager.updateButton(stylus.position)
-
-	// if (this.scene.getObjectByProperty('uuid', desk_manager.getButton()).containsPoint(stylus.position)) {
-
-	
-
-	if (desk_manager.isDeskPositioned()) {
-		// desk_manager.updateButton(stylus.position)
-	}
-
-    prevIsDrawing = isDrawing;
-    isDrawing = gamepad1.buttons[5].value > 0;
-	// Before allowing draw, desk must be set up
-	if (prevIsDrawing && isDrawing ){
-		if (!desk_manager.isDeskPositioned()) {
-			// Desk fly-in
-			desk_manager.slideToCamera(camera, stylus, tableGroup)
-			red_button.moveButton(red_button.moveToStylus(camera, stylus))
+		if (red_button.pressCheck(stylus.position, scene) == true){
+			console.log('Desklock')
+			desk_manager.lock()
 		}
 	}
 
+	// if (desk_manager.isDeskPositioned()) {
+	// 	// desk_manager.updateButton(stylus.position)
+	// }
+
+    prevIsDrawing = isDrawing;
+    isDrawing = gamepad1.buttons[5].value > 0;
 
 
-	if (!prevIsDrawing && isDrawing) {
+	// Desk setup logic: before allowing draw, desk must be set up
+	if (prevIsDrawing && isDrawing && !desk_manager.getLock()){
+		if (!desk_manager.isDeskPositioned()) {
+			// Desk fly-in
+			desk_manager.slideToCamera(camera, stylus, tableGroup)
+			let button_spot = red_button.moveToStylus(camera, stylus)
+
+			// Hover button in front of user
+			// Instead of doing offset
+			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+		}
+	}
+
+	if (!prevIsDrawing && isDrawing && !desk_manager.getLock()) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = true
@@ -250,12 +249,8 @@ function onFrame(timestamp, frame) {
 	prevBack = backPushed
 	backPushed = gamepad1.buttons[1].value > 0
 
-	if (prevBack && !backPushed) { 
-		// desk_manager.slideToCamera(camera, stylus, tableGroup)
-		// red_button.createButton(stylus.position, '#ffffff')
-
-		// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
-	}
+	// if (prevBack && !backPushed) { 
+	// }
 
   }
 
