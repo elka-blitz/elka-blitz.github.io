@@ -86,7 +86,7 @@ let green = new THREE.Color('#0d9b00')
 
 // Button stuff
 let red_button;
-let white_button;
+let greenButton;
 let red_button_object
 
 init();
@@ -136,8 +136,10 @@ function init() {
 	// tableGroup.add(red_button_object)
 	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
 	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
+	greenButton = new DeskButton(scene)
+	greenButton.createButton(new THREE.Vector3(0.5,1,1), '#359743', 'Change', 0.07)
+	greenButton.makeInvisible()
+
 	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
 
 
@@ -280,6 +282,7 @@ function animate() {
 	desk_set = !red_button.returnExists();
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
+		greenButton.makeVisible();
 		if (gamepad1) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;

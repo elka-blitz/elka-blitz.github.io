@@ -21,8 +21,8 @@ export default class DeskButton {
         return this.cylinder.visible
     }
 
-    createButton(position, colour, label) {
-        this.geometry = new THREE.CylinderGeometry(0.05, 0.05, 0.05, 32);
+    createButton(position, colour, label, radius) {
+        this.geometry = new THREE.CylinderGeometry(radius || 0.05, radius || 0.05, 0.05, 32);
         this.geometry.computeBoundingBox()
         this.cyl_material = new THREE.MeshBasicMaterial({ color: colour });
         this.cylinder = new THREE.Mesh(this.geometry, this.cyl_material);
@@ -161,6 +161,11 @@ export default class DeskButton {
     makeInvisible() {
         this.exists = false
         this.cylinder.visible = false
+    }
+
+		makeVisible() {
+        this.exists = true;
+        this.cylinder.visible = true;
     }
 
     pressCheck(stylus_position_vector, scene) {
