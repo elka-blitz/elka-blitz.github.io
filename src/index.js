@@ -34,6 +34,9 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
+
+let isMovingDesk = false;
+let prevIsMovingDesk = false;
 let painter1;
 
 let wasButtonEntered = false;
@@ -227,33 +230,33 @@ function onFrame(timestamp, frame) {
 	// 	// desk_manager.updateButton(stylus.position)
 	// }
 
-    prevIsDrawing = isDrawing;
-    isDrawing = gamepad1.buttons[5].value > 0;
+    prevIsMovingDesk = isMovingDesk;
+		isMovingDesk = gamepad1.buttons[5].value > 0;
 
 
 	// Desk setup logic: before allowing draw, desk must be set up
-	if (prevIsDrawing && isDrawing && !desk_manager.getLock()){
+	if (prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
-			desk_manager.slideToCamera(camera, stylus, tableGroup)
-			let button_spot = red_button.moveToStylus(camera, stylus)
+			desk_manager.slideToCamera(camera, stylus, tableGroup);
+			let button_spot = red_button.moveToStylus(camera, stylus);
 
 			// Hover button in front of user
 			// Instead of doing offset
-			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 		}
 	}
 
-	if (!prevIsDrawing && isDrawing && !desk_manager.getLock()) {
+	if (!prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
-				child.material.transparent = true
-				child.material.opacity = 0.5
+				child.material.transparent = true;
+				child.material.opacity = 0.5;
 			}
-		})
+		});
 	}
 
-	if (prevIsDrawing && !isDrawing) {
+	if (prevIsMovingDesk && !isMovingDesk) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = false 
