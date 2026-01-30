@@ -277,8 +277,9 @@ function onFrame(timestamp, frame) {
 
 function animate() {
 	UIText.sync()
+	desk_set = !red_button.returnExists();
 	// if desk is locked, initiate ability to draw
-	if (!red_button.returnExists()) {
+	if (desk_set) {
 		if (gamepad1) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
@@ -350,16 +351,13 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
+  if (e.target !== stylus || !desk_set) return;
 
-//   if (e.target !== stylus) return;
-	if (desk_set) {
-		const painter = stylus.userData.painter;
-		painter.moveTo(stylus.position);
-		this.userData.isSelecting = true;
-	}
-	else {
-		return
-	}
+	const painter = stylus.userData.painter;
+	painter.moveTo(stylus.position);
+	this.userData.isSelecting = true;
+
+
 }
 
 function onSelectEnd() {
