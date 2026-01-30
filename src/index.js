@@ -219,6 +219,7 @@ function onFrame(timestamp, frame) {
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
+			stylus.userData.painter = painter1;
 		}
 	}
 
@@ -273,8 +274,20 @@ function onFrame(timestamp, frame) {
 
 function animate() {
 	UIText.sync()
-	if (!red_button.returnExists()) {
+	// if desk is locked, initiate ability to draw
+	if (desk_set) {
+		if (gamepad1) {
+			prevIsDrawing = isDrawing;
+			isDrawing = gamepad1.buttons[5].value > 0;
+			debugGamepad(gamepad1);
+
+			if (isDrawing && !prevIsDrawing) {
+				const painter = stylus.userData.painter;
+				painter.moveTo(stylus.position);
+			}
+		}
 		handleDrawing(stylus);
+
 	}
 	//
 	gsap.ticker.tick()
