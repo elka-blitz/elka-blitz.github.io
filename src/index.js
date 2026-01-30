@@ -1,3 +1,7 @@
+window.addEventListener('unload', function () {
+  document.documentElement.innerHTML = '';
+});   
+
 import * as THREE from "three";
 
 import {
@@ -7,10 +11,12 @@ import {
 	getRect,
 	getSquare,
 } from './shapeFunctions';
+
 import { getController, getControllerGrip } from './controllerFunctions';
 
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import  DeskButton  from "./DeskButtons.js";
+import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -19,6 +25,8 @@ import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
+import { gsap } from 'gsap';   
+import { update } from "three/examples/jsm/libs/tween.module.js";
 
 let camera, scene, renderer;
 let stylus;
@@ -54,20 +62,29 @@ const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
 // Stylus info
 let position = new THREE.Vector3();
 
-
-// Cube Bounding box stuff
-let boundingBoxButton = new THREE.Box3();
-
 // Debugging stuff
 let debugVar = true
-const debugText = new Text();
-debugText.fontsize = 0.52
-debugText.font = 'assets/SpaceMono-Bold.ttf';
-debugText.position.z = -2;
-debugText.color = 0xffffff;
-debugText.anchorX = 'center';
-debugText.anchorY = 'middle';
-debugText.text = 'LiveStylusCoords'
+const UIText = new Text();
+UIText.fontsize = 0.52
+UIText.font = 'assets/SpaceMono-Bold.ttf';
+UIText.position.z = -2;
+UIText.color = 0xffffff;
+UIText.anchorX = 'center';
+UIText.anchorY = 'middle';
+UIText.text = 'LiveStylusCoords'
+
+// Desk stuff
+let desk_set = false
+let tableGroup = new THREE.Group()
+let prevBack = false
+let backPushed = false
+let desk_manager
+let green = new THREE.Color('#0d9b00')
+
+// Button stuff
+let red_button;
+let white_button;
+let red_button_object
 
 init();
 
@@ -95,8 +112,31 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	const grid = new THREE.GridHelper(4, 1, 0x111111, 0x111111);
-	scene.add(grid);
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+		tableGroup.add(gltf.scene);
+	});
+
+	scene.add(tableGroup)
+	// Initialise desk manager
+	desk_manager = new DeskManager(scene, tableGroup)
+
+	// tableGroup.position.set(0, 0, -3)
+	// tableGroup.rotateY(-30)
+
+	red_button = new DeskButton(scene)
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+	
+	// red_button.moveButton(new THREE.Vector3(0,2,1))
+	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
+	// console.log('result', desk_manager.getPositionForButton())
+
+	// tableGroup.add(red_button_object)
+	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
+	
+	// white_button = new DeskButton(scene)
+	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
+	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
+
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -118,6 +158,7 @@ function init() {
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
+
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
@@ -125,25 +166,12 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
-
 }
-
-
-	// button
-	scene.add(cubeButton)
-	cubeButton.position.set(0.15, 1.55, -0.25)
-	boundingBoxButton.setFromObject(cubeButton);
-
-	const nextButtonText = createText('Next', 0.02);
-	nextButtonText.position.set(0.15, 1.55, -0.235)
-	scene.add(nextButtonText);
-
-
-
-	// floor
-	const floor = getFloor(6, 6, 'grey');
-	floor.rotateX(-Math.PI / 2);
-	scene.add(floor);
+	// Debugging text
+	scene.add(UIText);
+	UIText.position.set(0, 1, -2.5);
+	UIText.rotateX(-Math.PI / 3.3);
+	UIText.text = 'Tap desk with stylus to start'
 
 	// drawing paint
 	painter1 = new TubePainter();
@@ -152,48 +180,14 @@ function init() {
 
 	scene.add(painter1.mesh);
 
-	// square shape
-	const squareSize = 0.1
-	const xPos = 0
-	const yPos = 1.6 // this will have to be height adjusted
-	const userDistance = -0.4
-	const leanTowards = 0.01
-	
-	const square = getSquare(
-		squareSize,
-		xPos,
-		yPos,
-		userDistance,
-		leanTowards,
-		true,
-		'white',
-	);
-	
-	scene.add(square);
-	
-	const circle1 = getCircle(0.02);
-	const circle2 = getCircle(0.02);
-	scene.add(circle1)
-	const distanceFromCenter = 0.06
-	circle1.position.set(xPos - distanceFromCenter, yPos + 0.04, userDistance);
-	
-	scene.add(circle2)
-	circle2.visible = true;
-	circle2.position.set(xPos + distanceFromCenter, yPos + 0.04, userDistance);
-	
-	const rect = getRect(0.08, 0.02, xPos, yPos - 0.035, userDistance, 0, true, 'white')
-	
-	scene.add(rect);
-	
-	const shapeOutlineArray = [square, circle1, circle2, rect];
-	
-	shapeOutlineArray.forEach((shape, i) => {
-		if (i !== 0) {
-			shape.visible = false;
-		}
-})
+	// // square shape
+	// const squareSize = 0.4
+	// const xPos = 0
+	// const yPos = 1.6 // this will have to be height adjusted
+	// const userDistance = -0.2
+	// const leanTowards = 0.05
 
-
+	// scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -208,35 +202,81 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+	gsap.ticker.remove(gsap.updateRoot);
+
+	// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
 });
 
-// animation functions
 
-function animate() {
-	debugText.sync()
+// animation functions
+function onFrame(timestamp, frame) {
+
+
   if (gamepad1) {
+
+	if (red_button.returnExists() == true) {
+		if (red_button.pressCheck(stylus.position, scene) == true){
+			console.log('Desklock')
+			desk_manager.lock()
+			scene.background = green
+		}
+	}
+
+	// if (desk_manager.isDeskPositioned()) {
+	// 	// desk_manager.updateButton(stylus.position)
+	// }
+
     prevIsDrawing = isDrawing;
     isDrawing = gamepad1.buttons[5].value > 0;
-    debugGamepad(gamepad1);
-	try {
-		if (boundingBoxButton.containsPoint(stylus.position) && !wasButtonEntered) {
-			handleButton(stylus)
-		}
-		wasButtonEntered = boundingBoxButton.containsPoint(stylus.position);
 
-	} catch (e) {
-		console.log(e)
+
+	// Desk setup logic: before allowing draw, desk must be set up
+	if (prevIsDrawing && isDrawing && !desk_manager.getLock()){
+		if (!desk_manager.isDeskPositioned()) {
+			// Desk fly-in
+			desk_manager.slideToCamera(camera, stylus, tableGroup)
+			let button_spot = red_button.moveToStylus(camera, stylus)
+
+			// Hover button in front of user
+			// Instead of doing offset
+			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+		}
 	}
-    if (isDrawing && !prevIsDrawing) {
-      const painter = stylus.userData.painter;
-      painter.moveTo(stylus.position);
-    }
+
+	if (!prevIsDrawing && isDrawing && !desk_manager.getLock()) {
+		tableGroup.traverse((child) => {
+			if (child.material) {
+				child.material.transparent = true
+				child.material.opacity = 0.5
+			}
+		})
+	}
+
+	if (prevIsDrawing && !isDrawing) {
+		tableGroup.traverse((child) => {
+			if (child.material) {
+				child.material.transparent = false 
+				// child.material.opacity = 0.5
+			}
+		})
+	}
+
+	prevBack = backPushed
+	backPushed = gamepad1.buttons[1].value > 0
+
+	// if (prevBack && !backPushed) { 
+	// }
+
   }
 
-  handleDrawing(stylus);
+}
 
+function animate() {
+	UIText.sync()
+//   handleDrawing(stylus);
+	gsap.ticker.tick()
   // Render
-  // onFrame();
+  onFrame();
   renderer.render(scene, camera);
 }
 
@@ -248,7 +288,7 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
+	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
 	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
@@ -260,25 +300,25 @@ function handleDrawing(controller) {
 function handleButton(controller) {
 	if (!controller) return;
 
-	if (shapeIndex < shapeOutlineArray.length - 1) {
-		shapeIndex += 1;
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = false;
-		// });
-		shapeOutlineArray.forEach((outline) => {
-			outline.visible = false;
-		});
+	// if (shapeIndex < shapeOutlineArray.length - 1) {
+	// 	shapeIndex += 1;
+	// 	// shapeArray.forEach((paint) => {
+	// 	// 	paint.mesh.visible = false;
+	// 	// });
+	// 	shapeOutlineArray.forEach((outline) => {
+	// 		outline.visible = false;
+	// 	});
 
-		// shapeArray[shapeIndex].mesh.visible = true;
-		shapeOutlineArray[shapeIndex].visible = true;
-	} else {
-		// shapeArray.forEach((paint) => {
-		// 	paint.mesh.visible = true;
-		// });
-		shapeOutlineArray.forEach((outline) => {
-			outline.visible = true;
-		});
-	}
+	// 	// shapeArray[shapeIndex].mesh.visible = true;
+	// 	shapeOutlineArray[shapeIndex].visible = true;
+	// } else {
+	// 	// shapeArray.forEach((paint) => {
+	// 	// 	paint.mesh.visible = true;
+	// 	// });
+	// 	shapeOutlineArray.forEach((outline) => {
+	// 		outline.visible = true;
+	// 	});
+	// }
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
@@ -292,10 +332,16 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
-  if (e.target !== stylus) return;
-  const painter = stylus.userData.painter;
-  painter.moveTo(stylus.position);
-  this.userData.isSelecting = true;
+
+//   if (e.target !== stylus) return;
+	if (desk_set) {
+		const painter = stylus.userData.painter;
+		painter.moveTo(stylus.position);
+		this.userData.isSelecting = true;
+	}
+	else {
+		return
+	}
 }
 
 function onSelectEnd() {
