@@ -4,13 +4,15 @@ window.addEventListener('unload', function () {
 
 import * as THREE from "three";
 
-import { getController, getControllerGrip } from './controllerFunctions';
 import {
+	getCircle,
 	getCube,
-	getDashedLine,
 	getFloor,
+	getRect,
 	getSquare,
 } from './shapeFunctions';
+import { getController, getControllerGrip } from './controllerFunctions';
+
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import DeskButton from "./DeskButtons.js";
@@ -24,6 +26,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
+import { createText } from 'three/examples/jsm/webxr/Text2D';
 
 let camera, scene, renderer;
 let stylus;
@@ -33,10 +36,16 @@ let isDrawing = false;
 let prevIsDrawing = false;
 let painter1;
 
+let wasButtonEntered = false;
+
+let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let shapeIndex = 0;
+
 const material = new THREE.MeshNormalMaterial({
-  flatShading: true,
-  side: THREE.DoubleSide,
+	flatShading: true,
+	side: THREE.DoubleSide,
 });
+
 
 const cursor = new THREE.Vector3();
 
@@ -46,9 +55,9 @@ const sizes = {
 };
 
 // cubes
-const cube = getCube(0.5, 0.5, 0.5, '#27F527');
-const cube2 = getCube(0.3, 0.3, 0.3, '#F54927');
-const cube3 = getCube(0.5, 0.3, 0.5, '#27e7f5ff');
+const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
+
+
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -267,7 +276,7 @@ function animate() {
 //   handleDrawing(stylus);
 	gsap.ticker.tick()
   // Render
-  onFrame();
+  // onFrame();
   renderer.render(scene, camera);
 }
 
@@ -286,6 +295,30 @@ function handleDrawing(controller) {
       painter.update();
     }
   }
+}
+
+function handleButton(controller) {
+	if (!controller) return;
+
+	if (shapeIndex < shapeOutlineArray.length - 1) {
+		shapeIndex += 1;
+		// shapeArray.forEach((paint) => {
+		// 	paint.mesh.visible = false;
+		// });
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = false;
+		});
+
+		// shapeArray[shapeIndex].mesh.visible = true;
+		shapeOutlineArray[shapeIndex].visible = true;
+	} else {
+		// shapeArray.forEach((paint) => {
+		// 	paint.mesh.visible = true;
+		// });
+		shapeOutlineArray.forEach((outline) => {
+			outline.visible = true;
+		});
+	}
 }
 
 // controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
