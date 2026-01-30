@@ -34,6 +34,9 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
+
+let isMovingDesk = false;
+let prevIsMovingDesk = false;
 let painter1;
 
 let wasButtonEntered = false;
@@ -214,11 +217,12 @@ function onFrame(timestamp, frame) {
 
   if (gamepad1) {
 
-	if (red_button.returnExists() == true) {
-		if (red_button.pressCheck(stylus.position, scene) == true){
+	if (red_button.returnExists() === true) {
+		if (red_button.pressCheck(stylus.position, scene) === true){
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
+			stylus.userData.painter = painter1;
 		}
 	}
 
@@ -226,33 +230,33 @@ function onFrame(timestamp, frame) {
 	// 	// desk_manager.updateButton(stylus.position)
 	// }
 
-    prevIsDrawing = isDrawing;
-    isDrawing = gamepad1.buttons[5].value > 0;
+    prevIsMovingDesk = isMovingDesk;
+		isMovingDesk = gamepad1.buttons[5].value > 0;
 
 
 	// Desk setup logic: before allowing draw, desk must be set up
-	if (prevIsDrawing && isDrawing && !desk_manager.getLock()){
+	if (prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
-			desk_manager.slideToCamera(camera, stylus, tableGroup)
-			let button_spot = red_button.moveToStylus(camera, stylus)
+			desk_manager.slideToCamera(camera, stylus, tableGroup);
+			let button_spot = red_button.moveToStylus(camera, stylus);
 
 			// Hover button in front of user
 			// Instead of doing offset
-			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 		}
 	}
 
-	if (!prevIsDrawing && isDrawing && !desk_manager.getLock()) {
+	if (!prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
-				child.material.transparent = true
-				child.material.opacity = 0.5
+				child.material.transparent = true;
+				child.material.opacity = 0.5;
 			}
-		})
+		});
 	}
 
-	if (prevIsDrawing && !isDrawing) {
+	if (prevIsMovingDesk && !isMovingDesk) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = false 
@@ -273,7 +277,23 @@ function onFrame(timestamp, frame) {
 
 function animate() {
 	UIText.sync()
-//   handleDrawing(stylus);
+	desk_set = !red_button.returnExists();
+	// if desk is locked, initiate ability to draw
+	if (desk_set) {
+		if (gamepad1) {
+			prevIsDrawing = isDrawing;
+			isDrawing = gamepad1.buttons[5].value > 0;
+			debugGamepad(gamepad1, gamepad1.buttons[5].pressed);
+
+			if (isDrawing && !prevIsDrawing) {
+				const painter = stylus.userData.painter;
+				painter.moveTo(stylus.position);
+			}
+		}
+		handleDrawing(stylus);
+
+	}
+	//
 	gsap.ticker.tick()
   // Render
   onFrame();
@@ -289,7 +309,6 @@ function handleDrawing(controller) {
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
 	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
-	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -332,16 +351,13 @@ function onControllerConnected(e) {
 }
 
 function onSelectStart(e) {
+  if (e.target !== stylus || !desk_set) return;
 
-//   if (e.target !== stylus) return;
-	if (desk_set) {
-		const painter = stylus.userData.painter;
-		painter.moveTo(stylus.position);
-		this.userData.isSelecting = true;
-	}
-	else {
-		return
-	}
+	const painter = stylus.userData.painter;
+	painter.moveTo(stylus.position);
+	this.userData.isSelecting = true;
+
+
 }
 
 function onSelectEnd() {
