@@ -275,7 +275,7 @@ function onFrame(timestamp, frame) {
 function animate() {
 	UIText.sync()
 	// if desk is locked, initiate ability to draw
-	if (desk_set) {
+	if (!red_button.returnExists()) {
 		if (gamepad1) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
