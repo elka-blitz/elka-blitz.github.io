@@ -24,6 +24,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
@@ -85,6 +86,15 @@ let green = new THREE.Color('#0d9b00')
 let red_button;
 let white_button;
 let red_button_object
+
+
+// Hand declarations
+let hand1, hand2;
+const handModels = {
+	left: null,
+	right: null
+};
+let controllerGrip1, controllerGrip2;
 
 init();
 
@@ -152,20 +162,89 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
-
+	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
-	document.body.appendChild(VRButton.createButton(renderer));
+	const sessionInit = {
+		requiredFeatures: [ 'hand-tracking' ]
+	};
+
+	document.body.appendChild(VRButton.createButton(renderer, sessionInit));
 	renderer.setAnimationLoop(animate);
 
 
 	// controller setup
-	const controllerModelFactory = new XRControllerModelFactory();
-	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
-	scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
+	// const controllerModelFactory = new XRControllerModelFactory();
+	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
+	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
 
-	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
-	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
+	// scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+	let controllerModelFactory = new XRControllerModelFactory();
+	const handModelFactory = new XRHandModelFactory();
+
+	// Hand1 setup
+	controllerGrip1 = renderer.xr.getControllerGrip(0);
+	controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+	scene.add(controllerGrip1);
+
+	hand1 = renderer.xr.getHand(0);
+	hand1.userData.currentHandModel = 0;
+	scene.add(hand1);
+
+	handModels.left = [
+		handModelFactory.createHandModel(hand1, 'boxes'),
+		handModelFactory.createHandModel(hand1, 'spheres'),
+		handModelFactory.createHandModel(hand1, 'mesh')
+	];
+
+	for (let i = 0; i < 3; i++) {
+
+		const model = handModels.left[i];
+		model.visible = i == 0;
+		hand1.add(model);
+
+	}
+
+	hand1.addEventListener('pinchend', function () {
+
+		handModels.left[this.userData.currentHandModel].visible = false;
+		this.userData.currentHandModel = (this.userData.currentHandModel + 1) % 3;
+		handModels.left[this.userData.currentHandModel].visible = true;
+
+	});
+					// Hand 2
+
+				controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+				controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+				scene.add( controllerGrip2 );
+
+				hand2 = renderer.xr.getHand( 1 );
+				hand2.userData.currentHandModel = 0;
+				scene.add( hand2 );
+
+				handModels.right = [
+					handModelFactory.createHandModel( hand2, 'boxes' ),
+					handModelFactory.createHandModel( hand2, 'spheres' ),
+					handModelFactory.createHandModel( hand2, 'mesh' )
+				];
+
+				for ( let i = 0; i < 3; i ++ ) {
+
+					const model = handModels.right[ i ];
+					model.visible = i == 0;
+					hand2.add( model );
+
+				}
+
+				hand2.addEventListener( 'pinchend', function () {
+
+					handModels.right[ this.userData.currentHandModel ].visible = false;
+					this.userData.currentHandModel = ( this.userData.currentHandModel + 1 ) % 3;
+					handModels.right[ this.userData.currentHandModel ].visible = true;
+
+				} );
 }
 	// Debugging text
 	scene.add(UIText);
