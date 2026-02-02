@@ -38,6 +38,7 @@ let prevIsDrawing = false;
 let isMovingDesk = false;
 let prevIsMovingDesk = false;
 let painter1;
+let painter2;
 
 let wasButtonEntered = false;
 
@@ -83,9 +84,11 @@ let prevBack = false
 let backPushed = false
 let desk_manager
 let green = new THREE.Color('#0d9b00')
+let blue = new THREE.Color('#00f8ff')
 
 // Button stuff
 let red_button;
+let newButton;
 let white_button;
 let red_button_object
 
@@ -128,18 +131,10 @@ function init() {
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-	
-	// red_button.moveButton(new THREE.Vector3(0,2,1))
-	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
-	// console.log('result', desk_manager.getPositionForButton())
 
-	// tableGroup.add(red_button_object)
-	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
-	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
-	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
-
+	newButton = new DeskButton(scene)
+	newButton.createButton(new THREE.Vector3(0,0,0), '#ff7300', 'Hello')
+	newButton.makeInvisible()
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -181,7 +176,12 @@ function init() {
 	painter1.mesh.material = material;
 	painter1.setSize(0.1);
 
-	scene.add(painter1.mesh);
+	painter2 = new TubePainter();
+	painter2.mesh.material = material;
+	painter2.setSize(0.1);
+	painter2.mesh.visible = false;
+
+	scene.add(painter2.mesh);
 
 	// // square shape
 	// const squareSize = 0.4
@@ -221,8 +221,18 @@ function onFrame(timestamp, frame) {
 		if (red_button.pressCheck(stylus.position, scene) === true){
 			console.log('Desklock')
 			desk_manager.lock()
-			scene.background = green
+			scene.background = green;
 			stylus.userData.painter = painter1;
+			newButton.makeVisible()
+		}
+	}
+	if (newButton.returnExists() === true) {
+		if (newButton.pressCheck(stylus.position, scene) === true){
+			scene.background = blue;
+			stylus.userData.painter = painter2;
+			painter1.mesh.visible = false;
+			painter2.mesh.visible = true;
+
 		}
 	}
 

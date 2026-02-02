@@ -163,6 +163,11 @@ export default class DeskButton {
         this.cylinder.visible = false
     }
 
+    makeVisible() {
+        this.exists = true;
+        this.cylinder.visible = true;
+    }
+
     pressCheck(stylus_position_vector, scene) {
 
         this.cylinder_bb.setFromObject(this.cylinder)
