@@ -176,10 +176,10 @@ function init() {
 	painter1.mesh.material = material;
 	painter1.setSize(0.1);
 
-	painter2 = new TubePainter();
-	painter2.mesh.material = material;
-	painter2.setSize(0.1);
-	painter2.mesh.visible = false;
+	// painter2 = new TubePainter();
+	// painter2.mesh.material = material;
+	// painter2.setSize(0.1);
+	// painter2.mesh.visible = false;
 
 	scene.add(painter2.mesh);
 
@@ -223,15 +223,13 @@ function onFrame(timestamp, frame) {
 			desk_manager.lock()
 			scene.background = green;
 			stylus.userData.painter = painter1;
-			newButton.makeVisible()
+			newButton.makeVisible();
+			newButton.moveToStylus(camera, stylus);
 		}
 	}
 	if (newButton.returnExists() === true) {
 		if (newButton.pressCheck(stylus.position, scene) === true){
 			scene.background = blue;
-			stylus.userData.painter = painter2;
-			painter1.mesh.visible = false;
-			painter2.mesh.visible = true;
 
 		}
 	}
