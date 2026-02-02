@@ -38,7 +38,6 @@ let prevIsDrawing = false;
 let isMovingDesk = false;
 let prevIsMovingDesk = false;
 let painter1;
-let painter2;
 
 let wasButtonEntered = false;
 
@@ -79,6 +78,7 @@ UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
 let desk_set = false
+let deskCoords;
 let tableGroup = new THREE.Group()
 let prevBack = false
 let backPushed = false
@@ -176,12 +176,7 @@ function init() {
 	painter1.mesh.material = material;
 	painter1.setSize(0.1);
 
-	// painter2 = new TubePainter();
-	// painter2.mesh.material = material;
-	// painter2.setSize(0.1);
-	// painter2.mesh.visible = false;
-
-	scene.add(painter2.mesh);
+	scene.add(painter1.mesh);
 
 	// // square shape
 	// const squareSize = 0.4
@@ -213,8 +208,6 @@ function init() {
 
 // animation functions
 function onFrame(timestamp, frame) {
-
-
   if (gamepad1) {
 
 	if (red_button.returnExists() === true) {
@@ -223,8 +216,13 @@ function onFrame(timestamp, frame) {
 			desk_manager.lock()
 			scene.background = green;
 			stylus.userData.painter = painter1;
+			deskCoords = desk_manager.getDeskCoordinates();
 			newButton.makeVisible();
-			newButton.moveToStylus(camera, stylus);
+			newButton.moveButton({
+				x: deskCoords.x,
+				y: deskCoords.y + 0.76, // place above desk
+				z: deskCoords.z,
+			});
 		}
 	}
 	if (newButton.returnExists() === true) {
