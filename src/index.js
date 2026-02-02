@@ -211,8 +211,8 @@ function onFrame(timestamp, frame) {
   if (gamepad1) {
 
 	if (red_button.returnExists() === true) {
-		if (red_button.pressCheck(stylus.position, scene) === true){
-			console.log('Desklock')
+		if (red_button.pressCheck(stylus.position, scene, "white") === true){
+			UIText.text = "Desklock"
 			desk_manager.lock()
 			scene.background = green;
 			stylus.userData.painter = painter1;
@@ -226,7 +226,9 @@ function onFrame(timestamp, frame) {
 		}
 	}
 	if (newButton.returnExists() === true) {
-		if (newButton.pressCheck(stylus.position, scene) === true){
+		if (newButton.pressCheck(stylus.position, scene, "yellow") === true){
+			UIText.text = 'New button';
+
 			scene.background = blue;
 
 		}

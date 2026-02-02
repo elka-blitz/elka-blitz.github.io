@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 
 import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { gsap } from 'gsap';   
+import { getCube } from './shapeFunctions';
+import { gsap } from 'gsap';
 export default class DeskButton {
     constructor (scene){
         this.scene = scene
@@ -168,12 +169,16 @@ export default class DeskButton {
         this.cylinder.visible = true;
     }
 
-    pressCheck(stylus_position_vector, scene) {
+    pressCheck(stylus_position_vector, scene, color) {
 
         this.cylinder_bb.setFromObject(this.cylinder)
         // this.cylinder.updateMatrixWorld()
         scene.remove(this.boxHelper)
-        // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+				const cubeButton = getCube(0.07, 0.05, 0.02, color);
+				scene.add(cubeButton)
+				cubeButton.position.set(0, 1.6, -2)
+
+			// this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
         // scene.add(this.boxHelper)
         // this.boxHelper.update()
 
