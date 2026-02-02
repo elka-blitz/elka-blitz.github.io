@@ -211,6 +211,8 @@ function onFrame(timestamp, frame) {
   if (gamepad1) {
 
 	if (red_button.returnExists() === true) {
+		UIText.text = `red ${red_button.pressCheck(stylus.position, scene, 'white')}`
+
 		if (red_button.pressCheck(stylus.position, scene, "white") === true){
 			UIText.text = "Desklock"
 			desk_manager.lock()
@@ -226,7 +228,8 @@ function onFrame(timestamp, frame) {
 		}
 	}
 	if (newButton.returnExists() === true) {
-		if (newButton.pressCheck(stylus.position, scene, "yellow") === true){
+		UIText.text = `new ${newButton.pressCheck(stylus.position, scene, 'red')}`;
+		if (newButton.pressCheck(stylus.position, scene, "red") === true){
 			UIText.text = 'New button';
 
 			scene.background = blue;
