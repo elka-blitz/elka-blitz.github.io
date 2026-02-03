@@ -37,7 +37,7 @@ export default class DeskButton {
 
         this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)//this.geometry.boundingBox 
 
-        // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
+        this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
         
         // cube.rotateY(45)
         // gsap.to(this.cylinder.position, {
@@ -52,7 +52,7 @@ export default class DeskButton {
         //     }
         // })	
 
-        // this.scene.add(this.boxHelper)
+        this.scene.add(this.boxHelper)
         this.cylinder.updateMatrixWorld()
         console.log(this.cylinder)
         
@@ -171,9 +171,9 @@ export default class DeskButton {
 
     pressCheck(stylus_position_vector, scene, color) {
 
-        // this.cylinder_bb.setFromObject(this.cylinder)
+        this.cylinder_bb.setFromObject(this.cylinder)
         // this.cylinder.updateMatrixWorld()
-        scene.remove(this.boxHelper)
+        // scene.remove(this.boxHelper)
 				const cubeButton = getCube(0.07, 0.05, 0.02, color);
 				scene.add(cubeButton)
 				cubeButton.position.set(0, 1.6, -2)
