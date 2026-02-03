@@ -157,7 +157,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(0.7,0,0), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(1,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
@@ -336,7 +336,6 @@ function handleButton() {
 		loadSVG(svgArray[shapeIndex]);
 
 		paintArray[shapeIndex].mesh.visible = true;
-		svgArray[shapeIndex].visible = true;
 		stylus.userData.painter = paintArray[shapeIndex];
 
 	} else {
