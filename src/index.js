@@ -236,7 +236,7 @@ function onFrame(timestamp, frame) {
 	}
 	  // change material
 	  if (yellowButton.returnExists() === true) {
-		  if (yellowButton.pressCheckReusable(stylus.position, scene, "white") === true) {
+		  if (yellowButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
 		  }
 		  wasChangeButton = yellowButton.pressCheckReusable(stylus.position, scene, "white")
@@ -328,8 +328,6 @@ function handleDrawing(controller) {
 }
 
 function handleButton() {
-	scene.background = yellow;
-
 
 	if (shapeIndex < paintArray.length - 1) {
 		shapeIndex += 1;
@@ -342,6 +340,7 @@ function handleButton() {
 		// });
 
 		paintArray[shapeIndex].mesh.visible = true;
+		stylus.userData.painter = paintArray[shapeIndex];
 		// shapeOutlineArray[shapeIndex].visible = true;
 	} else {
 		paintArray.forEach((paint) => {
