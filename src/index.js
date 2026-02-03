@@ -237,7 +237,6 @@ function onFrame(timestamp, frame) {
 	  // change material
 	  if (yellowButton.returnExists() === true) {
 		  if (yellowButton.pressCheckReusable(stylus.position, scene, "white") === true) {
-			  scene.background = yellow;
 			  handleButton();
 		  }
 		  wasChangeButton = yellowButton.pressCheckReusable(stylus.position, scene, "white")
@@ -330,9 +329,12 @@ function handleDrawing(controller) {
 
 function handleButton(controller) {
 	if (!controller) return;
+	scene.background = yellow;
+
 
 	if (shapeIndex < paintArray.length - 1) {
 		shapeIndex += 1;
+		UIText.text = shapeIndex;
 		paintArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
