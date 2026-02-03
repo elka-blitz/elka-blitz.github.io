@@ -31,7 +31,7 @@ let prevIsMovingDesk = false;
 
 let wasChangeButton = false;
 
-let blackPaint, redPaint, greenPaint, yellowPaint;
+let blackPaint, redPaint, greenPaint, yellowPaint, blackPaint2, redPaint2, greenPaint2;
 let shapeIndex = 0;
 
 const yellowMaterial = new THREE.MeshBasicMaterial({
@@ -157,7 +157,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(1,0,0), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(1.5,0,-0.5), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
@@ -177,13 +177,25 @@ function init() {
 	yellowPaint.mesh.material = yellowMaterial;
 	yellowPaint.setSize(0.1);
 
+	blackPaint2 = new TubePainter();
+	blackPaint2.mesh.material = blackMaterial;
+	blackPaint2.setSize(0.1);
+
+	redPaint2 = new TubePainter();
+	redPaint2.mesh.material = redMaterial;
+	redPaint2.setSize(0.1);
+
+	greenPaint2 = new TubePainter();
+	greenPaint2.mesh.material = greenMaterial;
+	greenPaint2.setSize(0.1);
+
 	const paintArray = [
 		blackPaint,
 		redPaint,
 		greenPaint,
-		yellowPaint,
-		blackPaint,
-		redPaint
+		blackPaint2,
+		greenPaint2,
+		redPaint2
 	];
 
 	scene.add(blackPaint.mesh);

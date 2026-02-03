@@ -65,7 +65,7 @@ export default class DeskManager {
 		drawingSurface.rotateX(Math.PI / 3);	// angle towards
 
 		desk_asset_instance.add(drawingSurface);
-		drawingSurface.visible = true;
+		drawingSurface.visible = false;
 
 		this.surface = drawingSurface;
 
