@@ -223,15 +223,16 @@ function onFrame(timestamp, frame) {
 
 	  // desk lock event
 	  if (red_button.returnExists() === true) {
-		if (red_button.pressCheck(stylus.position, scene, "white") === true) {
-			desk_manager.lock()
+		if (
+			red_button.pressCheck(stylus.position, scene, 'white') === true &&
+			!stylus.userData.isSelecting	// should reduce accidental pressing
+		) {
+			desk_manager.lock();
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
 			deskCoords = desk_manager.getDeskCoordinates();
 			yellowButton.makeVisible();
 			desk_set = true;
-
-
 		}
 	}
 	  // change material
@@ -251,7 +252,6 @@ function onFrame(timestamp, frame) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup);
-			let button_spot = red_button.moveToStylus(camera, stylus);
 
 			// Hover button in front of user
 			// Instead of doing offset
