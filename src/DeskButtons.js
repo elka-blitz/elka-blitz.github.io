@@ -181,7 +181,7 @@ export default class DeskButton {
 			// this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
         // scene.add(this.boxHelper)
         // this.boxHelper.update()
-
+		console.log('button', stylus_position_vector);
         if (this.cylinder_bb.containsPoint(stylus_position_vector) && stylus_position_vector.y < this.max_height) {
             console.log('Point in box');
 

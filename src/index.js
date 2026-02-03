@@ -85,11 +85,12 @@ let backPushed = false
 let desk_manager
 let green = new THREE.Color('#0d9b00')
 let blue = new THREE.Color('#00f8ff')
+let yellow = new THREE.Color('#ffc400')
 
 // Button stuff
 let red_button;
+let yellowButton;
 let newButton;
-let white_button;
 let red_button_object
 
 init();
@@ -131,6 +132,9 @@ function init() {
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+
+	yellowButton = new DeskButton(scene)
+	yellowButton.createButton(new THREE.Vector3(0.5,0,0), '#f1c708', 'Test')
 
 	newButton = new DeskButton(scene)
 	newButton.createButton(new THREE.Vector3(0,0,0), '#ff7300', 'Hello')
@@ -227,7 +231,14 @@ function onFrame(timestamp, frame) {
 			});
 		}
 	}
-	if (newButton.returnExists() === true) {
+	  if (yellowButton.returnExists() === true) {
+		  if (yellowButton.pressCheck(stylus.position, scene, "white") === true){
+			  UIText.text = "Yellow!"
+			  scene.background = yellow;
+		  }
+	  }
+
+	  if (newButton.returnExists() === true) {
 		UIText.text = `new ${newButton.pressCheck(stylus.position, scene, 'red')}`;
 		if (newButton.pressCheck(stylus.position, scene, "red") === true){
 			UIText.text = 'New button';
