@@ -236,10 +236,11 @@ function onFrame(timestamp, frame) {
 	}
 	  // change material
 	  if (yellowButton.returnExists() === true) {
-		  if (yellowButton.pressCheck(stylus.position, scene, "white") === true && !wasChangeButton) {
-			  handleButton()
+		  if (yellowButton.pressCheckReusable(stylus.position, scene, "white") === true) {
+			  scene.background = yellow;
+			  handleButton();
 		  }
-		  wasChangeButton = yellowButton.pressCheck(stylus.position, scene, "white")
+		  wasChangeButton = yellowButton.pressCheckReusable(stylus.position, scene, "white")
 	  }
 
     prevIsMovingDesk = isMovingDesk;
