@@ -177,20 +177,30 @@ function init() {
 	yellowPaint.mesh.material = yellowMaterial;
 	yellowPaint.setSize(0.1);
 
-	const paintArray = [blackPaint, redPaint, greenPaint, yellowPaint];
+	const paintArray = [
+		blackPaint,
+		redPaint,
+		greenPaint,
+		yellowPaint,
+		blackPaint,
+		redPaint
+	];
 
 	scene.add(blackPaint.mesh);
 	scene.add(redPaint.mesh);
 	scene.add(greenPaint.mesh);
 	scene.add(yellowPaint.mesh);
 
-	// drawing outlines
-	loadSVG('assets/banner_long.svg');
-	loadSVG('assets/window_curtain.svg');
-	loadSVG('assets/banner_short.svg');
-	loadSVG('assets/door_bottom.svg');
-	loadSVG('assets/door_top.svg');
-	loadSVG('assets/base.svg');
+	const svgArray = [
+		'assets/banner_long.svg',
+		'assets/window_curtain.svg',
+		'assets/banner_short.svg',
+		'assets/door_bottom.svg',
+		'assets/door_top.svg',
+		'assets/base.svg'
+	]
+
+	loadSVG(svgArray[0]);
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -316,43 +326,40 @@ function handleDrawing(controller) {
 
 function handleButton() {
 
-	if (shapeIndex < paintArray.length - 1) {
+	if (shapeIndex < svgArray.length - 1) {
 		shapeIndex += 1;
 		UIText.text = shapeIndex;
 		paintArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-		// shapeOutlineArray.forEach((outline) => {
-		// 	outline.visible = false;
-		// });
+		desk_manager.clearSurface();
+		loadSVG(svgArray[shapeIndex]);
 
 		paintArray[shapeIndex].mesh.visible = true;
+		svgArray[shapeIndex].visible = true;
 		stylus.userData.painter = paintArray[shapeIndex];
-		// shapeOutlineArray[shapeIndex].visible = true;
+
 	} else {
 		paintArray.forEach((paint) => {
 			paint.mesh.visible = true;
 		});
-		// shapeOutlineArray.forEach((outline) => {
-		// 	outline.visible = true;
-		// });
 	}
 }
 
 // controller functions
 function onControllerConnected(e) {
-  // if (e.data.profiles.includes("logitech-mx-ink")) {
+  if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	  // todo this is temporary for placing drawing area
-	desk_manager.slideToFront(camera, stylus, tableGroup);
-	  desk_manager.lock();
-	  desk_set = true;
+	//   // todo this is temporary for placing drawing area
+	// desk_manager.slideToFront(camera, stylus, tableGroup);
+	//   desk_manager.lock();
+	//   desk_set = true;
 
-  // }
+  }
 }
 
 function onSelectStart(e) {

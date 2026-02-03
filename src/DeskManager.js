@@ -244,5 +244,8 @@ export default class DeskManager {
 		this.surface.add(svgGroup);
 
 	}
+	clearSurface() {
+		this.surface.clear()
+	}
 }
 
