@@ -16,9 +16,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { gsap } from 'gsap';   
-import { update } from "three/examples/jsm/libs/tween.module.js";
+import { gsap } from 'gsap';
 
 let camera, scene, renderer;
 let stylus;
@@ -34,11 +32,6 @@ let wasChangeButton = false;
 
 let blackPaint, redPaint, greenPaint, yellowPaint;
 let shapeIndex = 0;
-
-const material = new THREE.MeshNormalMaterial({
-	flatShading: true,
-	side: THREE.DoubleSide,
-});
 
 const yellowMaterial = new THREE.MeshBasicMaterial({
 	color: 'yellow',
@@ -68,11 +61,7 @@ const sizes = {
   height: window.innerHeight,
 };
 
-// Stylus info
-let position = new THREE.Vector3();
-
-// Debugging stuff
-let debugVar = true
+// UI
 const UIText = new Text();
 UIText.fontsize = 0.52
 UIText.font = 'assets/SpaceMono-Bold.ttf';
@@ -90,8 +79,6 @@ let prevBack = false
 let backPushed = false
 let desk_manager
 let green = new THREE.Color('#0d9b00')
-let blue = new THREE.Color('#00f8ff')
-let yellow = new THREE.Color('#ffc400')
 
 // Button stuff
 let red_button;
@@ -277,13 +264,6 @@ function onFrame(timestamp, frame) {
 			}
 		})
 	}
-
-	prevBack = backPushed
-	backPushed = gamepad1.buttons[1].value > 0
-
-	// if (prevBack && !backPushed) { 
-	// }
-
   }
 
 }
@@ -319,7 +299,6 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
