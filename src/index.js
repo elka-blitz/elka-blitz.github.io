@@ -327,8 +327,7 @@ function handleDrawing(controller) {
   }
 }
 
-function handleButton(controller) {
-	if (!controller) return;
+function handleButton() {
 	scene.background = yellow;
 
 
