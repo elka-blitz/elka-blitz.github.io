@@ -54,6 +54,21 @@ const redMaterial = new THREE.MeshBasicMaterial({
 	wireframeLinewidth: '2',
 });
 
+const blueMaterial = new THREE.MeshBasicMaterial({
+	color: 'blue',
+	wireframeLinewidth: '2',
+});
+
+const whiteMaterial = new THREE.MeshBasicMaterial({
+	color: 'white',
+	wireframeLinewidth: '2',
+});
+
+const purpleMaterial = new THREE.MeshBasicMaterial({
+	color: 'purple',
+	wireframeLinewidth: '2',
+});
+
 
 const cursor = new THREE.Vector3();
 
@@ -157,7 +172,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(1.5,0,-0.5), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(2,0,0.5), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
@@ -178,15 +193,15 @@ function init() {
 	yellowPaint.setSize(0.1);
 
 	blackPaint2 = new TubePainter();
-	blackPaint2.mesh.material = blackMaterial;
+	blackPaint2.mesh.material = purpleMaterial;
 	blackPaint2.setSize(0.1);
 
 	redPaint2 = new TubePainter();
-	redPaint2.mesh.material = redMaterial;
+	redPaint2.mesh.material = blueMaterial;
 	redPaint2.setSize(0.1);
 
 	greenPaint2 = new TubePainter();
-	greenPaint2.mesh.material = greenMaterial;
+	greenPaint2.mesh.material = whiteMaterial;
 	greenPaint2.setSize(0.1);
 
 	const paintArray = [
