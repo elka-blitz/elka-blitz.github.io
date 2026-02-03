@@ -172,7 +172,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(2,0,0.5), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(3,0,1), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
