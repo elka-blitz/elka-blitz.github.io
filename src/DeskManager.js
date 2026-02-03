@@ -60,12 +60,12 @@ export default class DeskManager {
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
-		drawingSurface.position.y = 0.8; // slightly above model
+		drawingSurface.position.y = 0.82; // slightly above model
 		drawingSurface.rotateY(Math.PI / 2);
 		drawingSurface.rotateX(Math.PI / 3);	// angle towards
 
 		desk_asset_instance.add(drawingSurface);
-		drawingSurface.visible = false;
+		drawingSurface.visible = true;
 
 		this.surface = drawingSurface;
 
@@ -222,6 +222,27 @@ export default class DeskManager {
 	}
 	spawnDrawingSurface() {
 		this.surface.visible = true;
+	}
+
+	placeSVG(svgGroup) {
+		const box = new THREE.Box3().setFromObject(svgGroup);
+		const size = box.getSize(new THREE.Vector3());
+
+		const scale = Math.min(
+			this.surface.geometry.parameters.width  / size.x,
+			this.surface.geometry.parameters.height / size.y,
+		);
+
+		svgGroup.scale.setScalar(scale);
+
+		// centering
+		box.setFromObject(svgGroup);
+		const center = box.getCenter(new THREE.Vector3());
+		svgGroup.position.sub(center);
+		svgGroup.position.z = -0.01;
+
+		this.surface.add(svgGroup);
+
 	}
 }
 

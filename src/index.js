@@ -81,7 +81,7 @@ let green = new THREE.Color('#0d9b00')
 
 // Button stuff
 let red_button;
-let yellowButton;
+let nextButton;
 
 init();
 
@@ -156,9 +156,9 @@ function init() {
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
-	yellowButton = new DeskButton(scene)
-	yellowButton.createButton(new THREE.Vector3(0.5,0,0), '#359743', 'Change', 0.07)
-	yellowButton.makeInvisible();
+	nextButton = new DeskButton(scene)
+	nextButton.createButton(new THREE.Vector3(0.7,0,0), '#359743', 'Next', 0.07)
+	nextButton.makeInvisible();
 
 	// paints
 	blackPaint = new TubePainter();
@@ -185,12 +185,12 @@ function init() {
 	scene.add(yellowPaint.mesh);
 
 	// drawing outlines
-	// loadSVG('assets/banner_long.svg');
-	// loadSVG('assets/window_curtain.svg');
-	// loadSVG('assets/banner_short.svg');
-	// loadSVG('assets/door_bottom.svg');
-	// loadSVG('assets/door_top.svg');
-	// loadSVG('assets/base.svg');
+	loadSVG('assets/banner_long.svg');
+	loadSVG('assets/window_curtain.svg');
+	loadSVG('assets/banner_short.svg');
+	loadSVG('assets/door_bottom.svg');
+	loadSVG('assets/door_top.svg');
+	loadSVG('assets/base.svg');
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -226,16 +226,16 @@ function onFrame(timestamp, frame) {
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
 			deskCoords = desk_manager.getDeskCoordinates();
-			yellowButton.makeVisible();
+			nextButton.makeVisible();
 			desk_set = true;
 		}
 	}
 	  // change material
-	  if (yellowButton.returnExists() === true) {
-		  if (yellowButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
+	  if (nextButton.returnExists() === true) {
+		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
 		  }
-		  wasChangeButton = yellowButton.pressCheckReusable(stylus.position, scene, "white")
+		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
 	  }
 
     prevIsMovingDesk = isMovingDesk;
@@ -251,7 +251,7 @@ function onFrame(timestamp, frame) {
 			// Hover button in front of user
 			// Instead of doing offset
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			yellowButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.2);
+			nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.2);
 		}
 	}
 
@@ -341,18 +341,18 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
-  if (e.data.profiles.includes("logitech-mx-ink")) {
+  // if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	/*  // todo this is temporary for placing drawing area
+	  // todo this is temporary for placing drawing area
 	desk_manager.slideToFront(camera, stylus, tableGroup);
 	  desk_manager.lock();
-	  desk_set = true;*/
+	  desk_set = true;
 
-  }
+  // }
 }
 
 function onSelectStart(e) {
@@ -374,18 +374,14 @@ function loadSVG(url) {
 	loader.load(url, function (data) {
 		const group = new THREE.Group();
 
-		group.scale.set(0.005, 0.005, 0.005);
-		group.position.x = 0;
-		group.position.y = 1;
-		group.position.z = -1;
-
 		let renderOrder = 0;
 
 		for (const path of data.paths) {
 			const strokeColor = path.userData.style.stroke;
 
 			const material = new THREE.MeshBasicMaterial({
-				color: new THREE.Color().setStyle(strokeColor),
+				// color: new THREE.Color().setStyle(strokeColor),
+				color: "black",
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
 				side: THREE.DoubleSide,
@@ -407,7 +403,7 @@ function loadSVG(url) {
 			}
 		}
 
-		scene.add(group);
+		desk_manager.placeSVG(group)
 	});
 }
 
