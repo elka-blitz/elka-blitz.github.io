@@ -107,12 +107,12 @@ export default class DeskButton {
 
     }
 
-    hoverButtonByDesk(camera, desk, scene) {
+    hoverButtonByDesk(camera, desk, scene, xOffset) {
 
         this.cylinder.position.copy(desk.position)
         this.cylinder.quaternion.copy(desk.quaternion)
 
-        const offset = new THREE.Vector3(0, 0.8,0);
+        const offset = new THREE.Vector3(xOffset|| 0, 0.8,0);
         // this.cylinder.position.add(offset.applyQuaternion(yOnlyQuaternion));
         this.cylinder.position.add(offset)
 

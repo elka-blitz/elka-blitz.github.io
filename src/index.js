@@ -266,6 +266,7 @@ function onFrame(timestamp, frame) {
 			// Hover button in front of user
 			// Instead of doing offset
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			yellowButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.5);
 		}
 	}
 
