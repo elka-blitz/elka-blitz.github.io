@@ -90,7 +90,6 @@ let yellow = new THREE.Color('#ffc400')
 // Button stuff
 let red_button;
 let yellowButton;
-let newButton;
 let red_button_object
 
 init();
@@ -135,10 +134,7 @@ function init() {
 
 	yellowButton = new DeskButton(scene)
 	yellowButton.createButton(new THREE.Vector3(0.5,0,0), '#f1c708', 'Test')
-
-	newButton = new DeskButton(scene)
-	newButton.createButton(new THREE.Vector3(0,0,0), '#ff7300', 'Hello')
-	newButton.makeInvisible()
+	yellowButton.makeInvisible();
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -215,38 +211,22 @@ function onFrame(timestamp, frame) {
   if (gamepad1) {
 
 	if (red_button.returnExists() === true) {
-		UIText.text = `red ${red_button.pressCheck(stylus.position, scene, 'white')}`
-
-		if (red_button.pressCheck(stylus.position, scene, "white") === true){
-			UIText.text = "Desklock"
+		if (red_button.pressCheck(stylus.position, scene, "white") === true) {
 			desk_manager.lock()
 			scene.background = green;
 			stylus.userData.painter = painter1;
 			deskCoords = desk_manager.getDeskCoordinates();
-			newButton.makeVisible();
-			newButton.moveButton({
-				x: deskCoords.x,
-				y: deskCoords.y + 0.76, // place above desk
-				z: deskCoords.z,
-			});
+			yellowButton.makeVisible();
+
 		}
 	}
 	  if (yellowButton.returnExists() === true) {
-		  if (yellowButton.pressCheck(stylus.position, scene, "white") === true){
+		  if (yellowButton.pressCheck(stylus.position, scene, "white") === true) {
 			  UIText.text = "Yellow!"
 			  scene.background = yellow;
 		  }
 	  }
 
-	  if (newButton.returnExists() === true) {
-		UIText.text = `new ${newButton.pressCheck(stylus.position, scene, 'red')}`;
-		if (newButton.pressCheck(stylus.position, scene, "red") === true){
-			UIText.text = 'New button';
-
-			scene.background = blue;
-
-		}
-	}
 
 	// if (desk_manager.isDeskPositioned()) {
 	// 	// desk_manager.updateButton(stylus.position)
@@ -266,7 +246,7 @@ function onFrame(timestamp, frame) {
 			// Hover button in front of user
 			// Instead of doing offset
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			yellowButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.5);
+			yellowButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.2);
 		}
 	}
 
