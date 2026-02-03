@@ -222,6 +222,7 @@ function onFrame(timestamp, frame) {
 			!stylus.userData.isSelecting	// should reduce accidental pressing
 		) {
 			desk_manager.lock();
+			desk_manager.spawnDrawingSurface()
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
 			deskCoords = desk_manager.getDeskCoordinates();
@@ -340,18 +341,18 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
-  // if (e.data.profiles.includes("logitech-mx-ink")) {
+  if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	  // todo this is temporary for placing drawing area
+	/*  // todo this is temporary for placing drawing area
 	desk_manager.slideToFront(camera, stylus, tableGroup);
 	  desk_manager.lock();
-	  desk_set = true;
+	  desk_set = true;*/
 
-  // }
+  }
 }
 
 function onSelectStart(e) {
