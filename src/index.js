@@ -185,12 +185,12 @@ function init() {
 	scene.add(yellowPaint.mesh);
 
 	// drawing outlines
-	loadSVG('assets/banner_long.svg');
-	loadSVG('assets/window_curtain.svg');
-	loadSVG('assets/banner_short.svg');
-	loadSVG('assets/door_bottom.svg');
-	loadSVG('assets/door_top.svg');
-	loadSVG('assets/base.svg');
+	// loadSVG('assets/banner_long.svg');
+	// loadSVG('assets/window_curtain.svg');
+	// loadSVG('assets/banner_short.svg');
+	// loadSVG('assets/door_bottom.svg');
+	// loadSVG('assets/door_top.svg');
+	// loadSVG('assets/base.svg');
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -340,12 +340,18 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
-  if (e.data.profiles.includes("logitech-mx-ink")) {
+  // if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
-  }
+
+	  // todo this is temporary for placing drawing area
+	desk_manager.slideToFront(camera, stylus, tableGroup);
+	  desk_manager.lock();
+	  desk_set = true;
+
+  // }
 }
 
 function onSelectStart(e) {
