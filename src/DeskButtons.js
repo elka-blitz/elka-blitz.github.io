@@ -81,7 +81,7 @@ export default class DeskButton {
             z: end_position.z,
             duration: 0.5,
             onComplete: () => {
-                this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)
+                // this.cylinder_bb = new THREE.Box3().setFromObject(this.cylinder)
                 // this.boxHelper.update()
                 // this.boxHelper = new THREE.BoxHelper(this.cylinder, '#ffff00')
                 this.cylinder.updateMatrixWorld()
@@ -171,7 +171,7 @@ export default class DeskButton {
 
     pressCheck(stylus_position_vector, scene, color) {
 
-        this.cylinder_bb.setFromObject(this.cylinder)
+        // this.cylinder_bb.setFromObject(this.cylinder)
         // this.cylinder.updateMatrixWorld()
         scene.remove(this.boxHelper)
 				const cubeButton = getCube(0.07, 0.05, 0.02, color);
@@ -213,7 +213,7 @@ export default class DeskButton {
         else {
             // this.cylinder.position.y = this.inititial_height
             // this.moveButton(new THREE.Vector3(this.inititial_height)
-            return null;
+            return null;	// todo second button seems to return null
         }
     }
 }
