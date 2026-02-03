@@ -12,6 +12,7 @@ import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -75,8 +76,6 @@ UIText.text = 'LiveStylusCoords'
 let desk_set = false
 let deskCoords;
 let tableGroup = new THREE.Group()
-let prevBack = false
-let backPushed = false
 let desk_manager
 let green = new THREE.Color('#0d9b00')
 
@@ -184,6 +183,14 @@ function init() {
 	scene.add(redPaint.mesh);
 	scene.add(greenPaint.mesh);
 	scene.add(yellowPaint.mesh);
+
+	// drawing outlines
+	loadSVG('assets/banner_long.svg');
+	loadSVG('assets/window_curtain.svg');
+	loadSVG('assets/banner_short.svg');
+	loadSVG('assets/door_bottom.svg');
+	loadSVG('assets/door_top.svg');
+	loadSVG('assets/base.svg');
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -352,6 +359,51 @@ function onSelectStart(e) {
 function onSelectEnd() {
   this.userData.isSelecting = false;
 }
+
+// svg function
+function loadSVG(url) {
+	const loader = new SVGLoader();
+
+	loader.load(url, function (data) {
+		const group = new THREE.Group();
+
+		group.scale.set(0.005, 0.005, 0.005);
+		group.position.x = 0;
+		group.position.y = 1;
+		group.position.z = -1;
+
+		let renderOrder = 0;
+
+		for (const path of data.paths) {
+			const strokeColor = path.userData.style.stroke;
+
+			const material = new THREE.MeshBasicMaterial({
+				color: new THREE.Color().setStyle(strokeColor),
+				opacity: path.userData.style.strokeOpacity,
+				transparent: true,
+				side: THREE.DoubleSide,
+				depthWrite: false,
+			});
+
+			for (const subPath of path.subPaths) {
+				const geometry = SVGLoader.pointsToStroke(
+					subPath.getPoints(),
+					path.userData.style,
+				);
+
+				if (geometry) {
+					const mesh = new THREE.Mesh(geometry, material);
+					mesh.renderOrder = renderOrder++;
+
+					group.add(mesh);
+				}
+			}
+		}
+
+		scene.add(group);
+	});
+}
+
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
