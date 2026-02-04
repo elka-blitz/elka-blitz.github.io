@@ -88,7 +88,6 @@ UIText.anchorY = 'middle';
 
 // Desk stuff
 let desk_set = false
-let deskCoords;
 let tableGroup = new THREE.Group()
 let desk_manager
 let green = new THREE.Color('#80ed99');
@@ -171,7 +170,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(4,0,2), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(10,0,10), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
@@ -263,7 +262,6 @@ function onFrame(timestamp, frame) {
 			desk_manager.spawnDrawingSurface()
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
-			deskCoords = desk_manager.getDeskCoordinates();
 			nextButton.makeVisible();
 			desk_set = true;
 			UIText.text = "Draw on the outline!";
@@ -369,14 +367,16 @@ function handleButton() {
 	} else {
 		desk_manager.clearSurface();
 		nextButton.makeInvisible();
+		const deskCoords = desk_manager.getDeskCoordinates();
+
 		paintArray.forEach((paint) => {
 			paint.mesh.position.set(
 				deskCoords.x,
 				deskCoords.y + 0.2,
 				deskCoords.z - 1,
 			);
-			paint.mesh.rotateY(-Math.PI / 2);
-			paint.mesh.rotateX(-Math.PI / 3); // reversing tilt
+			paint.mesh.rotateY(- (Math.PI / 2));
+			paint.mesh.rotateX(- (Math.PI / 3)); // reversing tilt
 
 			paint.mesh.visible = true;
 		});
