@@ -34,14 +34,14 @@ let wasChangeButton = false;
 let blackPaint, redPaint, greenPaint, yellowPaint, blackPaint2, redPaint2, greenPaint2;
 let shapeIndex = 0;
 
-const yellowMaterial = new THREE.MeshBasicMaterial({
+const yellowMaterial = new THREE.LineBasicMaterial({
 	color: 'yellow',
-	wireframeLinewidth: '2',
+	linewidth: 5,
 });
 
-const blackMaterial = new THREE.MeshBasicMaterial({
+const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
-	wireframeLinewidth: '2',
+	linewidth: 4,
 });
 
 const greenMaterial = new THREE.MeshBasicMaterial({
@@ -49,9 +49,9 @@ const greenMaterial = new THREE.MeshBasicMaterial({
 	wireframeLinewidth: '2',
 });
 
-const redMaterial = new THREE.MeshBasicMaterial({
+const redMaterial = new THREE.LineBasicMaterial({
 	color: 'red',
-	wireframeLinewidth: '2',
+	linewidth: 3,
 });
 
 const blueMaterial = new THREE.MeshBasicMaterial({
@@ -85,14 +85,13 @@ UIText.position.z = -2;
 UIText.color = 0xffffff;
 UIText.anchorX = 'center';
 UIText.anchorY = 'middle';
-UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
 let desk_set = false
 let deskCoords;
 let tableGroup = new THREE.Group()
 let desk_manager
-let green = new THREE.Color('#0d9b00')
+let green = new THREE.Color('#80ed99');
 
 // Button stuff
 let red_button;
@@ -103,7 +102,7 @@ init();
 function init() {
 	// scene setup
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x1f0091);
+	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
 		50,
 		window.innerWidth / window.innerHeight,
@@ -208,15 +207,17 @@ function init() {
 		blackPaint,
 		redPaint,
 		greenPaint,
+		yellowPaint,
 		blackPaint2,
 		greenPaint2,
-		redPaint2
 	];
 
 	scene.add(blackPaint.mesh);
 	scene.add(redPaint.mesh);
 	scene.add(greenPaint.mesh);
 	scene.add(yellowPaint.mesh);
+	scene.add(blackPaint2.mesh);
+	scene.add(greenPaint2.mesh);
 
 	const svgArray = [
 		'assets/banner_long.svg',
@@ -265,6 +266,7 @@ function onFrame(timestamp, frame) {
 			deskCoords = desk_manager.getDeskCoordinates();
 			nextButton.makeVisible();
 			desk_set = true;
+			UIText.text = "Draw on the outline!";
 		}
 	}
 	  // change material
@@ -355,7 +357,6 @@ function handleButton() {
 
 	if (shapeIndex < svgArray.length - 1) {
 		shapeIndex += 1;
-		UIText.text = shapeIndex;
 		paintArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
