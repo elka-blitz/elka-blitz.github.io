@@ -181,19 +181,19 @@ function init() {
 
 	redPaint = new TubePainter();
 	redPaint.mesh.material = redMaterial;
-	redPaint.setSize(0.1);
+	redPaint.setSize(0.3);
 
 	greenPaint = new TubePainter();
 	greenPaint.mesh.material = greenMaterial;
-	greenPaint.setSize(0.1);
+	greenPaint.setSize(0.2);
 
 	yellowPaint = new TubePainter();
 	yellowPaint.mesh.material = yellowMaterial;
-	yellowPaint.setSize(0.1);
+	yellowPaint.setSize(0.3);
 
 	blackPaint2 = new TubePainter();
 	blackPaint2.mesh.material = purpleMaterial;
-	blackPaint2.setSize(0.1);
+	blackPaint2.setSize(0.25);
 
 	redPaint2 = new TubePainter();
 	redPaint2.mesh.material = blueMaterial;
@@ -201,7 +201,7 @@ function init() {
 
 	greenPaint2 = new TubePainter();
 	greenPaint2.mesh.material = whiteMaterial;
-	greenPaint2.setSize(0.1);
+	greenPaint2.setSize(0.5);
 
 	const paintArray = [
 		blackPaint,
@@ -367,8 +367,17 @@ function handleButton() {
 		stylus.userData.painter = paintArray[shapeIndex];
 
 	} else {
+		desk_manager.clearSurface();
+		nextButton.makeInvisible();
 		paintArray.forEach((paint) => {
-			paint.mesh.position.set(0, 1.7, -1.8)
+			paint.mesh.position.set(
+				deskCoords.x,
+				deskCoords.y + 0.2,
+				deskCoords.z - 1,
+			);
+			paint.mesh.rotateY(-Math.PI / 2);
+			paint.mesh.rotateX(-Math.PI / 3); // reversing tilt
+
 			paint.mesh.visible = true;
 		});
 	}
