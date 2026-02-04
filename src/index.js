@@ -171,13 +171,13 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(3,0,1), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(4,0,2), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
 	blackPaint = new TubePainter();
 	blackPaint.mesh.material = blackMaterial;
-	blackPaint.setSize(0.1);
+	blackPaint.setSize(0.4);
 
 	redPaint = new TubePainter();
 	redPaint.mesh.material = redMaterial;
@@ -368,6 +368,7 @@ function handleButton() {
 
 	} else {
 		paintArray.forEach((paint) => {
+			paint.mesh.position.set(0, 1.7, -1.8)
 			paint.mesh.visible = true;
 		});
 	}
