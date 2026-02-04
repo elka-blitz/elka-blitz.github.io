@@ -17,6 +17,7 @@ import { getController, getControllerGrip } from './controllerFunctions';
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js'
+import FeedbackManager from "./feedbackManager.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -24,6 +25,7 @@ import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
@@ -57,8 +59,6 @@ const sizes = {
 // cubes
 const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
 
-
-
 // Stylus info
 let position = new THREE.Vector3();
 
@@ -85,6 +85,25 @@ let green = new THREE.Color('#0d9b00')
 let red_button;
 let white_button;
 let red_button_object
+
+// Feedback declaration
+let feedback_manager
+
+// Noise feedback declaration
+const listener = new THREE.AudioListener();
+const audioLoader = new THREE.AudioLoader();
+let scoreSound;
+let laserSound;
+
+laserSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/laser.ogg', (buffer) => {
+	laserSound.setBuffer(buffer);
+});
+
+scoreSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/score.ogg', (buffer) => {
+	scoreSound.setBuffer(buffer);
+});
 
 init();
 
@@ -118,9 +137,10 @@ function init() {
 
 	scene.add(tableGroup)
 	// Initialise desk manager
+	// TODO: Update desk spawn point
 	desk_manager = new DeskManager(scene, tableGroup)
 
-	// tableGroup.position.set(0, 0, -3)
+	tableGroup.position.set(0, -3, 0)
 	// tableGroup.rotateY(-30)
 
 	red_button = new DeskButton(scene)
@@ -152,7 +172,7 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
-
+	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
 	document.body.appendChild(VRButton.createButton(renderer));
@@ -166,6 +186,14 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+	// Init haptic feedback
+	feedback_manager = new FeedbackManager(scene, gamepadInterface);
+
+	// Add sound files
+	feedback_manager.addSoundFile('assets/sounds/score.ogg');
+
+	feedback_manager.playSound(0);
 }
 	// Debugging text
 	scene.add(UIText);
@@ -202,6 +230,8 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+
+	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
 	// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
@@ -216,6 +246,8 @@ function onFrame(timestamp, frame) {
 
 	if (red_button.returnExists() == true) {
 		if (red_button.pressCheck(stylus.position, scene) == true){
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200);
+			laserSound.play();
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
@@ -264,9 +296,9 @@ function onFrame(timestamp, frame) {
 	prevBack = backPushed
 	backPushed = gamepad1.buttons[1].value > 0
 
-	// if (prevBack && !backPushed) { 
-	// }
-
+	if (backPushed && !prevBack && desk_manager.getLock()) {
+		laserSound.play();	
+	}
   }
 
 }
