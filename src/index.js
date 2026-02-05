@@ -249,6 +249,8 @@ function onFrame(timestamp, frame) {
 		// Desk has just been locked, run fly-in animation and text update
 		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
 		interface_text.updateText('Desk Locked!')
+
+		// Locate text permanently above desk for remainder of session
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
 	}
 
@@ -316,6 +318,7 @@ function onFrame(timestamp, frame) {
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
+		interface_text.flashText('#ff0000', 100) 
 	}
   }
 
