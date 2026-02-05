@@ -1,12 +1,5 @@
 import * as THREE from 'three';
 
-import {
-	getCube,
-	getDashedLine,
-	getFloor, getRect,
-	getSquare,
-} from './shapeFunctions';
-
 import { gsap } from 'gsap';   
 
 export default class DeskManager {
@@ -244,6 +237,7 @@ export default class DeskManager {
 		this.surface.add(svgGroup);
 
 	}
+
 	clearSurface() {
 		this.surface.clear()
 	}

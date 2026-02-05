@@ -93,6 +93,7 @@ let desk_manager
 let green = new THREE.Color('#80ed99');
 
 // Button stuff
+// if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
@@ -170,7 +171,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(10,0,10), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// paints
@@ -275,6 +276,16 @@ function onFrame(timestamp, frame) {
 		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
 	  }
 
+	  //  // todo: this is for testing in browser
+	  // if (gamepad1.buttons[5].pressed && !wasChangeButton) {
+		//   handleButton()
+		//   nextButton.makeVisible();
+		//   nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
+		//
+	  // }
+	  // wasChangeButton = gamepad1.buttons[5].pressed;
+
+
     prevIsMovingDesk = isMovingDesk;
 		isMovingDesk = gamepad1.buttons[5].value > 0;
 
@@ -288,7 +299,13 @@ function onFrame(timestamp, frame) {
 			// Hover button in front of user
 			// Instead of doing offset
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.2);
+			nextButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+				0.3,
+				0.2
+			);
 		}
 	}
 
@@ -372,11 +389,9 @@ function handleButton() {
 		paintArray.forEach((paint) => {
 			paint.mesh.position.set(
 				deskCoords.x,
-				deskCoords.y + 0.2,
+				deskCoords.y + 0.1,
 				deskCoords.z - 1,
 			);
-			paint.mesh.rotateY(- (Math.PI / 2));
-			paint.mesh.rotateX(- (Math.PI / 3)); // reversing tilt
 
 			paint.mesh.visible = true;
 		});
@@ -391,12 +406,15 @@ function onControllerConnected(e) {
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	//   // todo this is temporary for placing drawing area
+	//   // todo this is temporary for placing drawing area in browser testing
 	// desk_manager.slideToFront(camera, stylus, tableGroup);
 	//   desk_manager.lock();
 	//   desk_set = true;
+	//   desk_manager.spawnDrawingSurface()
+
 
   }
+  // todo else do raycasting
 }
 
 function onSelectStart(e) {
