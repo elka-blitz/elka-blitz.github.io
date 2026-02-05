@@ -30,8 +30,8 @@ let isMovingDesk = false;
 let prevIsMovingDesk = false;
 
 let wasChangeButton = false;
-
-let blackPaint, redPaint, greenPaint, yellowPaint, blackPaint2, redPaint2, greenPaint2;
+let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
+let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
 
 const yellowMaterial = new THREE.LineBasicMaterial({
@@ -174,53 +174,22 @@ function init() {
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
-	// paints
-	blackPaint = new TubePainter();
-	blackPaint.mesh.material = blackMaterial;
-	blackPaint.setSize(0.4);
 
-	redPaint = new TubePainter();
-	redPaint.mesh.material = redMaterial;
-	redPaint.setSize(0.3);
 
-	greenPaint = new TubePainter();
-	greenPaint.mesh.material = greenMaterial;
-	greenPaint.setSize(0.2);
+	svgPaintsArray.forEach((paint, i) => {
+		svgPaintsArray[i] = new TubePainter();
+		svgPaintsArray[i].mesh.material = blackMaterial;
+		svgPaintsArray[i].setSize(0.4);
+		scene.add(svgPaintsArray[i]);
+	})
 
-	yellowPaint = new TubePainter();
-	yellowPaint.mesh.material = yellowMaterial;
-	yellowPaint.setSize(0.3);
+	const paintArray = svgPaintsArray;
 
-	blackPaint2 = new TubePainter();
-	blackPaint2.mesh.material = purpleMaterial;
-	blackPaint2.setSize(0.25);
-
-	redPaint2 = new TubePainter();
-	redPaint2.mesh.material = blueMaterial;
-	redPaint2.setSize(0.1);
-
-	greenPaint2 = new TubePainter();
-	greenPaint2.mesh.material = whiteMaterial;
-	greenPaint2.setSize(0.5);
-
-	const paintArray = [
-		blackPaint,
-		redPaint,
-		greenPaint,
-		yellowPaint,
-		blackPaint2,
-		greenPaint2,
-	];
-
-	scene.add(blackPaint.mesh);
-	scene.add(redPaint.mesh);
-	scene.add(greenPaint.mesh);
-	scene.add(yellowPaint.mesh);
-	scene.add(blackPaint2.mesh);
-	scene.add(greenPaint2.mesh);
 
 	const svgArray = [
 		'assets/banner_long.svg',
+		'assets/window.svg',
+		'assets/window2.svg',
 		'assets/window_curtain.svg',
 		'assets/banner_short.svg',
 		'assets/door_bottom.svg',
