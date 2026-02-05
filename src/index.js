@@ -84,6 +84,8 @@ let prevBack = false
 let backPushed = false
 let desk_manager
 let green = new THREE.Color('#0d9b00')
+let desk_locked = false // Global main process variable, so desklock check method is only run once
+let prev_desk_locked = false
 
 // Button stuff
 let red_button;
@@ -236,8 +238,22 @@ function init() {
 
 // animation functions
 function onFrame(timestamp, frame) {
-	// interface_text.floatTextToCamera(camera)
-	interface_text.animateTextToCamera(camera)
+
+	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
+	if (!desk_locked) {
+		// Smooth text animation to camera, prompting user to lock desk
+		interface_text.updateText('Tap desk with stylus to lock')
+		interface_text.animateTextToCamera(camera)
+	}
+	else if (desk_locked && !prev_desk_locked) {
+		// Desk has just been locked, run fly-in animation and text update
+		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
+		interface_text.updateText('Desk Locked!')
+		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
+	}
+
+	prev_desk_locked = desk_locked // Framediff for desk lock check
+
 	interface_text.sync()
 
   if (gamepad1) {
@@ -246,7 +262,7 @@ function onFrame(timestamp, frame) {
 		if (red_button.pressCheck(stylus.position, scene) == true){
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 			laserSound.play(); // Sound effect for button press
-			// TODO: Find click .ogg sound file to use isntead of a laser sound
+			// TODO: Find click .ogg sound file to use instead of a laser sound
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
@@ -262,7 +278,7 @@ function onFrame(timestamp, frame) {
 
 
 	// Desk setup logic: before allowing draw, desk must be set up
-	if (prevIsDrawing && isDrawing && !desk_manager.getLock()){
+	if (prevIsDrawing && isDrawing && !desk_locked){
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup)
@@ -275,7 +291,7 @@ function onFrame(timestamp, frame) {
 		}
 	}
 
-	if (!prevIsDrawing && isDrawing && !desk_manager.getLock()) {
+	if (!prevIsDrawing && isDrawing && !desk_locked) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = true
@@ -296,7 +312,9 @@ function onFrame(timestamp, frame) {
 	prevBack = backPushed
 	backPushed = gamepad1.buttons[1].value > 0
 
-	if (backPushed && !prevBack && desk_manager.getLock()) {
+	if (backPushed && !prevBack && desk_locked) {
+		// Back button on controller
+		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
 	}
   }
