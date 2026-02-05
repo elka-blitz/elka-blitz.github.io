@@ -17,7 +17,6 @@ import { getController, getControllerGrip } from './controllerFunctions';
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js'
-import FeedbackManager from "./feedbackManager.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -137,11 +136,9 @@ function init() {
 
 	scene.add(tableGroup)
 	// Initialise desk manager
-	// TODO: Update desk spawn point
 	desk_manager = new DeskManager(scene, tableGroup)
 
 	tableGroup.position.set(0, -3, 0)
-	// tableGroup.rotateY(-30)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
