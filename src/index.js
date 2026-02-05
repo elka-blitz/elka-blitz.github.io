@@ -4,14 +4,6 @@ window.addEventListener('unload', function () {
 
 import * as THREE from "three";
 
-import {
-	getCircle,
-	getCube,
-	getFloor,
-	getRect,
-	getSquare,
-} from './shapeFunctions';
-
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -20,6 +12,7 @@ import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import UIText from "./UIText.js";
@@ -36,16 +29,48 @@ let gamepad1;
 let gamepadInterface;
 let isDrawing = false;
 let prevIsDrawing = false;
-let painter1;
 
-let wasButtonEntered = false;
+let isMovingDesk = false;
+let prevIsMovingDesk = false;
 
-let squarePaint, circlePaint1, circlePaint2, rectPaint;
+let wasChangeButton = false;
+let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
+let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
 
-const material = new THREE.MeshNormalMaterial({
-	flatShading: true,
-	side: THREE.DoubleSide,
+const yellowMaterial = new THREE.LineBasicMaterial({
+	color: 'yellow',
+	linewidth: 5,
+});
+
+const blackMaterial = new THREE.LineBasicMaterial({
+	color: 'black',
+	linewidth: 4,
+});
+
+const greenMaterial = new THREE.MeshBasicMaterial({
+	color: 'green',
+	wireframeLinewidth: '2',
+});
+
+const redMaterial = new THREE.LineBasicMaterial({
+	color: 'red',
+	linewidth: 3,
+});
+
+const blueMaterial = new THREE.MeshBasicMaterial({
+	color: 'blue',
+	wireframeLinewidth: '2',
+});
+
+const whiteMaterial = new THREE.MeshBasicMaterial({
+	color: 'white',
+	wireframeLinewidth: '2',
+});
+
+const purpleMaterial = new THREE.MeshBasicMaterial({
+	color: 'purple',
+	wireframeLinewidth: '2',
 });
 
 
@@ -80,17 +105,15 @@ let interface_text;
 // Desk stuff
 let desk_set = false
 let tableGroup = new THREE.Group()
-let prevBack = false
-let backPushed = false
 let desk_manager
-let green = new THREE.Color('#0d9b00')
+let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
 // Button stuff
+// if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
-let white_button;
-let red_button_object
+let nextButton;
 
 // Noise feedback declaration
 const listener = new THREE.AudioListener();
@@ -113,7 +136,7 @@ init();
 function init() {
 	// scene setup
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x1f0091);
+	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
 		50,
 		window.innerWidth / window.innerHeight,
@@ -179,7 +202,6 @@ function init() {
 	document.body.appendChild(VRButton.createButton(renderer));
 	renderer.setAnimationLoop(animate);
 
-
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
@@ -199,21 +221,41 @@ function init() {
 	// TODO: Replace with class method call
 	
 
-	// drawing paint
-	painter1 = new TubePainter();
-	painter1.mesh.material = material;
-	painter1.setSize(0.1);
+	// Initialise desk manager
+	desk_manager = new DeskManager(scene, tableGroup)
 
-	scene.add(painter1.mesh);
+	// buttons
+	red_button = new DeskButton(scene)
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
-	// // square shape
-	// const squareSize = 0.4
-	// const xPos = 0
-	// const yPos = 1.6 // this will have to be height adjusted
-	// const userDistance = -0.2
-	// const leanTowards = 0.05
+	nextButton = new DeskButton(scene)
+	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
+	nextButton.makeInvisible();
 
-	// scene.add(getSquare(squareSize, xPos, yPos, userDistance, leanTowards, true, 'white'));
+
+
+	svgPaintsArray.forEach((paint, i) => {
+		svgPaintsArray[i] = new TubePainter();
+		svgPaintsArray[i].mesh.material = blackMaterial;
+		svgPaintsArray[i].setSize(0.2);
+		scene.add(svgPaintsArray[i].mesh);
+	})
+
+	const paintArray = svgPaintsArray;
+
+
+	const svgArray = [
+		'assets/banner_long.svg',
+		'assets/window.svg',
+		'assets/window2.svg',
+		'assets/window_curtain.svg',
+		'assets/banner_short.svg',
+		'assets/door_bottom.svg',
+		'assets/door_top.svg',
+		'assets/base.svg'
+	]
+
+	loadSVG(svgArray[0]);
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -260,49 +302,76 @@ function onFrame(timestamp, frame) {
 
   if (gamepad1) {
 
-	if (red_button.returnExists() == true) {
-		if (red_button.pressCheck(stylus.position, scene) == true){
+	  // desk lock event
+	  if (red_button.returnExists() === true) {
+		if (
+			red_button.pressCheck(stylus.position, scene, 'white') === true &&
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 			laserSound.play(); // Sound effect for button press
 			// TODO: Find click .ogg sound file to use instead of a laser sound
-			console.log('Desklock')
-			desk_manager.lock()
-			scene.background = green
+			!stylus.userData.isSelecting	// should reduce accidental pressing
+		) {
+			desk_manager.lock();
+			desk_manager.spawnDrawingSurface()
+			scene.background = green;
+			stylus.userData.painter = paintArray[0];
+			nextButton.makeVisible();
+			desk_set = true;
+			UIText.text = "Draw on the outline!";
 		}
 	}
+	  // change material
+	  if (nextButton.returnExists() === true) {
+		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
+			  handleButton();
+		  }
+		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
+	  }
 
-	// if (desk_manager.isDeskPositioned()) {
-	// 	// desk_manager.updateButton(stylus.position)
-	// }
+	  //  // todo: this is for testing in browser
+	  // if (gamepad1.buttons[5].pressed && !wasChangeButton) {
+		//   handleButton()
+		//   nextButton.makeVisible();
+		//   nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
+		//
+	  // }
+	  // wasChangeButton = gamepad1.buttons[5].pressed;
 
-    prevIsDrawing = isDrawing;
-    isDrawing = gamepad1.buttons[5].value > 0;
+
+    prevIsMovingDesk = isMovingDesk;
+		isMovingDesk = gamepad1.buttons[5].value > 0;
 
 
 	// Desk setup logic: before allowing draw, desk must be set up
-	if (prevIsDrawing && isDrawing && !desk_locked){
+	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
-			desk_manager.slideToCamera(camera, stylus, tableGroup)
-			let button_spot = red_button.moveToStylus(camera, stylus)
+			desk_manager.slideToCamera(camera, stylus, tableGroup);
 
 			// Hover button in front of user
 			// Instead of doing offset
-			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			nextButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+				0.3,
+				0.2
+			);
 			interface_text.animateTextToCamera(camera)
 		}
 	}
 
-	if (!prevIsDrawing && isDrawing && !desk_locked) {
+	if (!prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
-				child.material.transparent = true
-				child.material.opacity = 0.5
+				child.material.transparent = true;
+				child.material.opacity = 0.5;
 			}
-		})
+		});
 	}
 
-	if (prevIsDrawing && !isDrawing) {
+	if (prevIsMovingDesk && !isMovingDesk) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = false 
@@ -326,7 +395,21 @@ function onFrame(timestamp, frame) {
 
 function animate() {
 	// UIText.sync()
-//   handleDrawing(stylus);
+	// if desk is locked, initiate ability to draw
+	if (desk_set) {
+		if (gamepad1) {
+			prevIsDrawing = isDrawing;
+			isDrawing = gamepad1.buttons[5].value > 0;
+			// debugGamepad(gamepad1, gamepad1.buttons[5].pressed);
+
+			if (isDrawing && !prevIsDrawing) {
+				const painter = stylus.userData.painter;
+				painter.moveTo(stylus.position);
+			}
+		}
+		handleDrawing(stylus);
+
+	}
 	gsap.ticker.tick()
   // Render
   onFrame();
@@ -337,12 +420,10 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = userData.painter;
+  const painter = paintArray[shapeIndex];
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-	// debugText.text = ('FindMyStylus 📍\n' + 'x: ' + Math.round(stylus.position.x * 100) + '\ny: ' + Math.round(stylus.position.y * 100) + '\nz: ' + Math.round(stylus.position.z * 100))
-	// cube.color = adjustColor(0x478293, Math.sqrt( stylus.position.x*cube.position.x + stylus.position.y*cube.position.y ))
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -350,56 +431,108 @@ function handleDrawing(controller) {
   }
 }
 
-function handleButton(controller) {
-	if (!controller) return;
+function handleButton() {
 
-	// if (shapeIndex < shapeOutlineArray.length - 1) {
-	// 	shapeIndex += 1;
-	// 	// shapeArray.forEach((paint) => {
-	// 	// 	paint.mesh.visible = false;
-	// 	// });
-	// 	shapeOutlineArray.forEach((outline) => {
-	// 		outline.visible = false;
-	// 	});
+	if (shapeIndex < svgArray.length - 1) {
+		shapeIndex += 1;
+		paintArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		desk_manager.clearSurface();
+		loadSVG(svgArray[shapeIndex]);
 
-	// 	// shapeArray[shapeIndex].mesh.visible = true;
-	// 	shapeOutlineArray[shapeIndex].visible = true;
-	// } else {
-	// 	// shapeArray.forEach((paint) => {
-	// 	// 	paint.mesh.visible = true;
-	// 	// });
-	// 	shapeOutlineArray.forEach((outline) => {
-	// 		outline.visible = true;
-	// 	});
-	// }
+		paintArray[shapeIndex].mesh.visible = true;
+		stylus.userData.painter = paintArray[shapeIndex];
+
+	} else {
+		desk_manager.clearSurface();
+		nextButton.makeInvisible();
+		const deskCoords = desk_manager.getDeskCoordinates();
+
+		paintArray.forEach((paint) => {
+			// paint.mesh.position.set(
+			// 	deskCoords.x,
+			// 	deskCoords.y + 0.1,SSS
+			// 	deskCoords.z - 0.2,
+			// );
+
+			paint.mesh.visible = true;
+		});
+	}
 }
 
-// controller functions (for now these are in this file because they manipulate variables in this file, but we can probably figure out a way of moving them)
+// controller functions
 function onControllerConnected(e) {
   if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
-    stylus.userData.painter = painter1;
+    stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
+
+	//   // todo this is temporary for placing drawing area in browser testing
+	// desk_manager.slideToFront(camera, stylus, tableGroup);
+	//   desk_manager.lock();
+	//   desk_set = true;
+	//   desk_manager.spawnDrawingSurface()
+
+
   }
+  // todo else do raycasting
 }
 
 function onSelectStart(e) {
+  if (e.target !== stylus || !desk_set) return;
 
-//   if (e.target !== stylus) return;
-	if (desk_set) {
-		const painter = stylus.userData.painter;
-		painter.moveTo(stylus.position);
-		this.userData.isSelecting = true;
-	}
-	else {
-		return
-	}
+	const painter = stylus.userData.painter;
+	painter.moveTo(stylus.position);
+	this.userData.isSelecting = true;
 }
 
 function onSelectEnd() {
   this.userData.isSelecting = false;
 }
+
+// svg function
+function loadSVG(url) {
+	const loader = new SVGLoader();
+
+	loader.load(url, function (data) {
+		const group = new THREE.Group();
+
+		let renderOrder = 0;
+
+		for (const path of data.paths) {
+			const strokeColor = path.userData.style.stroke;
+
+			const material = new THREE.MeshBasicMaterial({
+				// color: new THREE.Color().setStyle(strokeColor),
+				color: "black",
+				opacity: path.userData.style.strokeOpacity,
+				transparent: true,
+				side: THREE.DoubleSide,
+				depthWrite: false,
+			});
+
+			for (const subPath of path.subPaths) {
+				const geometry = SVGLoader.pointsToStroke(
+					subPath.getPoints(),
+					path.userData.style,
+				);
+				geometry.rotateZ( Math.PI ) // rotate right side up
+
+				if (geometry) {
+					const mesh = new THREE.Mesh(geometry, material);
+					mesh.renderOrder = renderOrder++;
+
+					group.add(mesh);
+				}
+			}
+		}
+
+		desk_manager.placeSVG(group)
+	});
+}
+
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
