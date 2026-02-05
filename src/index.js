@@ -81,9 +81,6 @@ const sizes = {
   height: window.innerHeight,
 };
 
-// cubes
-const cubeButton = getCube(0.07, 0.05, 0.02, '#4B9639')
-
 // Stylus info
 let position = new THREE.Vector3();
 
@@ -105,6 +102,8 @@ let interface_text;
 // Desk stuff
 let desk_set = false
 let tableGroup = new THREE.Group()
+let backPushed = false
+let prevBackPushed = false
 let desk_manager
 let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
@@ -306,9 +305,6 @@ function onFrame(timestamp, frame) {
 	  if (red_button.returnExists() === true) {
 		if (
 			red_button.pressCheck(stylus.position, scene, 'white') === true &&
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-			laserSound.play(); // Sound effect for button press
-			// TODO: Find click .ogg sound file to use instead of a laser sound
 			!stylus.userData.isSelecting	// should reduce accidental pressing
 		) {
 			desk_manager.lock();
@@ -317,7 +313,11 @@ function onFrame(timestamp, frame) {
 			stylus.userData.painter = paintArray[0];
 			nextButton.makeVisible();
 			desk_set = true;
-			UIText.text = "Draw on the outline!";
+			interface_text.updateText("Draw on the outline!");
+
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+			laserSound.play(); // Sound effect for button press
+			// TODO: Find click .ogg sound file to use instead of a laser sound
 		}
 	}
 	  // change material
@@ -380,10 +380,10 @@ function onFrame(timestamp, frame) {
 		})
 	}
 
-	prevBack = backPushed
+	prevBackPushed = backPushed;
 	backPushed = gamepad1.buttons[1].value > 0
 
-	if (backPushed && !prevBack && desk_locked) {
+	if (backPushed && !prevBackPushed && desk_locked) {
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
