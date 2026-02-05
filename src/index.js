@@ -22,6 +22,7 @@ import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
+import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
@@ -63,14 +64,14 @@ let position = new THREE.Vector3();
 
 // Debugging stuff
 let debugVar = true
-const UIText = new Text();
-UIText.fontsize = 0.52
-UIText.font = 'assets/SpaceMono-Bold.ttf';
-UIText.position.z = -2;
-UIText.color = 0xffffff;
-UIText.anchorX = 'center';
-UIText.anchorY = 'middle';
-UIText.text = 'LiveStylusCoords'
+// const UIText = new Text();
+// UIText.fontsize = 0.52
+// UIText.font = 'assets/SpaceMono-Bold.ttf';
+// UIText.position.z = -2;
+// UIText.color = 0xffffff;
+// UIText.anchorX = 'center';
+// UIText.anchorY = 'middle';
+// UIText.text = 'LiveStylusCoords'
 
 // Desk stuff
 let desk_set = false
@@ -84,9 +85,6 @@ let green = new THREE.Color('#0d9b00')
 let red_button;
 let white_button;
 let red_button_object
-
-// Feedback declaration
-let feedback_manager
 
 // Noise feedback declaration
 const listener = new THREE.AudioListener();
@@ -184,19 +182,13 @@ function init() {
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
-	// Init haptic feedback
-	feedback_manager = new FeedbackManager(scene, gamepadInterface);
-
-	// Add sound files
-	feedback_manager.addSoundFile('assets/sounds/score.ogg');
-
-	feedback_manager.playSound(0);
 }
 	// Debugging text
-	scene.add(UIText);
-	UIText.position.set(0, 1, -2.5);
-	UIText.rotateX(-Math.PI / 3.3);
-	UIText.text = 'Tap desk with stylus to start'
+	// scene.add(UIText);
+	// UIText.position.set(0, 1, -2.5);
+	// UIText.rotateX(-Math.PI / 3.3);
+	// UIText.text = 'Tap desk with stylus to start'
+	// TODO: Replace with class method call
 
 	// drawing paint
 	painter1 = new TubePainter();
@@ -243,8 +235,9 @@ function onFrame(timestamp, frame) {
 
 	if (red_button.returnExists() == true) {
 		if (red_button.pressCheck(stylus.position, scene) == true){
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200);
-			laserSound.play();
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+			laserSound.play(); // Sound effect for button press
+			// TODO: Find click .ogg sound file to use isntead of a laser sound
 			console.log('Desklock')
 			desk_manager.lock()
 			scene.background = green
