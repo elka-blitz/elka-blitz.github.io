@@ -356,7 +356,6 @@ function handleButton() {
 		const deskCoords = desk_manager.getDeskCoordinates();
 
 		paintArray.forEach((paint) => {
-			paint.mesh.lookAt(camera.position)
 			paint.mesh.position.set(
 				deskCoords.x,
 				deskCoords.y + 0.1,
