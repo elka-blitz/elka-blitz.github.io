@@ -356,11 +356,11 @@ function handleButton() {
 		const deskCoords = desk_manager.getDeskCoordinates();
 
 		paintArray.forEach((paint) => {
-			paint.mesh.position.set(
-				deskCoords.x,
-				deskCoords.y + 0.1,
-				deskCoords.z - 0.5,
-			);
+			// paint.mesh.position.set(
+			// 	deskCoords.x,
+			// 	deskCoords.y + 0.1,SSS
+			// 	deskCoords.z - 0.2,
+			// );
 
 			paint.mesh.visible = true;
 		});
