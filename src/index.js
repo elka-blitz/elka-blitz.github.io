@@ -179,7 +179,7 @@ function init() {
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = blackMaterial;
-		svgPaintsArray[i].setSize(0.4);
+		svgPaintsArray[i].setSize(0.2);
 		scene.add(svgPaintsArray[i].mesh);
 	})
 
@@ -356,10 +356,11 @@ function handleButton() {
 		const deskCoords = desk_manager.getDeskCoordinates();
 
 		paintArray.forEach((paint) => {
+			paint.mesh.lookAt(camera.position)
 			paint.mesh.position.set(
 				deskCoords.x,
 				deskCoords.y + 0.1,
-				deskCoords.z - 1,
+				deskCoords.z - 0.5,
 			);
 
 			paint.mesh.visible = true;
