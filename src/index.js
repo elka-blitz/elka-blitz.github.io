@@ -180,7 +180,7 @@ function init() {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = blackMaterial;
 		svgPaintsArray[i].setSize(0.4);
-		scene.add(svgPaintsArray[i]);
+		scene.add(svgPaintsArray[i].mesh);
 	})
 
 	const paintArray = svgPaintsArray;
@@ -424,6 +424,7 @@ function loadSVG(url) {
 					subPath.getPoints(),
 					path.userData.style,
 				);
+				geometry.rotateZ( Math.PI ) // rotate right side up
 
 				if (geometry) {
 					const mesh = new THREE.Mesh(geometry, material);
