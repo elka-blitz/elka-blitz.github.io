@@ -64,6 +64,7 @@ let position = new THREE.Vector3();
 
 // Debugging stuff
 let debugVar = true
+let interface_text;
 // const UIText = new Text();
 // UIText.fontsize = 0.52
 // UIText.font = 'assets/SpaceMono-Bold.ttf';
@@ -72,6 +73,9 @@ let debugVar = true
 // UIText.anchorX = 'center';
 // UIText.anchorY = 'middle';
 // UIText.text = 'LiveStylusCoords'
+// UIText declarations
+// TODO: Remember sync method
+// TODO: Move to function call
 
 // Desk stuff
 let desk_set = false
@@ -182,6 +186,8 @@ function init() {
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
+	// Add text initialisation
+	interface_text = new UIText(scene)
 }
 	// Debugging text
 	// scene.add(UIText);
@@ -189,6 +195,7 @@ function init() {
 	// UIText.rotateX(-Math.PI / 3.3);
 	// UIText.text = 'Tap desk with stylus to start'
 	// TODO: Replace with class method call
+	
 
 	// drawing paint
 	painter1 = new TubePainter();
@@ -223,13 +230,15 @@ function init() {
 	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
+	interface_text.updateText('Resized window to: ' + sizes.width + 'x' + sizes.height)
 });
 
 
 // animation functions
 function onFrame(timestamp, frame) {
-
+	// interface_text.floatTextToCamera(camera)
+	interface_text.animateTextToCamera(camera)
+	interface_text.sync()
 
   if (gamepad1) {
 
@@ -262,6 +271,7 @@ function onFrame(timestamp, frame) {
 			// Hover button in front of user
 			// Instead of doing offset
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene)
+			interface_text.animateTextToCamera(camera)
 		}
 	}
 
@@ -294,7 +304,7 @@ function onFrame(timestamp, frame) {
 }
 
 function animate() {
-	UIText.sync()
+	// UIText.sync()
 //   handleDrawing(stylus);
 	gsap.ticker.tick()
   // Render
