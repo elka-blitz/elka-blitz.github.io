@@ -315,6 +315,7 @@ function onFrame(timestamp, frame) {
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
 
+			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 			laserSound.play(); // Sound effect for button press
 			// TODO: Find click .ogg sound file to use instead of a laser sound
@@ -324,8 +325,15 @@ function onFrame(timestamp, frame) {
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
+			
+			// User feedback for button press
+			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+			laserSound.play(); // Sound effect for button press
 		  }
 		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
+
+
 	  }
 
 	  //  // todo: this is for testing in browser
