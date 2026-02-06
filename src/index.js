@@ -130,6 +130,10 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 	scoreSound.setBuffer(buffer);
 });
 
+
+// Office environment setup
+let office_group = new THREE.Group()
+
 init();
 
 function init() {
@@ -151,7 +155,7 @@ function init() {
 	controls.update();
 
 	const dracoLoader = new DRACOLoader();
-	dracoLoader.setDecoderPath('/draco/');
+	dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/libs/draco/');
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
@@ -160,11 +164,21 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
+	gltfLoader.load('./assets/office_environment.glb', function(gltf) {
+		office_group.add(gltf.scene);
+	}, undefined, function(error) {
+		console.error(error);
+	});
+
 	scene.add(tableGroup)
+	scene.add(office_group)
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
 	tableGroup.position.set(0, -3, 0)
+	// office_group.scale.set(0.5, 0.5, 0.5)
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
