@@ -177,8 +177,8 @@ function init() {
 
 	tableGroup.position.set(0, -3, 0)
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	// office_group.position.set(0, -3, 0)
-
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
