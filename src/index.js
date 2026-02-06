@@ -15,9 +15,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
+import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { gsap } from 'gsap';
+import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import { createText } from 'three/examples/jsm/webxr/Text2D';
+import { gsap } from 'gsap';   
+import { update } from "three/examples/jsm/libs/tween.module.js";
 
 let camera, scene, renderer;
 let stylus;
@@ -77,25 +81,54 @@ const sizes = {
   height: window.innerHeight,
 };
 
-// UI
-const UIText = new Text();
-UIText.fontsize = 0.52
-UIText.font = 'assets/SpaceMono-Bold.ttf';
-UIText.position.z = -2;
-UIText.color = 0xffffff;
-UIText.anchorX = 'center';
-UIText.anchorY = 'middle';
+// Stylus info
+let position = new THREE.Vector3();
+
+// Debugging stuff
+let debugVar = true
+let interface_text;
+// const UIText = new Text();
+// UIText.fontsize = 0.52
+// UIText.font = 'assets/SpaceMono-Bold.ttf';
+// UIText.position.z = -2;
+// UIText.color = 0xffffff;
+// UIText.anchorX = 'center';
+// UIText.anchorY = 'middle';
+// UIText.text = 'LiveStylusCoords'
+// UIText declarations
+// TODO: Remember sync method
+// TODO: Move to function call
 
 // Desk stuff
 let desk_set = false
 let tableGroup = new THREE.Group()
+let backPushed = false
+let prevBackPushed = false
 let desk_manager
 let green = new THREE.Color('#80ed99');
+let desk_locked = false // Global main process variable, so desklock check method is only run once
+let prev_desk_locked = false
 
 // Button stuff
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
+
+// Noise feedback declaration
+const listener = new THREE.AudioListener();
+const audioLoader = new THREE.AudioLoader();
+let scoreSound;
+let laserSound;
+
+laserSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/laser.ogg', (buffer) => {
+	laserSound.setBuffer(buffer);
+});
+
+scoreSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/score.ogg', (buffer) => {
+	scoreSound.setBuffer(buffer);
+});
 
 init();
 
@@ -128,6 +161,25 @@ function init() {
 	});
 
 	scene.add(tableGroup)
+	// Initialise desk manager
+	desk_manager = new DeskManager(scene, tableGroup)
+
+	tableGroup.position.set(0, -3, 0)
+
+	red_button = new DeskButton(scene)
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+	
+	// red_button.moveButton(new THREE.Vector3(0,2,1))
+	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
+	// console.log('result', desk_manager.getPositionForButton())
+
+	// tableGroup.add(red_button_object)
+	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
+	
+	// white_button = new DeskButton(scene)
+	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
+	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
+
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -143,7 +195,7 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
-
+	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
 	document.body.appendChild(VRButton.createButton(renderer));
@@ -156,12 +208,17 @@ function init() {
 
 	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+	// Add text initialisation
+	interface_text = new UIText(scene)
 }
-	// UI text
-	scene.add(UIText);
-	UIText.position.set(0, 1, -2.5);
-	UIText.rotateX(-Math.PI / 3.3);
-	UIText.text = 'Tap desk with stylus to start'
+	// Debugging text
+	// scene.add(UIText);
+	// UIText.position.set(0, 1, -2.5);
+	// UIText.rotateX(-Math.PI / 3.3);
+	// UIText.text = 'Tap desk with stylus to start'
+	// TODO: Replace with class method call
+	
 
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
@@ -212,14 +269,36 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+
+	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	// desk_manager.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff')
+	interface_text.updateText('Resized window to: ' + sizes.width + 'x' + sizes.height)
 });
 
 
 // animation functions
 function onFrame(timestamp, frame) {
+
+	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
+	if (!desk_locked) {
+		// Smooth text animation to camera, prompting user to lock desk
+		interface_text.updateText('Tap desk with stylus to lock')
+		interface_text.animateTextToCamera(camera)
+	}
+	else if (desk_locked && !prev_desk_locked) {
+		// Desk has just been locked, run fly-in animation and text update
+		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
+		interface_text.updateText('Desk Locked!')
+
+		// Locate text permanently above desk for remainder of session
+		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
+	}
+
+	prev_desk_locked = desk_locked // Framediff for desk lock check
+
+	interface_text.sync()
+
   if (gamepad1) {
 
 	  // desk lock event
@@ -234,15 +313,27 @@ function onFrame(timestamp, frame) {
 			stylus.userData.painter = paintArray[0];
 			nextButton.makeVisible();
 			desk_set = true;
-			UIText.text = "Draw on the outline!";
+			interface_text.updateText("Draw on the outline!");
+
+			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+			laserSound.play(); // Sound effect for button press
+			// TODO: Find click .ogg sound file to use instead of a laser sound
 		}
 	}
 	  // change material
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
+			
+			// User feedback for button press
+			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+			laserSound.play(); // Sound effect for button press
 		  }
 		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
+
+
 	  }
 
 	  //  // todo: this is for testing in browser
@@ -260,7 +351,7 @@ function onFrame(timestamp, frame) {
 
 
 	// Desk setup logic: before allowing draw, desk must be set up
-	if (prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
+	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup);
@@ -275,10 +366,11 @@ function onFrame(timestamp, frame) {
 				0.3,
 				0.2
 			);
+			interface_text.animateTextToCamera(camera)
 		}
 	}
 
-	if (!prevIsMovingDesk && isMovingDesk && !desk_manager.getLock()) {
+	if (!prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
 				child.material.transparent = true;
@@ -295,12 +387,22 @@ function onFrame(timestamp, frame) {
 			}
 		})
 	}
+
+	prevBackPushed = backPushed;
+	backPushed = gamepad1.buttons[1].value > 0
+
+	if (backPushed && !prevBackPushed && desk_locked) {
+		// Back button on controller
+		// TODO: Add commented framediff for every button on controller
+		laserSound.play();	
+		interface_text.flashText('#ff0000', 100) 
+	}
   }
 
 }
 
 function animate() {
-	UIText.sync()
+	// UIText.sync()
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
 		if (gamepad1) {
