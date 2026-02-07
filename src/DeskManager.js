@@ -50,6 +50,8 @@ export default class DeskManager {
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#B3B3B3',
 			side: THREE.DoubleSide, // optional, shows both sides
+			transparent: true,
+			opacity: 0.5
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
@@ -217,7 +219,7 @@ export default class DeskManager {
 		this.surface.visible = true;
 	}
 
-	placeSVG(svgGroup) {
+	placeSVG(svgGroup, position) {
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
 
@@ -233,6 +235,8 @@ export default class DeskManager {
 		const center = box.getCenter(new THREE.Vector3());
 		svgGroup.position.sub(center);
 		svgGroup.position.z = -0.01;
+		svgGroup.position.x -= position.x;	// negative because it's flipped
+		svgGroup.position.y -= position.y;
 
 		this.surface.add(svgGroup);
 

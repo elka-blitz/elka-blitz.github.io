@@ -13,15 +13,14 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-import { Text } from 'troika-three-text';
+
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
-import { createText } from 'three/examples/jsm/webxr/Text2D';
+
 import { gsap } from 'gsap';   
-import { update } from "three/examples/jsm/libs/tween.module.js";
+
 
 let camera, scene, renderer;
 let stylus;
@@ -38,39 +37,10 @@ let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
 
-const yellowMaterial = new THREE.LineBasicMaterial({
-	color: 'yellow',
-	linewidth: 5,
-});
 
 const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
 	linewidth: 4,
-});
-
-const greenMaterial = new THREE.MeshBasicMaterial({
-	color: 'green',
-	wireframeLinewidth: '2',
-});
-
-const redMaterial = new THREE.LineBasicMaterial({
-	color: 'red',
-	linewidth: 3,
-});
-
-const blueMaterial = new THREE.MeshBasicMaterial({
-	color: 'blue',
-	wireframeLinewidth: '2',
-});
-
-const whiteMaterial = new THREE.MeshBasicMaterial({
-	color: 'white',
-	wireframeLinewidth: '2',
-});
-
-const purpleMaterial = new THREE.MeshBasicMaterial({
-	color: 'purple',
-	wireframeLinewidth: '2',
 });
 
 
@@ -182,17 +152,6 @@ function init() {
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-	
-	// red_button.moveButton(new THREE.Vector3(0,2,1))
-	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
-	// console.log('result', desk_manager.getPositionForButton())
-
-	// tableGroup.add(red_button_object)
-	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
-	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
-	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -268,7 +227,15 @@ function init() {
 		'assets/base.svg'
 	]
 
-	loadSVG(svgArray[0]);
+	loadSVG('assets/base.svg', 			{ x: 0,		y:0});
+	loadSVG('assets/door_bottom.svg', 	{ x: -0.05, y: 0.06 });
+	loadSVG('assets/door_top.svg',		{ x: -0.05, y: -0.015 });
+	loadSVG('assets/window.svg', 		{ x: 0.04,  y: -0.02 });
+	loadSVG('assets/window2.svg', 		{ x: 0.04,  y: 0.03 });
+	loadSVG('assets/window_curtain.svg',{ x: 0.04,  y: -0.025 });
+	loadSVG('assets/banner_short.svg', 	{ x: 0, 	y:- 0.08 });
+	loadSVG('assets/banner_long.svg',	{ x: 0, 	y: -0.075 });
+
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -350,14 +317,14 @@ function onFrame(timestamp, frame) {
 
 	  }
 
-	  //  // todo: this is for testing in browser
-	  // if (gamepad1.buttons[5].pressed && !wasChangeButton) {
-		//   handleButton()
-		//   nextButton.makeVisible();
-		//   nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
-		//
-	  // }
-	  // wasChangeButton = gamepad1.buttons[5].pressed;
+	   // todo: this is for testing in browser
+	  if (gamepad1.buttons[5].pressed && !wasChangeButton) {
+		  handleButton()
+		  nextButton.makeVisible();
+		  nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
+
+	  }
+	  wasChangeButton = gamepad1.buttons[5].pressed;
 
 
     prevIsMovingDesk = isMovingDesk;
@@ -472,11 +439,6 @@ function handleButton() {
 		const deskCoords = desk_manager.getDeskCoordinates();
 
 		paintArray.forEach((paint) => {
-			// paint.mesh.position.set(
-			// 	deskCoords.x,
-			// 	deskCoords.y + 0.1,SSS
-			// 	deskCoords.z - 0.2,
-			// );
 
 			paint.mesh.visible = true;
 		});
@@ -485,20 +447,20 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
-  if (e.data.profiles.includes("logitech-mx-ink")) {
+  // if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	//   // todo this is temporary for placing drawing area in browser testing
-	// desk_manager.slideToFront(camera, stylus, tableGroup);
-	//   desk_manager.lock();
-	//   desk_set = true;
-	//   desk_manager.spawnDrawingSurface()
+	  // todo this is temporary for placing drawing area in browser testing
+	desk_manager.slideToFront(camera, stylus, tableGroup);
+	  desk_manager.lock();
+	  desk_set = true;
+	  desk_manager.spawnDrawingSurface()
 
 
-  }
+  // }
   // todo else do raycasting
 }
 
@@ -515,7 +477,7 @@ function onSelectEnd() {
 }
 
 // svg function
-function loadSVG(url) {
+function loadSVG(url, position) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
@@ -524,10 +486,9 @@ function loadSVG(url) {
 		let renderOrder = 0;
 
 		for (const path of data.paths) {
-			const strokeColor = path.userData.style.stroke;
+			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
-				// color: new THREE.Color().setStyle(strokeColor),
 				color: "black",
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
@@ -551,7 +512,7 @@ function loadSVG(url) {
 			}
 		}
 
-		desk_manager.placeSVG(group)
+		desk_manager.placeSVG(group, position)
 	});
 }
 
