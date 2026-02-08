@@ -13,7 +13,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -21,35 +20,32 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 
 import { gsap } from 'gsap';   
 
-
+// setup declarations
 let camera, scene, renderer;
 let stylus;
 let gamepad1;
 let gamepadInterface;
+
+const cursor = new THREE.Vector3();
+const sizes = {
+	width: window.innerWidth,
+	height: window.innerHeight,
+};
+
+
+// drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
-
-let isMovingDesk = false;
-let prevIsMovingDesk = false;
 
 let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
 
-
 const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
 	linewidth: 4,
 });
-
-
-const cursor = new THREE.Vector3();
-
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -69,7 +65,7 @@ let interface_text;
 // TODO: Remember sync method
 // TODO: Move to function call
 
-// Desk stuff
+// Desk declarations
 let desk_set = false
 let tableGroup = new THREE.Group()
 let backPushed = false
@@ -78,13 +74,15 @@ let desk_manager
 let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
+let isMovingDesk = false;
+let prevIsMovingDesk = false;
 
-// Button stuff
+// Button declarations
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
-// Noise feedback declaration
+// Noise feedback declarations
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
@@ -118,6 +116,11 @@ function init() {
 	);
 
 	camera.position.set(0, 1.6, 3);
+
+	const player = new THREE.Group();
+	scene.add(player);
+	player.add(camera);
+
 	const canvas = document.querySelector('canvas.webgl');
 
 	const controls = new OrbitControls(camera, canvas);
@@ -142,27 +145,22 @@ function init() {
 
 	scene.add(tableGroup)
 	scene.add(office_group)
+
+	// light setup
+	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
+	const light = new THREE.DirectionalLight(0xffffff, 1.5);
+	light.position.set(0, 4, 0);
+	scene.add(light);
+
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
 	tableGroup.position.set(0, -3, 0)
-	// office_group.scale.set(0.5, 0.5, 0.5)
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-
-
-	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
-
-	const light = new THREE.DirectionalLight(0xffffff, 1.5);
-	light.position.set(0, 4, 0);
-	scene.add(light);
-
-	const player = new THREE.Group();
-	scene.add(player);
-	player.add(camera);
 
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -204,8 +202,7 @@ function init() {
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
-
-
+	// drawing
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = blackMaterial;
