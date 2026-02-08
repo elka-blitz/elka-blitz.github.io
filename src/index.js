@@ -41,6 +41,7 @@ let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
+const CENTER_POSITION = {x: 0, y : 0};
 
 const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
@@ -224,14 +225,16 @@ function init() {
 		'assets/base.svg'
 	]
 
-	loadSVG('assets/base.svg', 			{ x: 0,		y:0});
-	loadSVG('assets/door_bottom.svg', 	{ x: -0.05, y: 0.06 });
-	loadSVG('assets/door_top.svg',		{ x: -0.05, y: -0.015 });
-	loadSVG('assets/window.svg', 		{ x: 0.04,  y: -0.02 });
-	loadSVG('assets/window2.svg', 		{ x: 0.04,  y: 0.03 });
-	loadSVG('assets/window_curtain.svg',{ x: 0.04,  y: -0.025 });
-	loadSVG('assets/banner_short.svg', 	{ x: 0, 	y:- 0.08 });
-	loadSVG('assets/banner_long.svg',	{ x: 0, 	y: -0.075 });
+	const svgWithPositionsArray = [
+		{url:'assets/base.svg', position: 			{ x: 0,		y:0}},
+		{url:'assets/door_bottom.svg', position: 	{ x: -0.05, y: 0.06 }},
+		{url:'assets/door_top.svg', position:		{ x: -0.05, y: -0.015 }},
+		{url:'assets/window.svg', position: 		{ x: 0.04,  y: -0.02 }},
+		{url:'assets/window2.svg', position: 		{ x: 0.04,  y: 0.03 }},
+		{url:'assets/window_curtain.svg', position: { x: 0.04,  y: -0.025 }},
+		{url:'assets/banner_short.svg', position: 	{ x: 0, 	y:- 0.08 }},
+		{url:'assets/banner_long.svg', position:	{ x: 0, 	y: -0.075 }},
+	]
 
 
 	window.addEventListener("resize", () => {
@@ -314,14 +317,14 @@ function onFrame(timestamp, frame) {
 
 	  }
 
-	   // todo: this is for testing in browser
+	/*   // todo: this is for testing in browser
 	  if (gamepad1.buttons[5].pressed && !wasChangeButton) {
 		  handleButton()
 		  nextButton.makeVisible();
 		  nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
 
 	  }
-	  wasChangeButton = gamepad1.buttons[5].pressed;
+	  wasChangeButton = gamepad1.buttons[5].pressed;*/
 
 
     prevIsMovingDesk = isMovingDesk;
@@ -425,18 +428,18 @@ function handleButton() {
 			paint.mesh.visible = false;
 		});
 		desk_manager.clearSurface();
-		loadSVG(svgArray[shapeIndex]);
+		loadSVG(svgArray[shapeIndex], CENTER_POSITION);
 
 		paintArray[shapeIndex].mesh.visible = true;
 		stylus.userData.painter = paintArray[shapeIndex];
 
 	} else {
-		desk_manager.clearSurface();
 		nextButton.makeInvisible();
-		const deskCoords = desk_manager.getDeskCoordinates();
+
+		desk_manager.clearSurface();
+		loadSVGs(svgWithPositionsArray)
 
 		paintArray.forEach((paint) => {
-
 			paint.mesh.visible = true;
 		});
 	}
@@ -444,20 +447,20 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
-  // if (e.data.profiles.includes("logitech-mx-ink")) {
+  if (e.data.profiles.includes("logitech-mx-ink")) {
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
 	gamepadInterface = new GamepadWrapper(e.data.gamepad)
 
-	  // todo this is temporary for placing drawing area in browser testing
-	desk_manager.slideToFront(camera, stylus, tableGroup);
-	  desk_manager.lock();
-	  desk_set = true;
-	  desk_manager.spawnDrawingSurface()
+	//   // todo this is temporary for placing drawing area in browser testing
+	// desk_manager.slideToFront(camera, stylus, tableGroup);
+	//   desk_manager.lock();
+	//   desk_set = true;
+	//   desk_manager.spawnDrawingSurface()
 
 
-  // }
+  }
   // todo else do raycasting
 }
 
@@ -512,6 +515,48 @@ function loadSVG(url, position) {
 		desk_manager.placeSVG(group, position)
 	});
 }
+
+function loadSVGs(svgObjs) {
+	const groups = [];
+	const loader = new SVGLoader();
+
+	svgObjs.map((obj, i) => {
+		loader.load(obj.url, function (data) {
+			const group = new THREE.Group();
+
+			let renderOrder = 0;
+
+			for (const path of data.paths) {
+				const strokeColor = path.userData.style.fill;
+
+				const material = new THREE.MeshBasicMaterial({
+					color: 'black',
+					opacity: path.userData.style.strokeOpacity,
+					transparent: true,
+					side: THREE.DoubleSide,
+					depthWrite: false,
+				});
+
+				for (const subPath of path.subPaths) {
+					const geometry = SVGLoader.pointsToStroke(
+						subPath.getPoints(),
+						path.userData.style,
+					);
+					geometry.rotateZ(Math.PI); // rotate right side up
+
+					if (geometry) {
+						const mesh = new THREE.Mesh(geometry, material);
+						mesh.renderOrder = renderOrder++;
+
+						group.add(mesh);
+					}
+				}
+			}
+			desk_manager.placeSVG(group, obj.position, i);
+		});
+	});
+}
+
 
 
 function debugGamepad(gamepad) {
