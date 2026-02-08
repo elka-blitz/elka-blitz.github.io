@@ -51,7 +51,7 @@ export default class DeskManager {
 			color: '#B3B3B3',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
-			opacity: 0.5
+			opacity: 0.1,
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
