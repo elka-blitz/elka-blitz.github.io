@@ -134,6 +134,30 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 // Office environment setup
 let office_group = new THREE.Group()
 
+
+// Hand declarations
+let hand1, hand2;
+const handModels = {
+	left: null,
+	right: null
+};
+
+// Keep references to hand models that persist
+const persistentHandModels = {
+  left: null,
+  right: null
+};
+
+let debugging_text;
+
+let controllerGrip1, controllerGrip2;
+
+let mx_ink_connected = false; 
+let left_hand_override = false; 
+let right_hand_override = false; 
+const left_hand_container = new THREE.Group();
+const right_hand_container = new THREE.Group();
+
 init();
 
 function init() {
@@ -177,8 +201,8 @@ function init() {
 
 	tableGroup.position.set(0, -3, 0)
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI)
+	office_group.position.set(0, -0.3, 0.8)
+	office_group.rotateY(Math.PI / 2)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
@@ -212,16 +236,62 @@ function init() {
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
-	document.body.appendChild(VRButton.createButton(renderer));
+	const sessionInit = {
+		requiredFeatures: [ 'hand-tracking' ]
+	};
+
+	document.body.appendChild(VRButton.createButton(renderer, sessionInit));
 	renderer.setAnimationLoop(animate);
 
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
-	scene.add(getControllerGrip(0, renderer, controllerModelFactory));
+	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
+	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
+
+	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
+	// scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+	const handModelFactory = new XRHandModelFactory();
+
+	controllerGrip1 = getControllerGrip(0, renderer, controllerModelFactory);
+	scene.add(controllerGrip1);
 	scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
 
-	scene.add(getControllerGrip(1, renderer, controllerModelFactory));
+	controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
+	scene.add(controllerGrip2);
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+
+	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
+	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
+
+	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
+
+	// Hand1 setup
+	hand1 = renderer.xr.getHand(0);
+
+	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
+	hand1.add(leftHandModel);
+	left_hand_container.add(hand1)
+	scene.add(left_hand_container)
+
+	// scene.add(hand1);
+	// let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
+	// persistentHandModels.left = leftHandModel;
+	// hand1.add(leftHandModel);
+
+	// Hand 2
+	hand2 = renderer.xr.getHand(1);
+
+	let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
+	hand2.add(rightHandModel)
+	right_hand_container.add(hand2)
+	scene.add(right_hand_container)
+
+	// scene.add(hand2);
+
+	// let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
+	// persistentHandModels.right = rightHandModel;
+	// hand2.add(rightHandModel);
 
 	// Add text initialisation
 	interface_text = new UIText(scene)
@@ -297,7 +367,8 @@ function onFrame(timestamp, frame) {
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		interface_text.updateText('Tap desk with stylus to lock')
+		// interface_text.updateText('Tap desk with stylus to lock')
+		// TODO: Uncomment after debugging ^^^
 		interface_text.animateTextToCamera(camera)
 	}
 	else if (desk_locked && !prev_desk_locked) {
@@ -405,17 +476,69 @@ function onFrame(timestamp, frame) {
 	prevBackPushed = backPushed;
 	backPushed = gamepad1.buttons[1].value > 0
 
-	if (backPushed && !prevBackPushed && desk_locked) {
+	if (backPushed && !prevBackPushed) {
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
+
+		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
 	}
   }
 
 }
 
 function animate() {
+
+	if (mx_ink_connected && right_hand_override) {
+
+		// interface_text.updateText(stylus.position.toArray().toString())
+		// interface_text.updateText(hand2.position.toArray().toString())
+		// interface_text.updateText(left_hand_container.position.toArray().toString(), right_hand_container.position.toArray().toString())
+
+		// Controller is connected in right hand
+		// This would normally hide the right hand model
+		// Overriding this by setting it to visible and positoning it with stylus
+
+		// hand2.visible = true
+		right_hand_container.children.forEach((child) => {
+			child.visible = true
+		})
+
+		// Calculate offset
+		// It seems that when added to a parent group, the handmodels inherit a local coord offset by hand-to-origin-coord
+
+		// right_hand_container.position.set(stylus.position.x -0.2, stylus.position.y - 0.75, stylus.position.z + 0.35);
+
+		// right_hand_container.quaternion.copy(stylus.quaternion) // Copy stylus rotation to hand, so it matches the hand orientation to the stylus orientation
+		// right_hand_container.position.set(stylus.position.x, stylus.position.y - 0.6, stylus.position.z);
+		camera.updateMatrixWorld()
+		// TODO: Copy quaternion
+	} 
+
+	else if (mx_ink_connected && left_hand_override) {
+		// Right hand XRInput source is controller
+		// Override right hand
+
+
+		// interface_text.updateText(left_hand_container.position.toArray().toString(), right_hand_container.position.toArray().toString())
+
+		// hand1.visible = true
+
+		left_hand_container.children.forEach((child) => {
+			child.visible = true
+		})
+		
+		// left_hand_container.position.set(stylus.position.x - 0.2, stylus.position.y - 0.75, stylus.position.z + 0.35);
+		// left_hand_container.quaternion.copy(stylus.quaternion) // Copy stylus rotation to hand, so it matches the hand orientation to the stylus orientation
+
+		camera.updateMatrixWorld()
+	}
+
+	// hand1.visible = true
+	// hand2.visible = true
+
+
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
@@ -435,6 +558,7 @@ function animate() {
 	gsap.ticker.tick()
   // Render
   onFrame();
+
   renderer.render(scene, camera);
 }
 
@@ -485,7 +609,21 @@ function handleButton() {
 
 // controller functions
 function onControllerConnected(e) {
+	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
+
+	// Set mx_ink_connected to true
+	mx_ink_connected = true;
+	// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
+	if (e.data.handedness === 'left') {
+		// Stylus is in left hand, override left hand model logic
+		left_hand_override = true;
+		right_hand_override = false;
+	} else if (e.data.handedness === 'right') {
+		right_hand_override = true;
+		left_hand_override = false; // Reset right hand variable 
+	}
+
     stylus = e.target;
     stylus.userData.painter = paintArray[0];
     gamepad1 = e.data.gamepad;
@@ -499,6 +637,19 @@ function onControllerConnected(e) {
 
 
   }
+
+  // If hand, add hand model and store reference in persistentHandModels
+  if (e.data.profiles.includes("oculus-hand")) {
+	console.log(e.data.handedness)
+	// const hand = e.target;
+	// const handedness = e.data.handedness; // 'left' or 'right'
+	// const handModelFactory = new XRHandModelFactory();
+	// const handModel = handModelFactory.createHandModel(hand, 'boxes');
+	// hand.add(handModel);
+	// persistentHandModels[handedness] = handModel; // Store reference to the hand model
+	debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
+  }
+
   // todo else do raycasting
 }
 
