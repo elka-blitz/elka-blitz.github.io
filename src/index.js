@@ -201,11 +201,6 @@ function init() {
 
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
-	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
-	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
-
-	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
-	// scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
 	const handModelFactory = new XRHandModelFactory();
 
@@ -217,11 +212,6 @@ function init() {
 	scene.add(controllerGrip2);
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
-	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
-	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
-
-	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
-
 	// Hand1 setup
 	hand1 = renderer.xr.getHand(0);
 
@@ -230,10 +220,6 @@ function init() {
 	left_hand_container.add(hand1)
 	scene.add(left_hand_container)
 
-	// scene.add(hand1);
-	// let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
-	// persistentHandModels.left = leftHandModel;
-	// hand1.add(leftHandModel);
 
 	// Hand 2
 	hand2 = renderer.xr.getHand(1);
@@ -243,11 +229,6 @@ function init() {
 	right_hand_container.add(hand2)
 	scene.add(right_hand_container)
 
-	// scene.add(hand2);
-
-	// let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
-	// persistentHandModels.right = rightHandModel;
-	// hand2.add(rightHandModel);
 
 	// Add text initialisation
 	interface_text = new UIText(scene)
@@ -281,7 +262,7 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		desk_manager.placeSVG(svgPaintsArray[i].mesh, CENTER_POSITION);
+		scene.add(svgPaintsArray[i].mesh);
 	})
 
 	const paintArray = svgPaintsArray;
@@ -358,8 +339,7 @@ function onFrame(timestamp, frame) {
 	  // desk lock event
 	  if (red_button.returnExists() === true) {
 		if (
-			red_button.pressCheck(stylus.position, scene, 'white') === true &&
-			!stylus.userData.isSelecting	// should reduce accidental pressing
+			red_button.pressCheck(stylus.position, scene, 'white') === true
 		) {
 			desk_manager.lock();
 			desk_manager.spawnDrawingSurface()
@@ -369,7 +349,7 @@ function onFrame(timestamp, frame) {
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
-			loadSVG(svgArray[shapeIndex], CENTER_POSITION)
+			loadSVG(svgArray[0])
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
@@ -481,7 +461,6 @@ function animate() {
 	gsap.ticker.tick()
   // Render
   onFrame();
-
   renderer.render(scene, camera);
 }
 
@@ -560,16 +539,10 @@ function onControllerConnected(e) {
   // If hand, add hand model and store reference in persistentHandModels
   if (e.data.profiles.includes("oculus-hand")) {
 	console.log(e.data.handedness)
-	// const hand = e.target;
-	// const handedness = e.data.handedness; // 'left' or 'right'
-	// const handModelFactory = new XRHandModelFactory();
-	// const handModel = handModelFactory.createHandModel(hand, 'boxes');
-	// hand.add(handModel);
-	// persistentHandModels[handedness] = handModel; // Store reference to the hand model
 	debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
   }
 
-  // todo else do raycasting
+  // todo else do controller
 }
 
 function onSelectStart(e) {
