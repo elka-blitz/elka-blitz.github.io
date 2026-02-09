@@ -448,11 +448,7 @@ function handleButton() {
 
 		paintArray.forEach((paint, index) => {
 			paint.mesh.visible = true;
-			paint.mesh.position.set(
-				svgWithPositionsArray[index].position.x,
-				svgWithPositionsArray[index].position.y,
-				-0.01
-			);
+			desk_manager.placeSVG(paint.mesh, svgWithPositionsArray[index])
 		});
 	}
 }
