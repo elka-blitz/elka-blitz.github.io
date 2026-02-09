@@ -4,6 +4,7 @@ window.addEventListener('unload', function () {
 
 import * as THREE from "three";
 
+import { csvMaker, downloadCSV } from './csvFunctions';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -394,6 +395,7 @@ function onFrame(timestamp, frame) {
 		stylusPosition: stylus ? stylus.position.clone() : null,
 		cameraPosition: camera.position.clone(),
 		deskLocked: desk_locked
+		// TODO: Buttonpushed variable
 	});
 
 	console.log(logData[logData.length - 1]) // Log the most recent data point for debugging
@@ -493,7 +495,8 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		downloadCSV(JSON.stringify(logData));
 	}
   }
 
