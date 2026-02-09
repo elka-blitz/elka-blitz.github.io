@@ -23,10 +23,22 @@ import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
+const BROWSER_TESTING = true // todo remove before deployment
+
+// setup declarations
 let camera, scene, renderer;
 let stylus;
 let gamepad1;
 let gamepadInterface;
+
+const cursor = new THREE.Vector3();
+const sizes = {
+	width: window.innerWidth,
+	height: window.innerHeight,
+};
+
+
+// drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
 
@@ -37,49 +49,12 @@ let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
-
-const yellowMaterial = new THREE.LineBasicMaterial({
-	color: 'yellow',
-	linewidth: 5,
-});
+const CENTER_POSITION = {x: 0, y : 0};
 
 const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
 	linewidth: 4,
 });
-
-const greenMaterial = new THREE.MeshBasicMaterial({
-	color: 'green',
-	wireframeLinewidth: '2',
-});
-
-const redMaterial = new THREE.LineBasicMaterial({
-	color: 'red',
-	linewidth: 3,
-});
-
-const blueMaterial = new THREE.MeshBasicMaterial({
-	color: 'blue',
-	wireframeLinewidth: '2',
-});
-
-const whiteMaterial = new THREE.MeshBasicMaterial({
-	color: 'white',
-	wireframeLinewidth: '2',
-});
-
-const purpleMaterial = new THREE.MeshBasicMaterial({
-	color: 'purple',
-	wireframeLinewidth: '2',
-});
-
-
-const cursor = new THREE.Vector3();
-
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
 
 // Stylus info
 let position = new THREE.Vector3();
@@ -99,7 +74,7 @@ let interface_text;
 // TODO: Remember sync method
 // TODO: Move to function call
 
-// Desk stuff
+// Desk declarations
 let desk_set = false
 let tableGroup = new THREE.Group()
 let backPushed = false
@@ -109,12 +84,12 @@ let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
-// Button stuff
+// Button declarations
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
-// Noise feedback declaration
+// Noise feedback declarations
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
@@ -172,6 +147,11 @@ function init() {
 	);
 
 	camera.position.set(0, 1.6, 3);
+
+	const player = new THREE.Group();
+	scene.add(player);
+	player.add(camera);
+
 	const canvas = document.querySelector('canvas.webgl');
 
 	const controls = new OrbitControls(camera, canvas);
@@ -196,38 +176,19 @@ function init() {
 
 	scene.add(tableGroup)
 	scene.add(office_group)
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup)
 
-	tableGroup.position.set(0, -3, 0)
-	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
-
-	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-	
-	// red_button.moveButton(new THREE.Vector3(0,2,1))
-	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
-	// console.log('result', desk_manager.getPositionForButton())
-
-	// tableGroup.add(red_button_object)
-	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
-	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
-	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
-
-
+	// light setup
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
-
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
 
-	const player = new THREE.Group();
-	scene.add(player);
-	player.add(camera);
+	// Initialise desk manager
+	desk_manager = new DeskManager(scene, tableGroup)
+
+	tableGroup.position.set(0, -3, 0)
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI / 5)
 
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -245,11 +206,6 @@ function init() {
 
 	// controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
-	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
-	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
-
-	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
-	// scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
 	const handModelFactory = new XRHandModelFactory();
 
@@ -261,11 +217,6 @@ function init() {
 	scene.add(controllerGrip2);
 	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
 
-	// scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
-	// scene.add(getControllerGrip(0, renderer, controllerModelFactory));
-
-	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
-
 	// Hand1 setup
 	hand1 = renderer.xr.getHand(0);
 
@@ -274,10 +225,6 @@ function init() {
 	left_hand_container.add(hand1)
 	scene.add(left_hand_container)
 
-	// scene.add(hand1);
-	// let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
-	// persistentHandModels.left = leftHandModel;
-	// hand1.add(leftHandModel);
 
 	// Hand 2
 	hand2 = renderer.xr.getHand(1);
@@ -287,11 +234,6 @@ function init() {
 	right_hand_container.add(hand2)
 	scene.add(right_hand_container)
 
-	// scene.add(hand2);
-
-	// let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
-	// persistentHandModels.right = rightHandModel;
-	// hand2.add(rightHandModel);
 
 	// Add text initialisation
 	interface_text = new UIText(scene)
@@ -310,16 +252,20 @@ function init() {
 	// buttons
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene)
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
 
-
-
+	// drawing
+	const coloursArray = ["red", "orange","yellow", "green", "blue", "cyan", "purple"];
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
-		svgPaintsArray[i].mesh.material = blackMaterial;
+		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
+			color: coloursArray[i],
+			linewidth: 4,
+		});
 		svgPaintsArray[i].setSize(0.2);
 		scene.add(svgPaintsArray[i].mesh);
 	})
@@ -328,17 +274,27 @@ function init() {
 
 
 	const svgArray = [
-		'assets/banner_long.svg',
+		'assets/base.svg',
+		'assets/door_bottom.svg',
+		'assets/door_top.svg',
 		'assets/window.svg',
 		'assets/window2.svg',
 		'assets/window_curtain.svg',
 		'assets/banner_short.svg',
-		'assets/door_bottom.svg',
-		'assets/door_top.svg',
-		'assets/base.svg'
+		'assets/banner_long.svg'
 	]
 
-	loadSVG(svgArray[0]);
+	const svgWithPositionsArray = [
+		{url:'assets/base.svg', position: 			{ x: 0,		y:0}},
+		{url:'assets/door_bottom.svg', position: 	{ x: -0.05, y: 0.06 }},
+		{url:'assets/door_top.svg', position:		{ x: -0.05, y: -0.015 }},
+		{url:'assets/window.svg', position: 		{ x: 0.04,  y: -0.02 }},
+		{url:'assets/window2.svg', position: 		{ x: 0.04,  y: 0.03 }},
+		{url:'assets/window_curtain.svg', position: { x: 0.04,  y: -0.025 }},
+		{url:'assets/banner_short.svg', position: 	{ x: 0, 	y:- 0.08 }},
+		{url:'assets/banner_long.svg', position:	{ x: 0, 	y: -0.075 }},
+	]
+
 
 	window.addEventListener("resize", () => {
 	// Update sizes
@@ -388,13 +344,13 @@ function onFrame(timestamp, frame) {
 	  // desk lock event
 	  if (red_button.returnExists() === true) {
 		if (
-			red_button.pressCheck(stylus.position, scene, 'white') === true &&
-			!stylus.userData.isSelecting	// should reduce accidental pressing
+			red_button.pressCheck(stylus.position, scene, 'white') === true
 		) {
 			desk_manager.lock();
 			desk_manager.spawnDrawingSurface()
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
+			red_button.makeInvisible();
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
@@ -420,15 +376,13 @@ function onFrame(timestamp, frame) {
 
 	  }
 
-	  //  // todo: this is for testing in browser
-	  // if (gamepad1.buttons[5].pressed && !wasChangeButton) {
-		//   handleButton()
-		//   nextButton.makeVisible();
-		//   nextButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2);
-		//
-	  // }
-	  // wasChangeButton = gamepad1.buttons[5].pressed;
-
+		if (BROWSER_TESTING){
+			// remove this block
+			if (gamepad1.buttons[5].pressed && !wasChangeButton) {
+				handleButton();
+			}
+			wasChangeButton = gamepad1.buttons[5].pressed;
+		}
 
     prevIsMovingDesk = isMovingDesk;
 		isMovingDesk = gamepad1.buttons[5].value > 0;
@@ -442,6 +396,7 @@ function onFrame(timestamp, frame) {
 
 			// Hover button in front of user
 			// Instead of doing offset
+			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextButton.hoverButtonByDesk(
 				camera,
@@ -535,13 +490,12 @@ function handleButton() {
 			paint.mesh.visible = false;
 		});
 		desk_manager.clearSurface();
-		loadSVG(svgArray[shapeIndex]);
+		loadSVG(svgArray[shapeIndex], CENTER_POSITION);
 
 		paintArray[shapeIndex].mesh.visible = true;
 		stylus.userData.painter = paintArray[shapeIndex];
 
 	} else {
-		desk_manager.clearSurface();
 		nextButton.makeInvisible();
 		const deskCoords = desk_manager.getDeskCoordinates();
 
@@ -561,32 +515,36 @@ function handleButton() {
 function onControllerConnected(e) {
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
+		// Set mx_ink_connected to true
+		mx_ink_connected = true;
+		// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
+		if (e.data.handedness === 'left') {
+			// Stylus is in left hand, override left hand model logic
+			left_hand_override = true;
+			right_hand_override = false;
+		} else if (e.data.handedness === 'right') {
+			right_hand_override = true;
+			left_hand_override = false; // Reset right hand variable
+		}
 
-	// Set mx_ink_connected to true
-	mx_ink_connected = true;
-	// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
-	if (e.data.handedness === 'left') {
-		// Stylus is in left hand, override left hand model logic
-		left_hand_override = true;
-		right_hand_override = false;
-	} else if (e.data.handedness === 'right') {
-		right_hand_override = true;
-		left_hand_override = false; // Reset right hand variable 
+		stylus = e.target;
+		stylus.userData.painter = paintArray[0];
+		gamepad1 = e.data.gamepad;
+		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 	}
 
-    stylus = e.target;
-    stylus.userData.painter = paintArray[0];
-    gamepad1 = e.data.gamepad;
-	gamepadInterface = new GamepadWrapper(e.data.gamepad)
+	if (BROWSER_TESTING) {
+		stylus = e.target;
+		stylus.userData.painter = paintArray[0];
+		gamepad1 = e.data.gamepad;
+		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
-	//   // todo this is temporary for placing drawing area in browser testing
-	// desk_manager.slideToFront(camera, stylus, tableGroup);
-	//   desk_manager.lock();
-	//   desk_set = true;
-	//   desk_manager.spawnDrawingSurface()
-
-
-  }
+		desk_manager.slideToFront(camera, stylus, tableGroup);
+		desk_manager.lock();
+		desk_set = true;
+		desk_manager.spawnDrawingSurface();
+		loadSVG(svgArray[0], CENTER_POSITION)
+	}
 
   // If hand, add hand model and store reference in persistentHandModels
   if (e.data.profiles.includes("oculus-hand")) {
@@ -616,7 +574,7 @@ function onSelectEnd() {
 }
 
 // svg function
-function loadSVG(url) {
+function loadSVG(url, position) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
@@ -625,10 +583,9 @@ function loadSVG(url) {
 		let renderOrder = 0;
 
 		for (const path of data.paths) {
-			const strokeColor = path.userData.style.stroke;
+			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
-				// color: new THREE.Color().setStyle(strokeColor),
 				color: "black",
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
@@ -652,7 +609,7 @@ function loadSVG(url) {
 			}
 		}
 
-		desk_manager.placeSVG(group)
+		desk_manager.placeSVG(group, position)
 	});
 }
 
