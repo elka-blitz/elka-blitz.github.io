@@ -500,7 +500,11 @@ function handleButton() {
 
 		paintArray.forEach((paint, index) => {
 			paint.mesh.visible = true;
-			desk_manager.placeSVG(paint.mesh, svgWithPositionsArray[index])
+			paint.mesh.position.set(
+				svgWithPositionsArray[index].position.x,
+				svgWithPositionsArray[index].position.y,
+				-0.01
+			);
 		});
 	}
 }
