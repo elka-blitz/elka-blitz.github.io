@@ -201,8 +201,8 @@ function init() {
 
 	tableGroup.position.set(0, -3, 0)
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0.8)
-	office_group.rotateY(Math.PI / 2)
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI / 5)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
@@ -367,8 +367,7 @@ function onFrame(timestamp, frame) {
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		// interface_text.updateText('Tap desk with stylus to lock')
-		// TODO: Uncomment after debugging ^^^
+		interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
 	}
 	else if (desk_locked && !prev_desk_locked) {
@@ -489,55 +488,6 @@ function onFrame(timestamp, frame) {
 }
 
 function animate() {
-
-	if (mx_ink_connected && right_hand_override) {
-
-		// interface_text.updateText(stylus.position.toArray().toString())
-		// interface_text.updateText(hand2.position.toArray().toString())
-		// interface_text.updateText(left_hand_container.position.toArray().toString(), right_hand_container.position.toArray().toString())
-
-		// Controller is connected in right hand
-		// This would normally hide the right hand model
-		// Overriding this by setting it to visible and positoning it with stylus
-
-		// hand2.visible = true
-		right_hand_container.children.forEach((child) => {
-			child.visible = true
-		})
-
-		// Calculate offset
-		// It seems that when added to a parent group, the handmodels inherit a local coord offset by hand-to-origin-coord
-
-		// right_hand_container.position.set(stylus.position.x -0.2, stylus.position.y - 0.75, stylus.position.z + 0.35);
-
-		// right_hand_container.quaternion.copy(stylus.quaternion) // Copy stylus rotation to hand, so it matches the hand orientation to the stylus orientation
-		// right_hand_container.position.set(stylus.position.x, stylus.position.y - 0.6, stylus.position.z);
-		camera.updateMatrixWorld()
-		// TODO: Copy quaternion
-	} 
-
-	else if (mx_ink_connected && left_hand_override) {
-		// Right hand XRInput source is controller
-		// Override right hand
-
-
-		// interface_text.updateText(left_hand_container.position.toArray().toString(), right_hand_container.position.toArray().toString())
-
-		// hand1.visible = true
-
-		left_hand_container.children.forEach((child) => {
-			child.visible = true
-		})
-		
-		// left_hand_container.position.set(stylus.position.x - 0.2, stylus.position.y - 0.75, stylus.position.z + 0.35);
-		// left_hand_container.quaternion.copy(stylus.quaternion) // Copy stylus rotation to hand, so it matches the hand orientation to the stylus orientation
-
-		camera.updateMatrixWorld()
-	}
-
-	// hand1.visible = true
-	// hand2.visible = true
-
 
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw
