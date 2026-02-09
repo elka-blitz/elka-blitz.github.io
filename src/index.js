@@ -282,21 +282,21 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		scene.add(svgPaintsArray[i].mesh);
+		desk_manager.placeSVG(paint.mesh, CENTER_POSITION);
 	})
 
 	const paintArray = svgPaintsArray;
 
 
 	const svgArray = [
-		'assets/banner_long.svg',
+		'assets/base.svg',
+		'assets/door_bottom.svg',
+		'assets/door_top.svg',
 		'assets/window.svg',
 		'assets/window2.svg',
 		'assets/window_curtain.svg',
 		'assets/banner_short.svg',
-		'assets/door_bottom.svg',
-		'assets/door_top.svg',
-		'assets/base.svg'
+		'assets/banner_long.svg'
 	]
 
 
@@ -371,7 +371,7 @@ function onFrame(timestamp, frame) {
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
-			loadSVG(svgArray[0])
+			loadSVG(svgArray[shapeIndex], CENTER_POSITION)
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
