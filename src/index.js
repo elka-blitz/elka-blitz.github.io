@@ -158,6 +158,8 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
+let logData = []
+
 init();
 
 function init() {
@@ -385,6 +387,16 @@ function onFrame(timestamp, frame) {
 
   if (gamepad1) {
 
+	// Stylus logging
+	// Get positional data for timestamp
+	logData.push({
+		timestamp: gamepad1.timestamp,
+		stylusPosition: stylus ? stylus.position.clone() : null,
+		cameraPosition: camera.position.clone(),
+		deskLocked: desk_locked
+	});
+
+	console.log(logData[logData.length - 1]) // Log the most recent data point for debugging
 	  // desk lock event
 	  if (red_button.returnExists() === true) {
 		if (
