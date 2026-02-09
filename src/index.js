@@ -17,6 +17,7 @@ import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 
 import { gsap } from 'gsap';   
 
@@ -184,9 +185,6 @@ function init() {
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
 
-	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
@@ -268,6 +266,7 @@ function init() {
 	// buttons
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene)
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
@@ -282,7 +281,7 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		desk_manager.placeSVG(paint.mesh, CENTER_POSITION);
+		desk_manager.placeSVG(svgPaintsArray[i].mesh, CENTER_POSITION);
 	})
 
 	const paintArray = svgPaintsArray;
@@ -298,8 +297,6 @@ function init() {
 		'assets/banner_short.svg',
 		'assets/banner_long.svg'
 	]
-
-
 
 	const svgWithPositionsArray = [
 		{url:'assets/base.svg', position: 			{ x: 0,		y:0}},
@@ -368,6 +365,7 @@ function onFrame(timestamp, frame) {
 			desk_manager.spawnDrawingSurface()
 			scene.background = green;
 			stylus.userData.painter = paintArray[0];
+			red_button.makeInvisible();
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
@@ -416,6 +414,7 @@ function onFrame(timestamp, frame) {
 
 			// Hover button in front of user
 			// Instead of doing offset
+			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextButton.hoverButtonByDesk(
 				camera,
