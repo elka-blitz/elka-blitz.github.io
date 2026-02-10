@@ -1,3 +1,4 @@
+
 window.addEventListener('unload', function () {
   document.documentElement.innerHTML = '';
 });   
@@ -20,6 +21,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
+import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
@@ -30,6 +32,7 @@ let camera, scene, renderer;
 let stylus;
 let gamepad1;
 let gamepadInterface;
+let contextText;
 
 const cursor = new THREE.Vector3();
 const sizes = {
@@ -62,17 +65,6 @@ let position = new THREE.Vector3();
 // Debugging stuff
 let debugVar = true
 let interface_text;
-// const UIText = new Text();
-// UIText.fontsize = 0.52
-// UIText.font = 'assets/SpaceMono-Bold.ttf';
-// UIText.position.z = -2;
-// UIText.color = 0xffffff;
-// UIText.anchorX = 'center';
-// UIText.anchorY = 'middle';
-// UIText.text = 'LiveStylusCoords'
-// UIText declarations
-// TODO: Remember sync method
-// TODO: Move to function call
 
 // Desk declarations
 let desk_set = false
@@ -238,13 +230,6 @@ function init() {
 	// Add text initialisation
 	interface_text = new UIText(scene)
 }
-	// Debugging text
-	// scene.add(UIText);
-	// UIText.position.set(0, 1, -2.5);
-	// UIText.rotateX(-Math.PI / 3.3);
-	// UIText.text = 'Tap desk with stylus to start'
-	// TODO: Replace with class method call
-	
 
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
@@ -325,6 +310,7 @@ function onFrame(timestamp, frame) {
 		// Smooth text animation to camera, prompting user to lock desk
 		interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
+		textPanel();
 	}
 	else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
@@ -613,6 +599,36 @@ function loadSVG(url, position) {
 	});
 }
 
+// context panel
+function textPanel() {
+	const xPos = 0;
+	const yPos = 1.6;
+	const width = 1.5;
+	const userDistance = 1.5
+
+	const rect = getFilledRect(width, 0.6, "#8c8c8c");
+	scene.add(rect);
+	rect.position.set(0, 1.6, -userDistance);
+
+	contextText = new Text();
+	contextText.fontSize = 0.05;
+
+	contextText.color = "black";
+	contextText.anchorX = 'center';
+	contextText.anchorY = 'middle';
+	contextText.maxWidth = width - 0.04;
+	contextText.lineHeight = 1.5;
+	contextText.text = 'You are an architect designing buildings for the city.' +
+		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
+		'\nThe three clients are the florist, the artist and the library.' +
+		'\n\nPlease go ahead and draw some practice shapes. After that the task will begin. Good luck!'
+	contextText.sync()
+
+	scene.add(contextText);
+	contextText.position.set(xPos, yPos, -(userDistance - 0.01))
+
+}
+
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
@@ -625,3 +641,4 @@ function debugGamepad(gamepad) {
     }
   });
 }
+
