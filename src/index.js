@@ -202,22 +202,8 @@ function init() {
 
 	// Questionnaire Manager
 	question_panel = new questionnaireManager(scene) // Load assetes on class initialisation
-	// let qtextureImage = questionnaire_instance.getImage(0) 
 
-	// questionnaire_instance.placeQuestionnnaireSlide()
-	// questionnaire_instance.setQuestionnaireSlide(1)
-
-	// red_button.moveButton(new THREE.Vector3(0,2,1))
-	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
-	// console.log('result', desk_manager.getPositionForButton())
-
-	// tableGroup.add(red_button_object)
-	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
-	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
-	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
-
+	question_panel.addToDesk(tableGroup)
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -477,7 +463,7 @@ function onFrame(timestamp, frame) {
 		// questionnaire_instance.setQuestionnaireSlide(2)
 		question_panel.nextQuestionnaireSlide()
 		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
-		question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 	}
   }
 
