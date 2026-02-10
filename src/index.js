@@ -88,17 +88,6 @@ let position = new THREE.Vector3();
 // Debugging stuff
 let debugVar = true
 let interface_text;
-// const UIText = new Text();
-// UIText.fontsize = 0.52
-// UIText.font = 'assets/SpaceMono-Bold.ttf';
-// UIText.position.z = -2;
-// UIText.color = 0xffffff;
-// UIText.anchorX = 'center';
-// UIText.anchorY = 'middle';
-// UIText.text = 'LiveStylusCoords'
-// UIText declarations
-// TODO: Remember sync method
-// TODO: Move to function call
 
 // Desk stuff
 let desk_set = false
@@ -307,14 +296,6 @@ function init() {
 	// Add text initialisation
 	interface_text = new UIText(scene)
 }
-	// Debugging text
-	// scene.add(UIText);
-	// UIText.position.set(0, 1, -2.5);
-	// UIText.rotateX(-Math.PI / 3.3);
-	// UIText.text = 'Tap desk with stylus to start'
-	// TODO: Replace with class method call
-	
-
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
