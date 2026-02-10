@@ -67,11 +67,12 @@ export default class questionnaireManager {
 
         // Re-add cube to screen
         this.scene.add(this.question_panel)
-        this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
-        this.question_panel.quaternion.set(this.panel_quaternion.x, this.panel_quaternion.y, this.panel_quaternion.z, this.panel_quaternion.w)
+        // this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
+        // this.question_panel.quaternion.set(this.panel_quaternion.x, this.panel_quaternion.y, this.panel_quaternion.z, this.panel_quaternion.w)
 
         // Rotate cube so that the panel surface appears horizontal
         this.question_panel.rotateX(-Math.PI / 2)
+        // this.question_panel.rotateY(Math.PI/2)
 
     }
 
@@ -82,7 +83,7 @@ export default class questionnaireManager {
 
     setPos(position_vector, quaternion) {
         this.panel_position.x = position_vector.x
-        this.panel_position.y = position_vector.y
+        this.panel_position.y = position_vector.y + 0.8 // Desktop coords
         this.panel_position.z = position_vector.z
 
         this.panel_quaternion.x = quaternion.x
@@ -91,5 +92,11 @@ export default class questionnaireManager {
         this.panel_quaternion.w = quaternion.w
 
         this.refresh()
+    }
+
+    addToDesk(desk_group) {
+        desk_group.add(this.question_panel)
+        this.panel_position.y = 0.8
+        // this.refresh()
     }
 }
