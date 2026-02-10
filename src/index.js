@@ -11,7 +11,9 @@ import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLExporter } from "three/examples/jsm/exporters/STLExporter";
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
@@ -26,7 +28,7 @@ import { update } from "three/examples/jsm/libs/tween.module.js";
 const BROWSER_TESTING = true // todo remove before deployment
 
 // setup declarations
-let camera, scene, renderer;
+let camera, scene, renderer, exporter;
 let stylus;
 let gamepad1;
 let gamepadInterface;
@@ -145,6 +147,8 @@ function init() {
 		0.01,
 		50,
 	);
+
+	exporter = new STLExporter();
 
 	camera.position.set(0, 1.6, 3);
 
@@ -485,6 +489,8 @@ function handleDrawing(controller) {
 function handleButton() {
 
 	if (shapeIndex < svgArray.length - 1) {
+		exportToObj(paintArray[shapeIndex].mesh, `drawing${shapeIndex}.stl`);
+
 		shapeIndex += 1;
 		paintArray.forEach((paint) => {
 			paint.mesh.visible = false;
@@ -611,6 +617,26 @@ function loadSVG(url, position) {
 
 		desk_manager.placeSVG(group, position)
 	});
+}
+
+// exporter
+const link = document.createElement('a');
+link.style.display = 'none';
+document.body.appendChild(link);
+
+function save(blob, filename) {
+	link.href = URL.createObjectURL(blob);
+	link.download = filename;
+	link.click();
+}
+function saveString(text, filename) {
+	save(new Blob([text], { type: 'text/plain' }), filename);
+}
+function exportToObj(mesh, filename) {
+	console.log('mesh', mesh)
+
+	const result = exporter.parse(mesh);
+	saveString(result, filename);
 }
 
 
