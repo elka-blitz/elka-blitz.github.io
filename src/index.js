@@ -21,6 +21,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
+import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 let camera, scene, renderer;
@@ -148,6 +149,9 @@ const persistentHandModels = {
   right: null
 };
 
+// Questionnaire stuff
+let question_panel;
+
 let debugging_text;
 
 let controllerGrip1, controllerGrip2;
@@ -206,7 +210,14 @@ function init() {
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-	
+
+	// Questionnaire Manager
+	question_panel = new questionnaireManager(scene) // Load assetes on class initialisation
+	// let qtextureImage = questionnaire_instance.getImage(0) 
+
+	// questionnaire_instance.placeQuestionnnaireSlide()
+	// questionnaire_instance.setQuestionnaireSlide(1)
+
 	// red_button.moveButton(new THREE.Vector3(0,2,1))
 	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
 	// console.log('result', desk_manager.getPositionForButton())
@@ -482,6 +493,10 @@ function onFrame(timestamp, frame) {
 		interface_text.flashText('#ff0000', 100) 
 
 		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// questionnaire_instance.setQuestionnaireSlide(2)
+		question_panel.nextQuestionnaireSlide()
+		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+		question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 	}
   }
 
