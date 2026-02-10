@@ -86,6 +86,10 @@ export default class DeskManager {
 		return this.desk_asset_instance.position;
 	}
 
+	getDeskQuaternion() {
+		return this.desk_asset_instance.quaternion
+	}
+
 	slideToCamera(camera, stylus, table_group) {
 		table_group.visible = true;
 
