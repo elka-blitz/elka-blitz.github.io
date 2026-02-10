@@ -96,6 +96,10 @@ export default class DeskButton {
 		this.cylinder.visible = true;
 	}
 
+	changeColor(color) {
+		this.cylinder.material.color.set(color)
+	}
+
 	pressCheck(stylus_position_vector, scene, color) {
 		this.cylinder_bb.setFromObject(this.cylinder);
 		if (

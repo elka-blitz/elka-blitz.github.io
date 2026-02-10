@@ -25,7 +25,7 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = false // todo remove before deployment
 
 // setup declarations
 let camera, scene, renderer;
@@ -52,7 +52,10 @@ let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = 0;
+let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
+
+let isPracticeMode = false;
 
 const blackMaterial = new THREE.LineBasicMaterial({
 	color: 'black',
@@ -240,7 +243,7 @@ function init() {
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
+	nextButton.createButton(new THREE.Vector3(0,0,0), '#ff7300', 'Next', 0.07)
 	nextButton.makeInvisible();
 
 	// drawing
@@ -255,6 +258,7 @@ function init() {
 		scene.add(svgPaintsArray[i].mesh);
 	})
 
+	const practicePaints = svgPaintsArray.slice(5);
 	const paintArray = svgPaintsArray;
 
 
@@ -310,7 +314,6 @@ function onFrame(timestamp, frame) {
 		// Smooth text animation to camera, prompting user to lock desk
 		interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
-		textPanel();
 	}
 	else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
@@ -325,21 +328,25 @@ function onFrame(timestamp, frame) {
 
 	interface_text.sync()
 
+
+ // ------ EVENTS ------
   if (gamepad1) {
 
-	  // desk lock event
+	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
 			red_button.pressCheck(stylus.position, scene, 'white') === true
 		) {
 			desk_manager.lock();
+			isPracticeMode = true;
 			desk_manager.spawnDrawingSurface()
 			scene.background = green;
-			stylus.userData.painter = paintArray[0];
+			stylus.userData.painter = practicePaints[0];
 			red_button.makeInvisible();
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
+			textPanel();
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
@@ -347,10 +354,11 @@ function onFrame(timestamp, frame) {
 			// TODO: Find click .ogg sound file to use instead of a laser sound
 		}
 	}
+
 	  // change material
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
-			  handleButton();
+			  handleButton(isPracticeMode);
 			
 			// User feedback for button press
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
@@ -468,7 +476,25 @@ function handleDrawing(controller) {
   }
 }
 
-function handleButton() {
+function handleButton(isPractice) {
+	if (isPractice) {
+		if (practiceShapeIndex < practicePaints.length - 1) {
+			practiceShapeIndex += 1
+			practicePaints.forEach((paint) => {
+				paint.mesh.visible = false;
+			});
+			desk_manager.clearSurface();
+			loadSVG(svgArray[practiceShapeIndex], CENTER_POSITION); // todo use practice svgarray
+
+			practicePaints[shapeIndex].mesh.visible = true;
+			stylus.userData.painter = practicePaints[practiceShapeIndex];
+		}
+		else {
+			isPracticeMode = false;
+			nextButton.changeColor('#359743');
+		}
+	}
+
 
 	if (shapeIndex < svgArray.length - 1) {
 		shapeIndex += 1;
@@ -601,6 +627,7 @@ function loadSVG(url, position) {
 
 // context panel
 function textPanel() {
+	if (!isPracticeMode) return;
 	const xPos = 0;
 	const yPos = 1.6;
 	const width = 1.5;
