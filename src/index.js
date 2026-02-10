@@ -391,7 +391,7 @@ function onFrame(timestamp, frame) {
 	// Stylus logging
 	// Get positional data for timestamp
 	logData.push({
-		t: gamepad1.timestamp,
+		t: Date.now(),
 		s: stylus ? stylus.position.clone() : null,
 		// deskLocked: desk_locked
 		// TODO: Buttonpushed variable
