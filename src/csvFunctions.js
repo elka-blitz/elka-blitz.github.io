@@ -9,16 +9,13 @@
 // 	return rows.join('\n');
 // };
 
-let csv_counter = 0; // Counter to create unique filenames
-
-
 export const downloadCSV = (data) => {
 	const blob = new Blob([data], { type: 'text/csv' });
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement('a');
 
 	link.href = url;
-	link.download = "generation_pittiplatsch_" + csv_counter + ".csv";
-    csv_counter++; // Increment the counter for the next file
+	var date = new Date();
+	link.download = `${date.getDate()}_${date.getMonth()}_${date.getFullYear()}_${date.getTime()}.txt`
 	link.click();
 };

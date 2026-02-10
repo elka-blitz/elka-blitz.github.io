@@ -391,10 +391,9 @@ function onFrame(timestamp, frame) {
 	// Stylus logging
 	// Get positional data for timestamp
 	logData.push({
-		timestamp: gamepad1.timestamp,
-		stylusPosition: stylus ? stylus.position.clone() : null,
-		cameraPosition: camera.position.clone(),
-		deskLocked: desk_locked
+		t: gamepad1.timestamp,
+		s: stylus ? stylus.position.clone() : null,
+		// deskLocked: desk_locked
 		// TODO: Buttonpushed variable
 	});
 
@@ -495,7 +494,9 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		// left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// Generate CSV and trigger download
+		// This is currently done on controller button press, but can be triggered prgrammattically
+		// Should be triggered alongside 
 		downloadCSV(JSON.stringify(logData));
 	}
   }
