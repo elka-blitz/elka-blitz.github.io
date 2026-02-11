@@ -108,7 +108,7 @@ export class TextPanel {
 		scene.add(this.rect);
 		this.rect.position.set(xPos, yPos, -userDistance);
 
-		this.text = new Text()
+		this.text = new Text();
 		this.text.fontSize = 0.05;
 		this.text.color = 'black';
 		this.text.anchorX = 'center';
@@ -134,5 +134,9 @@ export class TextPanel {
 	makeVisible() {
 		this.rect.visible = true;
 		this.text.visible = true;
+	}
+
+	updateText(text) {
+		this.text.text = text;
 	}
 }

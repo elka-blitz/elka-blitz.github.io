@@ -125,7 +125,7 @@ const svgWithPositionsArray = [
 let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
-let shapeIndex = 0;
+let shapeIndex = -1;	// workaround for the way i've done the task flow
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
 
@@ -345,7 +345,7 @@ function init() {
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene);
-	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Next', 0.07);
+	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 0/3', 0.07);
 	nextButton.makeInvisible();
 
 	// drawing
@@ -397,14 +397,13 @@ function onFrame(timestamp, frame) {
 			isPracticeMode = true;
 			desk_manager.spawnDrawingSurface();
 			scene.background = green;
-			stylus.userData.painter = practicePaints[0];
 			red_button.makeInvisible();
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
 			contextText.makeVisible();
 			loadSVG(practiceSvgArray[0], CENTER_POSITION);
-
+			stylus.userData.painter = practicePaints[0];
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
@@ -523,7 +522,7 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = svgPaintsArray[shapeIndex];
+  const painter = isPracticeMode ? practicePaints[practiceShapeIndex] : svgPaintsArray[shapeIndex];
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
@@ -549,12 +548,19 @@ function handleButton() {
 			practicePaints.forEach((paint) => {
 				paint.mesh.visible = false;
 			});
-			practicePaints[shapeIndex].mesh.visible = true;
+			practicePaints[practiceShapeIndex].mesh.visible = true;
 			stylus.userData.painter = practicePaints[practiceShapeIndex];
 
 		} else {
 			isPracticeMode = false;
+
+			desk_manager.clearSurface();
+			practicePaints.forEach((paint) => {
+				paint.mesh.visible = false;
+			});
+
 			nextButton.changeColor('#359743');
+			nextButton.updateLabel("Begin");
 			contextText.makeInvisible();
 			task1Text.makeVisible();
 
@@ -564,6 +570,7 @@ function handleButton() {
 	else {
 		// task1
 		if (shapeIndex < svgArray.length - 1) {
+			shapeIndex += 1;
 			desk_manager.clearSurface();
 			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
 			nextButton.updateLabel(`Next ${shapeIndex}/${svgArray.length -1}`);
@@ -576,15 +583,15 @@ function handleButton() {
 			svgPaintsArray[shapeIndex].mesh.visible = true;
 			stylus.userData.painter = svgPaintsArray[shapeIndex];
 
-			// increment at the end to include 0 index
-			shapeIndex += 1;
 
 		}
 		// end of task 1
 		else {
 			nextButton.makeInvisible();
+			task1Text.updateText("Task 1 Complete");
 
 			// todo move paints
+
 			// make all paints visible for full drawing
 			svgPaintsArray.forEach((paint) => {
 				paint.mesh.visible = true;
