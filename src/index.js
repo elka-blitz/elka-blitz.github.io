@@ -14,7 +14,6 @@ File structure:
 	- debugGamepad
 */
 
-
 // event listeners
 window.addEventListener('unload', function () {
   document.documentElement.innerHTML = '';
@@ -63,7 +62,7 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 
 // setup declarations
 let camera, scene, renderer;
@@ -392,7 +391,7 @@ function onFrame(timestamp, frame) {
 		) {
 			desk_manager.lock();
 			isPracticeMode = true;
-			desk_manager.spawnDrawingSurface()
+			desk_manager.spawnDrawingSurface();
 			scene.background = green;
 			stylus.userData.painter = practicePaints[0];
 			red_button.makeInvisible();
@@ -415,10 +414,10 @@ function onFrame(timestamp, frame) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton(isPracticeMode);
 			
-			// User feedback for button press
-			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-			laserSound.play(); // Sound effect for button press
+				// User feedback for button press
+				interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
 		  }
 		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
 
@@ -443,8 +442,7 @@ function onFrame(timestamp, frame) {
 			// Desk fly-in
 			desk_manager.slideToCamera(camera, stylus, tableGroup);
 
-			// Hover button in front of user
-			// Instead of doing offset
+			// Hover button in front of user instead of doing offset
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextButton.hoverButtonByDesk(
@@ -596,25 +594,38 @@ function onControllerConnected(e) {
 		}
 
 		stylus = e.target;
-		stylus.userData.painter = svgPaintsArray[0];
+		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 	}
 
 	if (BROWSER_TESTING) {
+		// normal setup
 		stylus = e.target;
-		stylus.userData.painter = svgPaintsArray[0];
+		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
+		// desk lock event simulation
 		desk_manager.slideToFront(camera, stylus, tableGroup);
 		desk_manager.lock();
-		desk_set = true;
+		nextButton.hoverButtonByDesk(
+			camera,
+			desk_manager.getDesk(),
+			scene,
+			0.3,
+			0.2,
+		);
+		isPracticeMode = true;
 		desk_manager.spawnDrawingSurface();
+		scene.background = green;
+		red_button.makeInvisible();
+		nextButton.makeVisible();
+		desk_set = true;
 		interface_text.updateText('Draw on the outline!');
 		contextText.makeVisible();
 		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-		nextButton.makeVisible();
+
 
 
 	}
