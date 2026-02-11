@@ -362,6 +362,8 @@ function onFrame(timestamp, frame) {
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
 			contextText.makeVisible();
+			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
@@ -388,7 +390,7 @@ function onFrame(timestamp, frame) {
 		if (BROWSER_TESTING){
 			// remove this block
 			if (gamepad1.buttons[5].pressed && !wasChangeButton) {
-				handleButton();
+				handleButton(isPracticeMode);
 			}
 			wasChangeButton = gamepad1.buttons[5].pressed;
 		}
@@ -499,7 +501,8 @@ function handleButton(isPractice) {
 				paint.mesh.visible = false;
 			});
 			desk_manager.clearSurface();
-			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION); // todo use practice svgarray
+			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+			nextButton.updateLabel(`Practice ${practiceSvgArray}/3`)
 
 			practicePaints[shapeIndex].mesh.visible = true;
 			stylus.userData.painter = practicePaints[practiceShapeIndex];
@@ -570,7 +573,12 @@ function onControllerConnected(e) {
 		desk_manager.lock();
 		desk_set = true;
 		desk_manager.spawnDrawingSurface();
-		loadSVG(svgArray[0], CENTER_POSITION)
+		interface_text.updateText('Draw on the outline!');
+		contextText.makeVisible();
+		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+		nextButton.makeVisible();
+
+
 	}
 
   // If hand, add hand model and store reference in persistentHandModels

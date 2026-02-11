@@ -62,6 +62,10 @@ export default class DeskButton {
 		return this.cylinder;
 	}
 
+	updateLabel(newLabel) {
+		this.button_label_text = createText(newLabel, 0.04);
+	}
+
 	hoverButtonByDesk(camera, desk, scene, xOffset, zOffset) {
 		this.cylinder.position.copy(desk.position);
 		this.cylinder.quaternion.copy(desk.quaternion);
