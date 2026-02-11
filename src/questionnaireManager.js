@@ -38,7 +38,7 @@ export default class questionnaireManager {
 
         this.question_panel.rotateX(-Math.PI / 2)
         // this.question_panel.rotateY(-Math.PI /2)
-        this.question_panel.rotateZ(Math.PI)
+        this.question_panel.rotateZ(-Math.PI / 2)
         
         // Input cube variables        
         this.input_cube_geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
@@ -49,7 +49,10 @@ export default class questionnaireManager {
 
         this.input_cube_offset_between = 0.01
         this.input_cube_start_position = new THREE.Vector3(-0.18, 0.119, 0) // relative to panel center
-        this.input_cube_sequnce_offset = 0.05 // how much the cubes move down as the questionnaire progresses
+        this.input_cube_sequnce_offset = 0.1 // how much the cubes move down as the questionnaire progresses
+
+        this.prevIsSelecting = false
+        this.isSelecting = false
     }
 
     async loadImage(image_path){
@@ -178,7 +181,11 @@ export default class questionnaireManager {
             // boundingBox.max.add(cube.position)
             let bounding_box = new THREE.Box3().setFromObject(cube)
 
-            if (bounding_box.containsPoint(stylus_position_vector)) {
+            this.prevIsSelecting = this.isSelecting
+            this.isSelecting = bounding_box.containsPoint(stylus_position_vector)
+            
+
+            if (this.isSelecting && !this.prevIsSelecting) {
                 console.log('Input cube intersected:', cube)
                 this.nextQuestionnaireSlide()
                 this.moveInputCubesDown()
