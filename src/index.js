@@ -70,7 +70,7 @@ let camera, scene, renderer;
 let stylus;
 let gamepad1;
 let gamepadInterface;
-let contextText;
+let contextText, task1Text;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -328,10 +328,13 @@ function init() {
 	const contextTextStr =
 		'You are an architect designing buildings for the city.' +
 		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
-		'\nThe three clients are the florist, the artist and the library.' +
-		'\n\nPlease go ahead and draw some practice shapes. After that the task will begin. Good luck!';
+		'\nThe three clients want to build a bakery, a studio and a library.' +
+		'\n\nPlease go ahead and draw some practice shapes. After that the tasks will begin. Good luck!';
+
+	const task1TextStr = 'Task 1: The Bakery';
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
+	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
 
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup);
@@ -539,7 +542,9 @@ function handleButton() {
 			practiceShapeIndex += 1;
 			desk_manager.clearSurface();
 			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(`Practice ${practiceSvgArray}/3`)
+			nextButton.updateLabel(
+				`Practice ${practiceShapeIndex}/${practiceSvgArray.length - 1}`,
+			);
 
 			practicePaints.forEach((paint) => {
 				paint.mesh.visible = false;
@@ -551,6 +556,7 @@ function handleButton() {
 			isPracticeMode = false;
 			nextButton.changeColor('#359743');
 			contextText.makeInvisible();
+			task1Text.makeVisible();
 
 		}
 	}
@@ -560,6 +566,8 @@ function handleButton() {
 		if (shapeIndex < svgArray.length - 1) {
 			desk_manager.clearSurface();
 			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
+			nextButton.updateLabel(`Next ${shapeIndex}/${svgArray.length -1}`);
+
 
 			svgPaintsArray.forEach((paint) => {
 				paint.mesh.visible = false;
