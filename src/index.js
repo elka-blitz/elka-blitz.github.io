@@ -1,7 +1,45 @@
 
+/*
+File structure:
+	- event listeners
+	- imports
+	- declarations
+	- init function
+	- onFrame function (events)
+	- animate function (drawing)
+	- handleDrawing
+	- handleButton
+	- controller functions (onControllerConnected, onSelectStart, onSelectEnd
+	- loadSVG
+	- debugGamepad
+*/
+
+
+// event listeners
 window.addEventListener('unload', function () {
   document.documentElement.innerHTML = '';
-});   
+});
+
+window.addEventListener('resize', () => {
+	// Update sizes
+	sizes.width = window.innerWidth;
+	sizes.height = window.innerHeight;
+
+	// Update camera
+	camera.aspect = sizes.width / sizes.height;
+	camera.updateProjectionMatrix();
+
+	// Update renderer
+	renderer.setSize(sizes.width, sizes.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+	// Animation method cleanup
+	gsap.ticker.remove(gsap.updateRoot);
+
+	interface_text.updateText(
+		'Resized window to: ' + sizes.width + 'x' + sizes.height,
+	);
+});
 
 import * as THREE from "three";
 
@@ -43,9 +81,46 @@ const sizes = {
 // drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
+let practicePaints;
 
-let isMovingDesk = false;
-let prevIsMovingDesk = false;
+// todo organise this into a class or something
+const coloursArray = [
+	'red',
+	'orange',
+	'yellow',
+	'green',
+	'blue',
+	'cyan',
+	'purple',
+];
+
+const svgArray = [
+	'assets/base.svg',
+	'assets/door_bottom.svg',
+	'assets/door_top.svg',
+	'assets/window.svg',
+	'assets/window2.svg',
+	'assets/window_curtain.svg',
+	'assets/banner_short.svg',
+	'assets/banner_long.svg',
+];
+
+const practiceSvgArray = [
+	'assets/window.svg',
+	'assets/door_top.svg',
+	'assets/window_curtain.svg',
+];
+
+const svgWithPositionsArray = [
+	{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
+	{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
+	{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
+	{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
+	{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
+	{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
+	{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
+	{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
+];
 
 let wasChangeButton = false;
 let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
@@ -56,11 +131,6 @@ const CENTER_POSITION = {x: 0, y : 0};
 
 let isPracticeMode = false;
 
-const blackMaterial = new THREE.LineBasicMaterial({
-	color: 'black',
-	linewidth: 4,
-});
-
 // Stylus info
 let position = new THREE.Vector3();
 
@@ -69,6 +139,8 @@ let debugVar = true
 let interface_text;
 
 // Desk declarations
+let isMovingDesk = false;
+let prevIsMovingDesk = false;
 let desk_set = false
 let tableGroup = new THREE.Group()
 let backPushed = false
@@ -153,7 +225,9 @@ function init() {
 	controls.update();
 
 	const dracoLoader = new DRACOLoader();
-	dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/libs/draco/');
+	dracoLoader.setDecoderPath(
+		'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/libs/draco/',
+	);
 
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
@@ -162,14 +236,19 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	gltfLoader.load('./assets/office_environment.glb', function(gltf) {
-		office_group.add(gltf.scene);
-	}, undefined, function(error) {
-		console.error(error);
-	});
+	gltfLoader.load(
+		'./assets/office_environment.glb',
+		function (gltf) {
+			office_group.add(gltf.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error);
+		},
+	);
 
-	scene.add(tableGroup)
-	scene.add(office_group)
+	scene.add(tableGroup);
+	scene.add(office_group);
 
 	// light setup
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -178,11 +257,11 @@ function init() {
 	scene.add(light);
 
 	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup)
+	desk_manager = new DeskManager(scene, tableGroup);
 
-	tableGroup.position.set(0, -3, 0)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
+	tableGroup.position.set(0, -3, 0);
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
 
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -192,7 +271,7 @@ function init() {
 	renderer.xr.enabled = true;
 
 	const sessionInit = {
-		requiredFeatures: [ 'hand-tracking' ]
+		requiredFeatures: ['hand-tracking'],
 	};
 
 	document.body.appendChild(VRButton.createButton(renderer, sessionInit));
@@ -205,32 +284,46 @@ function init() {
 
 	controllerGrip1 = getControllerGrip(0, renderer, controllerModelFactory);
 	scene.add(controllerGrip1);
-	scene.add(getController(0, renderer, onControllerConnected, onSelectStart, onSelectEnd));
+	scene.add(
+		getController(
+			0,
+			renderer,
+			onControllerConnected,
+			onSelectStart,
+			onSelectEnd,
+		),
+	);
 
 	controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
 	scene.add(controllerGrip2);
-	scene.add(getController(1, renderer, onControllerConnected, onSelectStart, onSelectEnd,),);
+	scene.add(
+		getController(
+			1,
+			renderer,
+			onControllerConnected,
+			onSelectStart,
+			onSelectEnd,
+		),
+	);
 
-	// Hand1 setup
+	// Hand 1 setup
 	hand1 = renderer.xr.getHand(0);
 
 	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
 	hand1.add(leftHandModel);
-	left_hand_container.add(hand1)
-	scene.add(left_hand_container)
-
+	left_hand_container.add(hand1);
+	scene.add(left_hand_container);
 
 	// Hand 2
 	hand2 = renderer.xr.getHand(1);
 
 	let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
-	hand2.add(rightHandModel)
-	right_hand_container.add(hand2)
-	scene.add(right_hand_container)
-
+	hand2.add(rightHandModel);
+	right_hand_container.add(hand2);
+	scene.add(right_hand_container);
 
 	// Add text initialisation
-	interface_text = new UIText(scene)
+	interface_text = new UIText(scene);
 
 	const contextTextStr =
 		'You are an architect designing buildings for the city.' +
@@ -238,25 +331,21 @@ function init() {
 		'\nThe three clients are the florist, the artist and the library.' +
 		'\n\nPlease go ahead and draw some practice shapes. After that the task will begin. Good luck!';
 
-
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 
-}
-
 	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup)
+	desk_manager = new DeskManager(scene, tableGroup);
 
 	// buttons
-	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+	red_button = new DeskButton(scene);
+	red_button.createButton(new THREE.Vector3(0, 0, 0), '#b30000', 'Lock');
 	red_button.makeInvisible();
 
-	nextButton = new DeskButton(scene)
-	nextButton.createButton(new THREE.Vector3(0,0,0), '#ff7300', 'Next', 0.07)
+	nextButton = new DeskButton(scene);
+	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Next', 0.07);
 	nextButton.makeInvisible();
 
 	// drawing
-	const coloursArray = ["red", "orange","yellow", "green", "blue", "cyan", "purple"];
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
@@ -265,61 +354,10 @@ function init() {
 		});
 		svgPaintsArray[i].setSize(0.2);
 		scene.add(svgPaintsArray[i].mesh);
-	})
+	});
 
-	const practicePaints = svgPaintsArray.slice(5);
-	const paintArray = svgPaintsArray;
-
-
-	const svgArray = [
-		'assets/base.svg',
-		'assets/door_bottom.svg',
-		'assets/door_top.svg',
-		'assets/window.svg',
-		'assets/window2.svg',
-		'assets/window_curtain.svg',
-		'assets/banner_short.svg',
-		'assets/banner_long.svg'
-	]
-
-	const practiceSvgArray = [
-		'assets/window.svg',
-		'assets/door_top.svg',
-		'assets/window_curtain.svg'
-	];
-
-	const svgWithPositionsArray = [
-		{url:'assets/base.svg', position: 			{ x: 0,		y:0}},
-		{url:'assets/door_bottom.svg', position: 	{ x: -0.05, y: 0.06 }},
-		{url:'assets/door_top.svg', position:		{ x: -0.05, y: -0.015 }},
-		{url:'assets/window.svg', position: 		{ x: 0.04,  y: -0.02 }},
-		{url:'assets/window2.svg', position: 		{ x: 0.04,  y: 0.03 }},
-		{url:'assets/window_curtain.svg', position: { x: 0.04,  y: -0.025 }},
-		{url:'assets/banner_short.svg', position: 	{ x: 0, 	y:- 0.08 }},
-		{url:'assets/banner_long.svg', position:	{ x: 0, 	y: -0.075 }},
-	]
-
-
-	window.addEventListener("resize", () => {
-	// Update sizes
-	sizes.width = window.innerWidth;
-	sizes.height = window.innerHeight;
-
-	// Update camera
-	camera.aspect = sizes.width / sizes.height;
-	camera.updateProjectionMatrix();
-
-	// Update renderer
-	renderer.setSize(sizes.width, sizes.height);
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-
-	// Animation method cleanup
-	gsap.ticker.remove(gsap.updateRoot);
-
-	interface_text.updateText('Resized window to: ' + sizes.width + 'x' + sizes.height)
-});
-
+	practicePaints = svgPaintsArray.slice(5);
+}
 
 // animation functions
 function onFrame(timestamp, frame) {
@@ -482,7 +520,7 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = paintArray[shapeIndex];
+  const painter = svgPaintsArray[shapeIndex];
 
   if (gamepad1) {
     cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
@@ -516,20 +554,20 @@ function handleButton(isPractice) {
 
 	if (shapeIndex < svgArray.length - 1) {
 		shapeIndex += 1;
-		paintArray.forEach((paint) => {
+		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
 		desk_manager.clearSurface();
 		loadSVG(svgArray[shapeIndex], CENTER_POSITION);
 
-		paintArray[shapeIndex].mesh.visible = true;
-		stylus.userData.painter = paintArray[shapeIndex];
+		svgPaintsArray[shapeIndex].mesh.visible = true;
+		stylus.userData.painter = svgPaintsArray[shapeIndex];
 
 	} else {
 		nextButton.makeInvisible();
 		const deskCoords = desk_manager.getDeskCoordinates();
 
-		paintArray.forEach((paint) => {
+		svgPaintsArray.forEach((paint) => {
 			// paint.mesh.position.set(
 			// 	deskCoords.x,
 			// 	deskCoords.y + 0.1,SSS
@@ -558,14 +596,14 @@ function onControllerConnected(e) {
 		}
 
 		stylus = e.target;
-		stylus.userData.painter = paintArray[0];
+		stylus.userData.painter = svgPaintsArray[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 	}
 
 	if (BROWSER_TESTING) {
 		stylus = e.target;
-		stylus.userData.painter = paintArray[0];
+		stylus.userData.painter = svgPaintsArray[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
