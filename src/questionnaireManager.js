@@ -2,8 +2,9 @@ import * as THREE from "three";
 
 export default class questionnaireManager {
     // Who wants to be a questionnaire?
-    constructor(scene) {
+    constructor(scene, camera) {
         this.scene = scene
+        this.camera = camera
 
         this.question_panels = ['assets/question_1.png', 'assets/question_2.png', 'assets/question_3.png', 'assets/question_4.png', 'assets/question_5.png', 'assets/question_6.png', 'assets/question_7.png', 'assets/question_8.png']
         this.q_slide_index = 0;
@@ -160,12 +161,16 @@ export default class questionnaireManager {
         // If so, move the questionnaire to the next slide and move the cubes down
         // This function would be called in the main animation loop, and would check for intersection with the stylus position
         // Log which cube was intersected
-        let raycaster = new THREE.Raycaster()
-        raycaster.setFromCamera(stylus_position_vector, this.camera)
 
+        // Check if the stylus vector is within the bounding box of any of the input cubes
+        // 
         this.input_cubes.forEach(cube => {
-            if (raycaster.intersectObject(cube).length > 0) {
-                console.log("Intersected cube:", cube)
+            let boundingBox = cube.boundingBox.clone()
+            boundingBox.min.add(cube.position)
+            boundingBox.max.add(cube.position)
+
+            if (boundingBox.containsPoint(stylus_position_vector)) {
+                console.log('Input cube intersected:', cube)
                 this.nextQuestionnaireSlide()
                 this.moveInputCubesDown()
             }

@@ -204,7 +204,7 @@ function init() {
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	// Questionnaire Manager
-	question_panel = new questionnaireManager(scene) // Load assetes on class initialisation
+	question_panel = new questionnaireManager(scene, camera) // Load assetes on class initialisation
 
 	question_panel.addToDesk(tableGroup)
 
@@ -389,6 +389,9 @@ function onFrame(timestamp, frame) {
 			// TODO: Find click .ogg sound file to use instead of a laser sound
 		}
 	}
+
+	question_panel.inputChecker(stylus.position, scene)
+
 	  // change material
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
