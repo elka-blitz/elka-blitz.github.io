@@ -63,7 +63,11 @@ export default class DeskButton {
 	}
 
 	updateLabel(newLabel) {
+		this.cylinder.remove(this.button_label_text);
 		this.button_label_text = createText(newLabel, 0.04);
+		this.button_label_text.rotateX(-1.570796); // -90deg
+		this.cylinder.add(this.button_label_text);
+		this.button_label_text.position.y = 0.03; // Hardcoded
 	}
 
 	hoverButtonByDesk(camera, desk, scene, xOffset, zOffset) {

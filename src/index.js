@@ -63,6 +63,7 @@ import { gsap } from 'gsap';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
+let BROWSER_buttonPressed = false;
 
 // setup declarations
 let camera, scene, renderer;
@@ -399,7 +400,7 @@ function onFrame(timestamp, frame) {
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
 			contextText.makeVisible();
-			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+			loadSVG(practiceSvgArray[0], CENTER_POSITION);
 
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
@@ -412,7 +413,7 @@ function onFrame(timestamp, frame) {
 	  // change material
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
-			  handleButton(isPracticeMode);
+			  handleButton();
 			
 				// User feedback for button press
 				interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
@@ -426,15 +427,16 @@ function onFrame(timestamp, frame) {
 
 		if (BROWSER_TESTING){
 			// remove this block
-			if (gamepad1.buttons[5].pressed && !wasChangeButton) {
-				handleButton(isPracticeMode);
+			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+				handleButton();
 			}
-			wasChangeButton = gamepad1.buttons[5].pressed;
+			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 		}
 
-    prevIsMovingDesk = isMovingDesk;
-		isMovingDesk = gamepad1.buttons[5].value > 0;
-
+		if (!desk_set){
+			prevIsMovingDesk = isMovingDesk;
+			isMovingDesk = gamepad1.buttons[5].value > 0;
+		}
 
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
@@ -529,51 +531,58 @@ function handleDrawing(controller) {
   }
 }
 
-function handleButton(isPractice) {
-	if (isPractice) {
+function handleButton() {
+	// if practice mode, use practice objects
+	if (isPracticeMode) {
+		// iterating
 		if (practiceShapeIndex < practiceSvgArray.length - 1) {
 			practiceShapeIndex += 1;
-			practicePaints.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
 			desk_manager.clearSurface();
 			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
 			nextButton.updateLabel(`Practice ${practiceSvgArray}/3`)
 
+			practicePaints.forEach((paint) => {
+				paint.mesh.visible = false;
+			});
 			practicePaints[shapeIndex].mesh.visible = true;
 			stylus.userData.painter = practicePaints[practiceShapeIndex];
+
 		} else {
 			isPracticeMode = false;
 			nextButton.changeColor('#359743');
 			contextText.makeInvisible();
+
 		}
 	}
+	// if not practice mode
+	else {
+		// task1
+		if (shapeIndex < svgArray.length - 1) {
+			desk_manager.clearSurface();
+			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
 
+			svgPaintsArray.forEach((paint) => {
+				paint.mesh.visible = false;
+			});
 
-	if (shapeIndex < svgArray.length - 1) {
-		shapeIndex += 1;
-		svgPaintsArray.forEach((paint) => {
-			paint.mesh.visible = false;
-		});
-		desk_manager.clearSurface();
-		loadSVG(svgArray[shapeIndex], CENTER_POSITION);
+			svgPaintsArray[shapeIndex].mesh.visible = true;
+			stylus.userData.painter = svgPaintsArray[shapeIndex];
 
-		svgPaintsArray[shapeIndex].mesh.visible = true;
-		stylus.userData.painter = svgPaintsArray[shapeIndex];
+			// increment at the end to include 0 index
+			shapeIndex += 1;
 
-	} else {
-		nextButton.makeInvisible();
-		const deskCoords = desk_manager.getDeskCoordinates();
+		}
+		// end of task 1
+		else {
+			nextButton.makeInvisible();
 
-		svgPaintsArray.forEach((paint) => {
-			// paint.mesh.position.set(
-			// 	deskCoords.x,
-			// 	deskCoords.y + 0.1,SSS
-			// 	deskCoords.z - 0.2,
-			// );
+			// todo move paints
+			// make all paints visible for full drawing
+			svgPaintsArray.forEach((paint) => {
+				paint.mesh.visible = true;
+			});
 
-			paint.mesh.visible = true;
-		});
+		}
 	}
 }
 
