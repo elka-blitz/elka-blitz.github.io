@@ -12,6 +12,7 @@ import  DeskManager  from './DeskManager.js'
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
@@ -163,7 +164,7 @@ init();
 function init() {
 	// scene setup
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color('#38a3a5');
+	// scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
 		50,
 		window.innerWidth / window.innerHeight,
@@ -188,11 +189,49 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	gltfLoader.load('./assets/office_environment.glb', function(gltf) {
-		office_group.add(gltf.scene);
-	}, undefined, function(error) {
-		console.error(error);
-	});
+	gltfLoader.load('./assets/office_environment.glb', (gltf) => {
+		const model = gltf.scene;
+
+		model.traverse((obj) => {
+			if (!obj.isMesh) return;
+
+			obj.castShadow = true;
+			obj.receiveShadow = true;
+
+			const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+
+			for (let i = 0; i < mats.length; i++) {
+				const m = mats[i];
+				if (!m) continue;
+
+				if (m.isMeshBasicMaterial) {
+					m.dispose();
+
+					mats[i] = new THREE.MeshStandardMaterial({
+						map: m.map ?? null,
+						color: m.color ?? new THREE.Color(0xffffff),
+						roughness: 0.7,
+						metalness: 0.0,
+					});
+				} else {
+					if ('roughness' in m) m.roughness = 0.7;
+					if ('metalness' in m) m.metalness = 0.0;
+				}
+
+				mats[i].needsUpdate = true;
+			}
+
+			obj.material = Array.isArray(obj.material) ? mats : mats[0];
+		});
+
+		office_group.add(model);
+	},
+		undefined,
+
+		(error) => {
+			console.error(error);
+		}
+	);
 
 	scene.add(tableGroup)
 	scene.add(office_group)
@@ -219,11 +258,56 @@ function init() {
 	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
 
 
-	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
+	const hemi = new THREE.HemisphereLight(0xfff1dc, 0x1b1b2a, 0.35);
+	scene.add(hemi);
 
-	const light = new THREE.DirectionalLight(0xffffff, 1.5);
-	light.position.set(0, 4, 0);
+	const ambient = new THREE.AmbientLight(0xfff1dc, 0.15);
+	scene.add(ambient);
+
+	const light = new THREE.DirectionalLight(0xffffff, 0.25);
+	light.position.set(2, 4, 1);
+	light.castShadow = true;
+
+	light.shadow.mapSize.set(2048, 2048);
+	light.shadow.radius = 4;
+
+	light.shadow.camera.near = 0.1;
+	light.shadow.camera.far = 20;
+	light.shadow.camera.right = 10;
+	light.shadow.camera.left = -10;
+	light.shadow.camera.top = 10;
+	light.shadow.camera.bottom = -10;
+
 	scene.add(light);
+	scene.add(light.target);
+
+	const gridSize = 3;
+
+	const ceilingY = 2.24;
+
+	const xMin = -2.0, xMax = 2.0;
+	const zMin = -2.0, zMax = 2.0;
+
+	const warm = 0xffe7cf;
+	const intensity = 2.0;
+	const distance = 30.0;
+	const decay = 0.5;
+
+	for (let xi = 0; xi < gridSize; xi++) {
+		const x = THREE.MathUtils.lerp(xMin, xMax, xi / (gridSize - 1));
+
+		for (let zi = 0; zi < gridSize; zi++) {
+			const z = THREE.MathUtils.lerp(zMin, zMax, zi / (gridSize - 1));
+
+			const bulb = new THREE.PointLight(warm, intensity, distance, decay);
+			bulb.position.set(x, ceilingY, z);
+
+			bulb.castShadow = false;
+
+			scene.add(bulb);
+		}
+	}
+
 
 	const player = new THREE.Group();
 	scene.add(player);
@@ -235,6 +319,24 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
+
+	renderer.outputColorSpace = THREE.SRGBColorSpace;
+	renderer.toneMapping = THREE.ACESFilmicToneMapping;
+	renderer.toneMappingExposure = 1.3;
+
+	const pmrem = new THREE.PMREMGenerator(renderer);
+	pmrem.compileEquirectangularShader();
+
+	new RGBELoader().load("./assets/flow_bg.hdr", (hdrTex) => {
+		hdrTex.mapping = THREE.EquirectangularReflectionMapping;
+
+		const envMap = pmrem.fromEquirectangular(hdrTex).texture;
+		scene.environment = envMap;
+		scene.background = envMap;
+
+		hdrTex.dispose();
+		pmrem.dispose();
+	});
 
 	const sessionInit = {
 		requiredFeatures: [ 'hand-tracking' ]
@@ -393,7 +495,7 @@ function onFrame(timestamp, frame) {
 		) {
 			desk_manager.lock();
 			desk_manager.spawnDrawingSurface()
-			scene.background = green;
+			// scene.background = green;
 			stylus.userData.painter = paintArray[0];
 			nextButton.makeVisible();
 			desk_set = true;
