@@ -99,12 +99,12 @@ let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
-// Button stuff
+// MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
-// Noise feedback declaration
+// MARK: Sounds
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
@@ -121,11 +121,11 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 });
 
 
-// Office environment setup
+// MARK: Environment
 let office_group = new THREE.Group()
 
 
-// Hand declarations
+// MARK: Hands
 let hand1, hand2;
 const handModels = {
 	left: null,
@@ -138,7 +138,7 @@ const persistentHandModels = {
   right: null
 };
 
-// Questionnaire stuff
+// MARK: Questionnaire
 let question_panel;
 
 let debugging_text;
@@ -154,7 +154,7 @@ const right_hand_container = new THREE.Group();
 init();
 
 function init() {
-	// scene setup
+	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
@@ -187,9 +187,12 @@ function init() {
 		console.error(error);
 	});
 
+	// MARK: Model setup
 	scene.add(tableGroup)
 	scene.add(office_group)
 	// Initialise desk manager
+
+	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup)
 
 
@@ -203,7 +206,7 @@ function init() {
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
-	// Questionnaire Manager
+	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera) // Load assetes on class initialisation
 
 	question_panel.addToDesk(tableGroup)
@@ -228,6 +231,7 @@ function init() {
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
+	// MARK: Session Init
 	const sessionInit = {
 		requiredFeatures: [ 'hand-tracking' ]
 	};
@@ -258,7 +262,7 @@ function init() {
 
 	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 
-	// Hand1 setup
+	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
 
 	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
@@ -298,8 +302,6 @@ function init() {
 	nextButton = new DeskButton(scene)
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
-
-
 
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
@@ -345,7 +347,7 @@ function init() {
 });
 
 
-// animation functions
+// MARK: OnFrame
 function onFrame(timestamp, frame) {
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
@@ -367,6 +369,7 @@ function onFrame(timestamp, frame) {
 
 	interface_text.sync()
 
+	// MARK: Gamepad Condition
 	if (gamepad1) {
 
 		// desk lock event
@@ -417,10 +420,10 @@ function onFrame(timestamp, frame) {
 	  // wasChangeButton = gamepad1.buttons[5].pressed;
 
 
-    prevIsMovingDesk = isMovingDesk;
+    	prevIsMovingDesk = isMovingDesk;
 		isMovingDesk = gamepad1.buttons[5].value > 0;
 
-
+	  // MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
@@ -479,6 +482,7 @@ function onFrame(timestamp, frame) {
 
 }
 
+// MARK: Animate Function
 function animate() {
 
 	// UIText.sync()
@@ -549,7 +553,7 @@ function handleButton() {
 	}
 }
 
-// controller functions
+// MARK: Connect Event
 function onControllerConnected(e) {
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
@@ -595,6 +599,7 @@ function onControllerConnected(e) {
   // todo else do raycasting
 }
 
+// MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 
@@ -603,11 +608,12 @@ function onSelectStart(e) {
 	this.userData.isSelecting = true;
 }
 
+// MARK: Front Button Release
 function onSelectEnd() {
   this.userData.isSelecting = false;
 }
 
-// svg function
+// MARK: SVG Function
 function loadSVG(url) {
 	const loader = new SVGLoader();
 
