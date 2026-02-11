@@ -198,7 +198,7 @@ function init() {
 	office_group.rotateY(Math.PI / 5)
 
 	// TODO: Set y to -3 after questionnaire is added
-	tableGroup.position.set(0, 0, 0)
+	tableGroup.position.set(0, -3, 0)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
@@ -367,30 +367,30 @@ function onFrame(timestamp, frame) {
 
 	interface_text.sync()
 
-  if (gamepad1) {
+	if (gamepad1) {
 
-	  // desk lock event
-	  if (red_button.returnExists() === true) {
-		if (
-			red_button.pressCheck(stylus.position, scene, 'white') === true &&
-			!stylus.userData.isSelecting	// should reduce accidental pressing
-		) {
-			desk_manager.lock();
-			desk_manager.spawnDrawingSurface()
-			scene.background = green;
-			stylus.userData.painter = paintArray[0];
-			nextButton.makeVisible();
-			desk_set = true;
-			interface_text.updateText("Draw on the outline!");
+		// desk lock event
+		if (red_button.returnExists() === true) {
+			if (
+				red_button.pressCheck(stylus.position, scene, 'white') === true &&
+				!stylus.userData.isSelecting	// should reduce accidental pressing
+			) {
+				desk_manager.lock();
+				desk_manager.spawnDrawingSurface();
+				scene.background = green;
+				stylus.userData.painter = paintArray[0];
+				nextButton.makeVisible();
+				desk_set = true;
+				interface_text.updateText("Draw on the outline!");
 
-			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-			laserSound.play(); // Sound effect for button press
-			// TODO: Find click .ogg sound file to use instead of a laser sound
+				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
+				// TODO: Find click .ogg sound file to use instead of a laser sound
+			}
 		}
-	}
 
-	question_panel.inputChecker(stylus.position, scene)
+		question_panel.inputChecker(stylus.position)
 
 	  // change material
 	  if (nextButton.returnExists() === true) {
@@ -463,6 +463,7 @@ function onFrame(timestamp, frame) {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (backPushed && !prevBackPushed) {
+		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	

@@ -38,10 +38,15 @@ export default class questionnaireManager {
 
         this.question_panel.rotateX(-Math.PI / 2)
         // this.question_panel.rotateY(-Math.PI /2)
-        this.question_panel.rotateZ(Math.PI / 2)
+        this.question_panel.rotateZ(Math.PI)
         
-        // Input cube variables
+        // Input cube variables        
+        this.input_cube_geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+        this.input_cube_material = new THREE.MeshStandardMaterial({ color: '#5f5f5f' });
+        this.input_cube_material.transparent = true;
+        this.input_cube_material.opacity = 0.3;
         this.input_cubes = []
+
         this.input_cube_offset_between = 0.01
         this.input_cube_start_position = new THREE.Vector3(-0.18, 0.119, 0) // relative to panel center
         this.input_cube_sequnce_offset = 0.05 // how much the cubes move down as the questionnaire progresses
@@ -81,6 +86,7 @@ export default class questionnaireManager {
 
         // Rotate cube so that the panel surface appears horizontal
         this.question_panel.rotateX(-Math.PI / 2)
+        this.question_panel.rotateZ(Math.PI)
         // this.question_panel.rotateY(Math.PI/2)
 
     }
@@ -120,14 +126,13 @@ export default class questionnaireManager {
     // Provisional function for testing bounding box locations
     spawnBoundingBoxes() {
         // Start with one
-        let input_cube_geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-        let input_cube_material = new THREE.MeshStandardMaterial({ color: '#5f5f5f' });
+
 
         // Set cube opacity to 0.5 and make it transparent
-        input_cube_material.transparent = true;
-        input_cube_material.opacity = 0.3;
+        this.input_cube_material.transparent = true;
+        this.input_cube_material.opacity = 0.3;
 
-        let input_cube = new THREE.Mesh(input_cube_geometry, input_cube_material);
+        let input_cube = new THREE.Mesh(this.input_cube_geometry, this.input_cube_material);
         // this.question_panel.add(input_cube)
 
         // Set cube position to be in front of the question panel
@@ -144,7 +149,8 @@ export default class questionnaireManager {
         // Add bounding boxes to these cubes for interaction detection
         this.input_cubes.forEach(cube => {
             cube.geometry.computeBoundingBox()
-            cube.boundingBox = cube.geometry.boundingBox.clone()
+            // cube.boundingBox = cube.geometry.boundingBox.clone()
+            cube.updateMatrixWorld() // Ensure world matrix is up to date
         })
 
         // Move them all down as the questionnaire progresses
@@ -164,17 +170,19 @@ export default class questionnaireManager {
 
         // Check if the stylus vector is within the bounding box of any of the input cubes
         // 
-        this.input_cubes.forEach(cube => {
-            let boundingBox = cube.boundingBox.clone()
-            boundingBox.min.add(cube.position)
-            boundingBox.max.add(cube.position)
+        console.log('Checking input cubes for intersection with stylus position:', stylus_position_vector)
 
-            if (boundingBox.containsPoint(stylus_position_vector)) {
+        this.input_cubes.forEach(cube => {
+            // let boundingBox = cube.boundingBox.clone()
+            // boundingBox.min.add(cube.position)
+            // boundingBox.max.add(cube.position)
+            let bounding_box = new THREE.Box3().setFromObject(cube)
+
+            if (bounding_box.containsPoint(stylus_position_vector)) {
                 console.log('Input cube intersected:', cube)
                 this.nextQuestionnaireSlide()
                 this.moveInputCubesDown()
             }
         })
-
     }
 }
