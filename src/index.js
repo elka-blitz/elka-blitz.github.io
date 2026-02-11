@@ -81,7 +81,10 @@ const sizes = {
 // drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
-let practicePaints;
+let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, practice2, practice3;
+let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
+let practicePaints = [practice1, practice2, practice3];
+let isDrawingDisabled = false;
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -123,8 +126,6 @@ const svgWithPositionsArray = [
 ];
 
 let wasChangeButton = false;
-let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8;
-let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8]
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
@@ -359,7 +360,16 @@ function init() {
 		scene.add(svgPaintsArray[i].mesh);
 	});
 
-	practicePaints = svgPaintsArray.slice(5);
+	practicePaints.forEach((paint, i) => {
+		practicePaints[i] = new TubePainter();
+		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
+			color: coloursArray[i],
+			linewidth: 4,
+		});
+		practicePaints[i].setSize(0.2);
+		scene.add(practicePaints[i].mesh);
+	});
+
 }
 
 // animation functions
@@ -508,7 +518,9 @@ function animate() {
 				painter.moveTo(stylus.position);
 			}
 		}
-		handleDrawing(stylus);
+		if (!isDrawingDisabled) {
+			handleDrawing(stylus);
+		}
 
 	}
 	gsap.ticker.tick()
@@ -553,6 +565,7 @@ function handleButton() {
 
 		} else {
 			isPracticeMode = false;
+			isDrawingDisabled = true;
 
 			desk_manager.clearSurface();
 			practicePaints.forEach((paint) => {
@@ -570,6 +583,7 @@ function handleButton() {
 	else {
 		// task1
 		if (shapeIndex < svgArray.length - 1) {
+			isDrawingDisabled = false;
 			shapeIndex += 1;
 			desk_manager.clearSurface();
 			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
@@ -587,6 +601,7 @@ function handleButton() {
 		}
 		// end of task 1
 		else {
+			isDrawingDisabled = true;
 			nextButton.makeInvisible();
 			task1Text.updateText("Task 1 Complete");
 
