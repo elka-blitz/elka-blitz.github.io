@@ -21,6 +21,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { gsap } from 'gsap';   
+import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 let camera, scene, renderer;
@@ -87,17 +88,6 @@ let position = new THREE.Vector3();
 // Debugging stuff
 let debugVar = true
 let interface_text;
-// const UIText = new Text();
-// UIText.fontsize = 0.52
-// UIText.font = 'assets/SpaceMono-Bold.ttf';
-// UIText.position.z = -2;
-// UIText.color = 0xffffff;
-// UIText.anchorX = 'center';
-// UIText.anchorY = 'middle';
-// UIText.text = 'LiveStylusCoords'
-// UIText declarations
-// TODO: Remember sync method
-// TODO: Move to function call
 
 // Desk stuff
 let desk_set = false
@@ -109,12 +99,12 @@ let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
-// Button stuff
+// MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
-// Noise feedback declaration
+// MARK: Sounds
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
@@ -131,11 +121,11 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 });
 
 
-// Office environment setup
+// MARK: Environment
 let office_group = new THREE.Group()
 
 
-// Hand declarations
+// MARK: Hands
 let hand1, hand2;
 const handModels = {
 	left: null,
@@ -147,6 +137,9 @@ const persistentHandModels = {
   left: null,
   right: null
 };
+
+// MARK: Questionnaire
+let question_panel;
 
 let debugging_text;
 
@@ -161,7 +154,7 @@ const right_hand_container = new THREE.Group();
 init();
 
 function init() {
-	// scene setup
+	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
@@ -194,30 +187,32 @@ function init() {
 		console.error(error);
 	});
 
+	// MARK: Model setup
 	scene.add(tableGroup)
 	scene.add(office_group)
 	// Initialise desk manager
+
+	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup)
 
-	tableGroup.position.set(0, -3, 0)
+
 	// office_group.scale.set(0.5, 0.5, 0.5)
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
 
+	// TODO: Set y to -3 after questionnaire is added
+	tableGroup.position.set(0, -3, 0)
+
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
-	
-	// red_button.moveButton(new THREE.Vector3(0,2,1))
-	// red_button.placeButton(new THREE.Vector3(0,2,1), scene)
-	// console.log('result', desk_manager.getPositionForButton())
 
-	// tableGroup.add(red_button_object)
-	// red_button.moveButton(new THREE.Vector3(-0.25,-0.25,-0.25))
-	
-	// white_button = new DeskButton(scene)
-	// white_button.createButton(new THREE.Vector3(1,1,1), '#ffffff')
-	// white_button.moveButton(new THREE.Vector3(0.25,0.25,0.25))
+	// MARK: Panel
+	question_panel = new questionnaireManager(scene, camera) // Load assetes on class initialisation
 
+	question_panel.addToDesk(tableGroup)
+
+	// TODO: Remove and run in class initialiser after testing
+	question_panel.spawnBoundingBoxes() // Provisional function for testing bounding box locations
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
@@ -236,6 +231,7 @@ function init() {
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
+	// MARK: Session Init
 	const sessionInit = {
 		requiredFeatures: [ 'hand-tracking' ]
 	};
@@ -266,7 +262,7 @@ function init() {
 
 	// scene.add(getControllerGrip(1, renderer, controllerModelFactory));
 
-	// Hand1 setup
+	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
 
 	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
@@ -296,14 +292,6 @@ function init() {
 	// Add text initialisation
 	interface_text = new UIText(scene)
 }
-	// Debugging text
-	// scene.add(UIText);
-	// UIText.position.set(0, 1, -2.5);
-	// UIText.rotateX(-Math.PI / 3.3);
-	// UIText.text = 'Tap desk with stylus to start'
-	// TODO: Replace with class method call
-	
-
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
@@ -314,8 +302,6 @@ function init() {
 	nextButton = new DeskButton(scene)
 	nextButton.createButton(new THREE.Vector3(0,0,0), '#359743', 'Next', 0.07)
 	nextButton.makeInvisible();
-
-
 
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
@@ -361,7 +347,7 @@ function init() {
 });
 
 
-// animation functions
+// MARK: OnFrame
 function onFrame(timestamp, frame) {
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
@@ -383,28 +369,32 @@ function onFrame(timestamp, frame) {
 
 	interface_text.sync()
 
-  if (gamepad1) {
+	// MARK: Gamepad Condition
+	if (gamepad1) {
 
-	  // desk lock event
-	  if (red_button.returnExists() === true) {
-		if (
-			red_button.pressCheck(stylus.position, scene, 'white') === true &&
-			!stylus.userData.isSelecting	// should reduce accidental pressing
-		) {
-			desk_manager.lock();
-			desk_manager.spawnDrawingSurface()
-			scene.background = green;
-			stylus.userData.painter = paintArray[0];
-			nextButton.makeVisible();
-			desk_set = true;
-			interface_text.updateText("Draw on the outline!");
+		// desk lock event
+		if (red_button.returnExists() === true) {
+			if (
+				red_button.pressCheck(stylus.position, scene, 'white') === true &&
+				!stylus.userData.isSelecting	// should reduce accidental pressing
+			) {
+				desk_manager.lock();
+				desk_manager.spawnDrawingSurface();
+				scene.background = green;
+				stylus.userData.painter = paintArray[0];
+				nextButton.makeVisible();
+				desk_set = true;
+				interface_text.updateText("Draw on the outline!");
 
-			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-			laserSound.play(); // Sound effect for button press
-			// TODO: Find click .ogg sound file to use instead of a laser sound
+				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
+				// TODO: Find click .ogg sound file to use instead of a laser sound
+			}
 		}
-	}
+
+		question_panel.inputChecker(stylus.position)
+
 	  // change material
 	  if (nextButton.returnExists() === true) {
 		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
@@ -430,10 +420,10 @@ function onFrame(timestamp, frame) {
 	  // wasChangeButton = gamepad1.buttons[5].pressed;
 
 
-    prevIsMovingDesk = isMovingDesk;
+    	prevIsMovingDesk = isMovingDesk;
 		isMovingDesk = gamepad1.buttons[5].value > 0;
 
-
+	  // MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
@@ -476,17 +466,23 @@ function onFrame(timestamp, frame) {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (backPushed && !prevBackPushed) {
+		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
 		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// questionnaire_instance.setQuestionnaireSlide(2)
+		question_panel.nextQuestionnaireSlide()
+		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 	}
   }
 
 }
 
+// MARK: Animate Function
 function animate() {
 
 	// UIText.sync()
@@ -557,7 +553,7 @@ function handleButton() {
 	}
 }
 
-// controller functions
+// MARK: Connect Event
 function onControllerConnected(e) {
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
@@ -603,6 +599,7 @@ function onControllerConnected(e) {
   // todo else do raycasting
 }
 
+// MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 
@@ -611,11 +608,12 @@ function onSelectStart(e) {
 	this.userData.isSelecting = true;
 }
 
+// MARK: Front Button Release
 function onSelectEnd() {
   this.userData.isSelecting = false;
 }
 
-// svg function
+// MARK: SVG Function
 function loadSVG(url) {
 	const loader = new SVGLoader();
 
