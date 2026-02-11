@@ -192,10 +192,13 @@ function init() {
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup)
 
-	tableGroup.position.set(0, -3, 0)
+
 	// office_group.scale.set(0.5, 0.5, 0.5)
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
+
+	// TODO: Set y to -3 after questionnaire is added
+	tableGroup.position.set(0, 0, 0)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
@@ -204,6 +207,9 @@ function init() {
 	question_panel = new questionnaireManager(scene) // Load assetes on class initialisation
 
 	question_panel.addToDesk(tableGroup)
+
+	// TODO: Remove and run in class initialiser after testing
+	question_panel.spawnBoundingBoxes() // Provisional function for testing bounding box locations
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 
