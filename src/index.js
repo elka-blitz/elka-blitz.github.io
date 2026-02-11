@@ -5,6 +5,7 @@ window.addEventListener('unload', function () {
 
 import * as THREE from "three";
 
+import { TextPanel, UIText } from './UIText.js';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -16,7 +17,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import UIText from "./UIText.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
@@ -33,7 +33,6 @@ let stylus;
 let gamepad1;
 let gamepadInterface;
 let contextText;
-
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -232,6 +231,16 @@ function init() {
 
 	// Add text initialisation
 	interface_text = new UIText(scene)
+
+	const contextTextStr =
+		'You are an architect designing buildings for the city.' +
+		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
+		'\nThe three clients are the florist, the artist and the library.' +
+		'\n\nPlease go ahead and draw some practice shapes. After that the task will begin. Good luck!';
+
+
+	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
+
 }
 
 	// Initialise desk manager
@@ -272,6 +281,12 @@ function init() {
 		'assets/banner_short.svg',
 		'assets/banner_long.svg'
 	]
+
+	const practiceSvgArray = [
+		'assets/window.svg',
+		'assets/door_top.svg',
+		'assets/window_curtain.svg'
+	];
 
 	const svgWithPositionsArray = [
 		{url:'assets/base.svg', position: 			{ x: 0,		y:0}},
@@ -346,7 +361,7 @@ function onFrame(timestamp, frame) {
 			nextButton.makeVisible();
 			desk_set = true;
 			interface_text.updateText("Draw on the outline!");
-			textPanel();
+			contextText.makeVisible();
 
 			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
@@ -478,20 +493,20 @@ function handleDrawing(controller) {
 
 function handleButton(isPractice) {
 	if (isPractice) {
-		if (practiceShapeIndex < practicePaints.length - 1) {
-			practiceShapeIndex += 1
+		if (practiceShapeIndex < practiceSvgArray.length - 1) {
+			practiceShapeIndex += 1;
 			practicePaints.forEach((paint) => {
 				paint.mesh.visible = false;
 			});
 			desk_manager.clearSurface();
-			loadSVG(svgArray[practiceShapeIndex], CENTER_POSITION); // todo use practice svgarray
+			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION); // todo use practice svgarray
 
 			practicePaints[shapeIndex].mesh.visible = true;
 			stylus.userData.painter = practicePaints[practiceShapeIndex];
-		}
-		else {
+		} else {
 			isPracticeMode = false;
 			nextButton.changeColor('#359743');
+			contextText.makeInvisible();
 		}
 	}
 
@@ -624,38 +639,6 @@ function loadSVG(url, position) {
 		desk_manager.placeSVG(group, position)
 	});
 }
-
-// context panel
-function textPanel() {
-	if (!isPracticeMode) return;
-	const xPos = 0;
-	const yPos = 1.6;
-	const width = 1.5;
-	const userDistance = 1.5
-
-	const rect = getFilledRect(width, 0.6, "#8c8c8c");
-	scene.add(rect);
-	rect.position.set(0, 1.6, -userDistance);
-
-	contextText = new Text();
-	contextText.fontSize = 0.05;
-
-	contextText.color = "black";
-	contextText.anchorX = 'center';
-	contextText.anchorY = 'middle';
-	contextText.maxWidth = width - 0.04;
-	contextText.lineHeight = 1.5;
-	contextText.text = 'You are an architect designing buildings for the city.' +
-		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
-		'\nThe three clients are the florist, the artist and the library.' +
-		'\n\nPlease go ahead and draw some practice shapes. After that the task will begin. Good luck!'
-	contextText.sync()
-
-	scene.add(contextText);
-	contextText.position.set(xPos, yPos, -(userDistance - 0.01))
-
-}
-
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
