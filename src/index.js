@@ -62,7 +62,7 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = false // todo remove before deployment
 
 // setup declarations
 let camera, scene, renderer;
