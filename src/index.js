@@ -603,6 +603,7 @@ function handleButton() {
 		else {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
+			desk_manager.clearSurface();
 			task1Text.updateText("Task 1 Complete");
 
 			// todo move paints
