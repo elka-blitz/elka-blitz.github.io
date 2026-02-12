@@ -64,7 +64,7 @@ import { gsap } from 'gsap';
 import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = falsel // todo remove before deployment
 let BROWSER_buttonPressed = false;
 
 // setup declarations
