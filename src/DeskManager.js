@@ -51,12 +51,15 @@ export default class DeskManager {
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#B3B3B3',
 			side: THREE.DoubleSide, // optional, shows both sides
+			transparent: true,
+			opacity: 0.3,
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
 		drawingSurface.position.y = 0.82; // slightly above model
 		drawingSurface.rotateY(Math.PI / 2);
 		drawingSurface.rotateX(Math.PI / 3);	// angle towards
+
 
 		desk_asset_instance.add(drawingSurface);
 		drawingSurface.visible = false;
