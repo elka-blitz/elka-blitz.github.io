@@ -265,19 +265,14 @@ function init() {
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
 
-	// TODO: Set y to -3 after questionnaire is added
 	tableGroup.position.set(0, -3, 0)
 
 	red_button = new DeskButton(scene)
 	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera) // Load assetes on class initialisation
-
-	question_panel.addToDesk(tableGroup)
-
-	// TODO: Remove and run in class initialiser after testing
-	question_panel.spawnBoundingBoxes() // Provisional function for testing bounding box locations
+	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
+	question_panel.setQuestionnaireVisibility(false) // Initially set the questionnaire to be invisible until desk is locked in place
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -304,6 +299,20 @@ function init() {
 	};
 
 	document.body.appendChild(VRButton.createButton(renderer, sessionInit));
+
+	// MARK: Key Input
+	// Keyboard buttonpress listener for testing in browser
+	document.addEventListener('keydown', function(event) {
+		switch (event.keyCode) {
+			case 87: // W
+				question_panel.moveInputCubesDown();	
+				break;
+			case 65: // A
+			 	question_panel.resetInputCubes();
+				break;
+		}
+	});
+
 	renderer.setAnimationLoop(animate);
 
 	// controller setup
@@ -506,6 +515,8 @@ function onFrame(timestamp, frame) {
 				child.material.transparent = true;
 				child.material.opacity = 0.5;
 			}
+
+			question_panel.makeCubesTransparent();
 		});
 	}
 
@@ -536,6 +547,7 @@ function onFrame(timestamp, frame) {
 	}
   }
 
+  question_panel.updateBoxGradientFade()
 }
 
 // MARK: Animate Function
