@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
-import { gsap } from 'gsap';   
+import { getFilledRect } from './shapeFunctions';
+import { gsap } from 'gsap';
 
-export default class UIText {
+export class UIText {
     constructor(scene) {
     this.UIText = new Text();
     this.UIText.fontsize = 0.52
@@ -99,4 +100,43 @@ export default class UIText {
         }, duration);  
     }
 
+}
+
+export class TextPanel {
+	constructor(scene, textString, xPos, yPos, width, height, userDistance) {
+		this.rect = getFilledRect(width, height, '#8c8c8c');
+		scene.add(this.rect);
+		this.rect.position.set(xPos, yPos, -userDistance);
+
+		this.text = new Text();
+		this.text.fontSize = 0.05;
+		this.text.color = 'black';
+		this.text.anchorX = 'center';
+		this.text.anchorY = 'middle';
+		this.text.maxWidth = width - 0.04;
+		this.text.lineHeight = 1.5;
+		this.text.text = textString;
+		this.text.sync();
+
+		scene.add(this.text);
+		this.text.position.set(xPos, yPos, -(userDistance - 0.01));
+
+		// on initialisation it will not be visible
+		this.rect.visible = false;
+		this.text.visible = false;
+	}
+
+	makeInvisible() {
+		this.rect.visible = false;
+		this.text.visible = false;
+	}
+
+	makeVisible() {
+		this.rect.visible = true;
+		this.text.visible = true;
+	}
+
+	updateText(text) {
+		this.text.text = text;
+	}
 }
