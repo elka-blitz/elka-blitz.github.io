@@ -288,8 +288,8 @@ function init() {
 	const xMin = -2.0, xMax = 2.0;
 	const zMin = -2.0, zMax = 2.0;
 
-	const warm = 0xffe7cf;
-	const intensity = 2.0;
+	const warm = 0xbc822d;
+	const intensity = 1.5;
 	const distance = 30.0;
 	const decay = 0.5;
 
