@@ -12,7 +12,8 @@ export default class DeskManager {
 		// center (x and z are in the center, y is on the floor so add 0.75 as the model's height)
 		this.desk_asset_instance = desk_asset_instance; // Of THREE.group() nature
 
-		desk_asset_instance.visible = false;
+		// TODO: Set back to false after testing 
+		desk_asset_instance.visible = true;
 
 
 		// Get model height
@@ -61,8 +62,6 @@ export default class DeskManager {
 		drawingSurface.visible = false;
 
 		this.surface = drawingSurface;
-
-
 	}
 
 	lock() {
@@ -84,6 +83,10 @@ export default class DeskManager {
 
 	getDeskCoordinates() {
 		return this.desk_asset_instance.position;
+	}
+
+	getDeskQuaternion() {
+		return this.desk_asset_instance.quaternion
 	}
 
 	slideToCamera(camera, stylus, table_group) {

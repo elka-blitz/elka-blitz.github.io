@@ -60,6 +60,7 @@ import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
+import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
@@ -151,12 +152,12 @@ let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
-// Button declarations
+// MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
 let red_button;
 let nextButton;
 
-// Noise feedback declarations
+// MARK: Sounds
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
@@ -173,11 +174,11 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 });
 
 
-// Office environment setup
+// MARK: Environment
 let office_group = new THREE.Group()
 
 
-// Hand declarations
+// MARK: Hands
 let hand1, hand2;
 const handModels = {
 	left: null,
@@ -189,6 +190,9 @@ const persistentHandModels = {
   left: null,
   right: null
 };
+
+// MARK: Questionnaire
+let question_panel;
 
 let debugging_text;
 
@@ -203,7 +207,7 @@ const right_hand_container = new THREE.Group();
 init();
 
 function init() {
-	// scene setup
+	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
@@ -248,10 +252,33 @@ function init() {
 		},
 	);
 
-	scene.add(tableGroup);
-	scene.add(office_group);
+	// MARK: Model setup
+	scene.add(tableGroup)
+	scene.add(office_group)
+	// Initialise desk manager
 
-	// light setup
+	// MARK: Desk
+	desk_manager = new DeskManager(scene, tableGroup)
+
+
+	// office_group.scale.set(0.5, 0.5, 0.5)
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI / 5)
+
+	// TODO: Set y to -3 after questionnaire is added
+	tableGroup.position.set(0, -3, 0)
+
+	red_button = new DeskButton(scene)
+	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
+
+	// MARK: Panel
+	question_panel = new questionnaireManager(scene, camera) // Load assetes on class initialisation
+
+	question_panel.addToDesk(tableGroup)
+
+	// TODO: Remove and run in class initialiser after testing
+	question_panel.spawnBoundingBoxes() // Provisional function for testing bounding box locations
+
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
@@ -271,6 +298,7 @@ function init() {
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
 
+	// MARK: Session Init
 	const sessionInit = {
 		requiredFeatures: ['hand-tracking'],
 	};
@@ -307,7 +335,7 @@ function init() {
 		),
 	);
 
-	// Hand 1 setup
+	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
 
 	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
@@ -358,21 +386,46 @@ function init() {
 		});
 		svgPaintsArray[i].setSize(0.2);
 		scene.add(svgPaintsArray[i].mesh);
-	});
+	})
 
-	practicePaints.forEach((paint, i) => {
-		practicePaints[i] = new TubePainter();
-		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: coloursArray[i],
-			linewidth: 4,
-		});
-		practicePaints[i].setSize(0.2);
-		scene.add(practicePaints[i].mesh);
-	});
+	const paintArray = svgPaintsArray;
 
-}
 
-// animation functions
+	const svgArray = [
+		'assets/banner_long.svg',
+		'assets/window.svg',
+		'assets/window2.svg',
+		'assets/window_curtain.svg',
+		'assets/banner_short.svg',
+		'assets/door_bottom.svg',
+		'assets/door_top.svg',
+		'assets/base.svg'
+	]
+
+	loadSVG(svgArray[0]);
+
+	window.addEventListener("resize", () => {
+	// Update sizes
+	sizes.width = window.innerWidth;
+	sizes.height = window.innerHeight;
+
+	// Update camera
+	camera.aspect = sizes.width / sizes.height;
+	camera.updateProjectionMatrix();
+
+	// Update renderer
+	renderer.setSize(sizes.width, sizes.height);
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+
+	// Animation method cleanup
+	gsap.ticker.remove(gsap.updateRoot);
+
+	interface_text.updateText('Resized window to: ' + sizes.width + 'x' + sizes.height)
+});
+
+
+// MARK: OnFrame
 function onFrame(timestamp, frame) {
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
@@ -394,9 +447,8 @@ function onFrame(timestamp, frame) {
 
 	interface_text.sync()
 
-
- // ------ EVENTS ------
-  if (gamepad1) {
+	// MARK: Gamepad Condition
+	if (gamepad1) {
 
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
@@ -415,12 +467,14 @@ function onFrame(timestamp, frame) {
 			loadSVG(practiceSvgArray[0], CENTER_POSITION);
 			stylus.userData.painter = practicePaints[0];
 
-			interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-			laserSound.play(); // Sound effect for button press
-			// TODO: Find click .ogg sound file to use instead of a laser sound
+				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
+				// TODO: Find click .ogg sound file to use instead of a laser sound
+			}
 		}
-	}
+
+		question_panel.inputChecker(stylus.position)
 
 	  // change material
 	  if (nextButton.returnExists() === true) {
@@ -446,10 +500,10 @@ function onFrame(timestamp, frame) {
 		}
 
 		if (!desk_set){
-			prevIsMovingDesk = isMovingDesk;
+				prevIsMovingDesk = isMovingDesk;
 			isMovingDesk = gamepad1.buttons[5].value > 0;
 		}
-
+	  // MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
@@ -492,17 +546,23 @@ function onFrame(timestamp, frame) {
 	backPushed = gamepad1.buttons[1].value > 0
 
 	if (backPushed && !prevBackPushed) {
+		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
 		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// questionnaire_instance.setQuestionnaireSlide(2)
+		question_panel.nextQuestionnaireSlide()
+		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 	}
   }
 
 }
 
+// MARK: Animate Function
 function animate() {
 
 	// UIText.sync()
@@ -617,7 +677,7 @@ function handleButton() {
 	}
 }
 
-// controller functions
+// MARK: Connect Event
 function onControllerConnected(e) {
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
@@ -685,6 +745,7 @@ function onControllerConnected(e) {
   // todo else do raycasting
 }
 
+// MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 
@@ -693,11 +754,12 @@ function onSelectStart(e) {
 	this.userData.isSelecting = true;
 }
 
+// MARK: Front Button Release
 function onSelectEnd() {
   this.userData.isSelecting = false;
 }
 
-// svg function
+// MARK: SVG Function
 function loadSVG(url, position) {
 	const loader = new SVGLoader();
 
