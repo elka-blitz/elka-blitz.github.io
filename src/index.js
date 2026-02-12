@@ -669,16 +669,13 @@ function handleButton() {
 
 			// todo move paints
 
-			// make all paints visible for full drawing
-			svgPaintsArray.forEach((paint, index) => {
-				if (index < svgWithPositionsArray.length - 1) {
-					paint.mesh.rotateX(-Math.PI / 3);
-					paint.mesh.position.x = svgWithPositionsArray[index].position.x;
-					paint.mesh.position.y = svgWithPositionsArray[index].position.y;
+			svgWithPositionsArray.forEach((obj, i) => {
+				svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+				svgPaintsArray[i].mesh.position.x = obj.position.x;
+				svgPaintsArray[i].mesh.position.y = obj.position.y;
+				svgPaintsArray[i].mesh.visible = true;
+			})
 
-				}
-				paint.mesh.visible = true;
-			});
 
 		}
 	}
