@@ -64,7 +64,7 @@ import { gsap } from 'gsap';
 import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 
 // setup declarations
@@ -103,11 +103,11 @@ const svgArray = [
 	'assets/base.svg',
 	'assets/door_bottom.svg',
 	'assets/door_top.svg',
-	'assets/window.svg',
-	'assets/window2.svg',
-	'assets/window_curtain.svg',
-	'assets/banner_short.svg',
-	'assets/banner_long.svg',
+	// 'assets/window.svg',
+	// 'assets/window2.svg',
+	// 'assets/window_curtain.svg',
+	// 'assets/banner_short.svg',
+	// 'assets/banner_long.svg',
 ];
 
 const practiceSvgArray = [
@@ -120,11 +120,11 @@ const svgWithPositionsArray = [
 	{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
 	{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
 	{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
-	{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
-	{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
-	{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-	{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
-	{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
+	// { url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
+	// { url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
+	// { url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
+	// { url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
+	// { url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
 ];
 
 let wasChangeButton = false;
@@ -665,11 +665,19 @@ function handleButton() {
 			nextButton.makeInvisible();
 			desk_manager.clearSurface();
 			task1Text.updateText("Task 1 Complete");
+			loadSVGs(svgWithPositionsArray);
 
 			// todo move paints
 
 			// make all paints visible for full drawing
-			svgPaintsArray.forEach((paint) => {
+			svgPaintsArray.forEach((paint, index) => {
+				if (index < svgWithPositionsArray.length - 1) {
+					paint.mesh.position.set(
+						svgWithPositionsArray[index].position.x,
+						svgWithPositionsArray[index].position.y,
+						-0.01,
+					);
+				}
 				paint.mesh.visible = true;
 			});
 
@@ -798,6 +806,48 @@ function loadSVG(url, position) {
 		desk_manager.placeSVG(group, position)
 	});
 }
+
+function loadSVGs(svgObjs) {
+	const groups = [];
+	const loader = new SVGLoader();
+
+	svgObjs.map((obj, i) => {
+		loader.load(obj.url, function (data) {
+			const group = new THREE.Group();
+
+			let renderOrder = 0;
+
+			for (const path of data.paths) {
+				const strokeColor = path.userData.style.fill;
+
+				const material = new THREE.MeshBasicMaterial({
+					color: 'black',
+					opacity: path.userData.style.strokeOpacity,
+					transparent: true,
+					side: THREE.DoubleSide,
+					depthWrite: false,
+				});
+
+				for (const subPath of path.subPaths) {
+					const geometry = SVGLoader.pointsToStroke(
+						subPath.getPoints(),
+						path.userData.style,
+					);
+					geometry.rotateZ(Math.PI); // rotate right side up
+
+					if (geometry) {
+						const mesh = new THREE.Mesh(geometry, material);
+						mesh.renderOrder = renderOrder++;
+
+						group.add(mesh);
+					}
+				}
+			}
+			desk_manager.placeSVG(group, obj.position, i);
+		});
+	});
+}
+
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
