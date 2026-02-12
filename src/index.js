@@ -43,6 +43,7 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
+import { csvMaker, downloadCSV } from './csvFunctions';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -204,6 +205,8 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
+let logData = []
+
 init();
 
 function init() {
@@ -255,7 +258,6 @@ function init() {
 	// MARK: Model setup
 	scene.add(tableGroup)
 	scene.add(office_group)
-	// Initialise desk manager
 
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup)
@@ -267,8 +269,6 @@ function init() {
 
 	tableGroup.position.set(0, -3, 0)
 
-	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
@@ -383,7 +383,7 @@ function init() {
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene);
-	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 0/3', 0.07);
+	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 1/3', 0.07);
 	nextButton.makeInvisible();
 
 	// drawing
@@ -422,7 +422,7 @@ function onFrame(timestamp, frame) {
 	else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
 		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
-		interface_text.updateText('Desk Locked!')
+		interface_text.updateText('')
 
 		// Locate text permanently above desk for remainder of session
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
@@ -435,6 +435,15 @@ function onFrame(timestamp, frame) {
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
+	// Stylus logging
+	// Get positional data for timestamp
+	logData.push({
+		t: Date.now(),
+		s: stylus ? stylus.position.clone() : null,
+		// deskLocked: desk_locked
+		// TODO: Buttonpushed variable
+	});
+	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -539,7 +548,10 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// Generate CSV and trigger download
+		// This is currently done on controller button press, but can be triggered prgrammattically
+		// Should be triggered alongside 
+		downloadCSV(JSON.stringify(logData));
 		// questionnaire_instance.setQuestionnaireSlide(2)
 		question_panel.nextQuestionnaireSlide()
 		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
@@ -602,7 +614,7 @@ function handleButton() {
 			desk_manager.clearSurface();
 			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
 			nextButton.updateLabel(
-				`Practice ${practiceShapeIndex}/${practiceSvgArray.length - 1}`,
+				`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
 			);
 
 			practicePaints.forEach((paint) => {
@@ -635,7 +647,7 @@ function handleButton() {
 			shapeIndex += 1;
 			desk_manager.clearSurface();
 			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(`Next ${shapeIndex}/${svgArray.length -1}`);
+			nextButton.updateLabel(`Next ${shapeIndex + 1}/${svgArray.length}`);
 
 
 			svgPaintsArray.forEach((paint) => {
