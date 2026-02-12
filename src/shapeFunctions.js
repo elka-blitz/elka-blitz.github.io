@@ -99,6 +99,18 @@ export const getRect = (width, height, xPos, yPos, userDistance, leanTowards, is
 	return isDashed ? getDashedLine(points, color) : getLine(points, color);
 }
 
+export const getFilledRect = (width, height, color) => {
+
+	const geometry = new THREE.PlaneGeometry(width, height);
+
+	const material = new THREE.MeshBasicMaterial({
+		color: color || 0xff0000,
+		side: THREE.DoubleSide,
+	});
+
+	return new THREE.Mesh(geometry, material);
+}
+
 export const getCircle = (radius) => {
 
 	const segments = 64;

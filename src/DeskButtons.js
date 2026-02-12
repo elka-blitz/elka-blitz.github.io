@@ -62,6 +62,14 @@ export default class DeskButton {
 		return this.cylinder;
 	}
 
+	updateLabel(newLabel) {
+		this.cylinder.remove(this.button_label_text);
+		this.button_label_text = createText(newLabel, 0.04);
+		this.button_label_text.rotateX(-1.570796); // -90deg
+		this.cylinder.add(this.button_label_text);
+		this.button_label_text.position.y = 0.03; // Hardcoded
+	}
+
 	hoverButtonByDesk(camera, desk, scene, xOffset, zOffset) {
 		this.cylinder.position.copy(desk.position);
 		this.cylinder.quaternion.copy(desk.quaternion);
@@ -94,6 +102,10 @@ export default class DeskButton {
 	makeVisible() {
 		this.exists = true;
 		this.cylinder.visible = true;
+	}
+
+	changeColor(color) {
+		this.cylinder.material.color.set(color)
 	}
 
 	pressCheck(stylus_position_vector, scene, color) {
