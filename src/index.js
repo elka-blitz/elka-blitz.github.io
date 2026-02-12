@@ -43,6 +43,7 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
+import { csvMaker, downloadCSV } from './csvFunctions';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -203,6 +204,8 @@ let left_hand_override = false;
 let right_hand_override = false; 
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
+
+let logData = []
 
 init();
 
@@ -435,6 +438,16 @@ function onFrame(timestamp, frame) {
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
+	// Stylus logging
+	// Get positional data for timestamp
+	logData.push({
+		t: Date.now(),
+		s: stylus ? stylus.position.clone() : null,
+		// deskLocked: desk_locked
+		// TODO: Buttonpushed variable
+	});
+
+	console.log(logData[logData.length - 1]) // Log the most recent data point for debugging
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -539,7 +552,10 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		left_hand_container.position.set(stylus.position.x, stylus.position.y - 0.7, stylus.position.z);
+		// Generate CSV and trigger download
+		// This is currently done on controller button press, but can be triggered prgrammattically
+		// Should be triggered alongside 
+		downloadCSV(JSON.stringify(logData));
 		// questionnaire_instance.setQuestionnaireSlide(2)
 		question_panel.nextQuestionnaireSlide()
 		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
