@@ -267,12 +267,10 @@ function init() {
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
 
-	tableGroup.position.set(0, -3, 0)
-
-
 	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(false) // Initially set the questionnaire to be invisible until desk is locked in place
+	question_panel.setQuestionnaireVisibility(true) // Initially set the questionnaire to be invisible until desk is locked in place
+
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -282,7 +280,7 @@ function init() {
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup);
 
-	tableGroup.position.set(0, -3, 0);
+	tableGroup.position.set(0, 0, 0);
 	office_group.position.set(0, -0.3, 0);
 	office_group.rotateY(Math.PI / 5);
 
@@ -308,7 +306,8 @@ function init() {
 				question_panel.moveInputCubesDown();	
 				break;
 			case 65: // A
-			 	question_panel.resetInputCubes();
+			 	// question_panel.resetInputCubes();
+				question_panel.refresh()
 				break;
 		}
 	});
@@ -515,6 +514,7 @@ function onFrame(timestamp, frame) {
 				0.2
 			);
 			interface_text.animateTextToCamera(camera)
+			question_panel.refresh()
 		}
 	}
 
