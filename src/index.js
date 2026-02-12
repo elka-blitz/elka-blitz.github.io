@@ -383,7 +383,7 @@ function init() {
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene);
-	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 0/3', 0.07);
+	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 1/3', 0.07);
 	nextButton.makeInvisible();
 
 	// drawing
