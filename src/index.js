@@ -386,43 +386,19 @@ function init() {
 		});
 		svgPaintsArray[i].setSize(0.2);
 		scene.add(svgPaintsArray[i].mesh);
-	})
+	});
 
-	const paintArray = svgPaintsArray;
+	practicePaints.forEach((paint, i) => {
+		practicePaints[i] = new TubePainter();
+		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
+			color: coloursArray[i],
+			linewidth: 4,
+		});
+		practicePaints[i].setSize(0.2);
+		scene.add(practicePaints[i].mesh);
+	});
 
-
-	const svgArray = [
-		'assets/banner_long.svg',
-		'assets/window.svg',
-		'assets/window2.svg',
-		'assets/window_curtain.svg',
-		'assets/banner_short.svg',
-		'assets/door_bottom.svg',
-		'assets/door_top.svg',
-		'assets/base.svg'
-	]
-
-	loadSVG(svgArray[0]);
-
-	window.addEventListener("resize", () => {
-	// Update sizes
-	sizes.width = window.innerWidth;
-	sizes.height = window.innerHeight;
-
-	// Update camera
-	camera.aspect = sizes.width / sizes.height;
-	camera.updateProjectionMatrix();
-
-	// Update renderer
-	renderer.setSize(sizes.width, sizes.height);
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-
-	// Animation method cleanup
-	gsap.ticker.remove(gsap.updateRoot);
-
-	interface_text.updateText('Resized window to: ' + sizes.width + 'x' + sizes.height)
-});
+}
 
 
 // MARK: OnFrame
