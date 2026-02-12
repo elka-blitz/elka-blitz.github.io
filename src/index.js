@@ -672,11 +672,8 @@ function handleButton() {
 			// make all paints visible for full drawing
 			svgPaintsArray.forEach((paint, index) => {
 				if (index < svgWithPositionsArray.length - 1) {
-					paint.mesh.position.set(
-						svgWithPositionsArray[index].position.x,
-						svgWithPositionsArray[index].position.y,
-						-0.01,
-					);
+					paint.mesh.position.x = svgWithPositionsArray[index].position.x
+					paint.mesh.position.y = svgWithPositionsArray[index].position.y
 				}
 				paint.mesh.visible = true;
 			});
