@@ -17,11 +17,11 @@ data = json.loads(fin)
 for i in data:
     print(i)
     js_time_stamp_ms = i['t']
-    js_time_stamp_s = js_time_stamp_ms
-    utc_date_time = datetime.datetime.utcfromtimestamp(js_time_stamp_s)
-    print(i['t'])
-    print(utc_date_time)
-    print('')
+    # js_time_stamp_s = js_time_stamp_ms
+    # utc_date_time = datetime.datetime.utcfromtimestamp(js_time_stamp_s)
+    # print(i['t'])
+    # print(utc_date_time)
+    # print('')
 
 # Convert to CSV file
 fout = open(sys.argv[1][:-3] + 'csv', 'w', newline='')
@@ -41,3 +41,6 @@ for location in data:
 
 writer.writerows(data_to_write)
 
+fout.close()
+print(len(data_to_write) - 1)
+print('Done!' + sys.argv[1][:-3] + 'csv')
