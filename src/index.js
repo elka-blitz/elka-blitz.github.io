@@ -258,7 +258,6 @@ function init() {
 	// MARK: Model setup
 	scene.add(tableGroup)
 	scene.add(office_group)
-	// Initialise desk manager
 
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup)
@@ -270,8 +269,6 @@ function init() {
 
 	tableGroup.position.set(0, -3, 0)
 
-	red_button = new DeskButton(scene)
-	red_button.createButton(new THREE.Vector3(0,0,0), '#b30000', 'Lock')
 
 	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
@@ -425,7 +422,7 @@ function onFrame(timestamp, frame) {
 	else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
 		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
-		interface_text.updateText('Desk Locked!')
+		interface_text.updateText('')
 
 		// Locate text permanently above desk for remainder of session
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
@@ -446,8 +443,7 @@ function onFrame(timestamp, frame) {
 		// deskLocked: desk_locked
 		// TODO: Buttonpushed variable
 	});
-
-	console.log(logData[logData.length - 1]) // Log the most recent data point for debugging
+	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -618,7 +614,7 @@ function handleButton() {
 			desk_manager.clearSurface();
 			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
 			nextButton.updateLabel(
-				`Practice ${practiceShapeIndex}/${practiceSvgArray.length - 1}`,
+				`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
 			);
 
 			practicePaints.forEach((paint) => {
@@ -651,7 +647,7 @@ function handleButton() {
 			shapeIndex += 1;
 			desk_manager.clearSurface();
 			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(`Next ${shapeIndex}/${svgArray.length -1}`);
+			nextButton.updateLabel(`Next ${shapeIndex + 1}/${svgArray.length}`);
 
 
 			svgPaintsArray.forEach((paint) => {
