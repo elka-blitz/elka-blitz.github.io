@@ -305,7 +305,7 @@ function init() {
 	document.addEventListener('keydown', function(event) {
 		switch (event.keyCode) {
 			case 87: // W
-				question_panel.moveInputCubesDown();	
+				// question_panel.moveInputCubesDown();	
 				break;
 			case 65: // A
 			 	question_panel.resetInputCubes();
@@ -551,11 +551,12 @@ function onFrame(timestamp, frame) {
 		// Generate CSV and trigger download
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
-		downloadCSV(JSON.stringify(logData));
-		// questionnaire_instance.setQuestionnaireSlide(2)
-		question_panel.nextQuestionnaireSlide()
-		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
-		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+		// downloadCSV(JSON.stringify(logData));
+
+		console.log('Angular Velocity', stylus.angularVelocity)
+		console.log('Linear Velocity', stylus.linearVelocity)
+		console.log('Rotation', stylus.rotation)
+		console.log('Quaternion', stylus.quaternion)
 	}
   }
 
