@@ -43,7 +43,6 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
-import { csvMaker, downloadCSV } from './csvFunctions';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -64,6 +63,7 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
+import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
