@@ -577,11 +577,8 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
+		textDownload(JSON.stringify(logData))
 
-		console.log('Angular Velocity', stylus.angularVelocity)
-		console.log('Linear Velocity', stylus.linearVelocity)
-		console.log('Rotation', stylus.rotation)
-		console.log('Quaternion', stylus.quaternion)
 	}
   }
 
