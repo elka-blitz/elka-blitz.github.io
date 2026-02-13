@@ -64,7 +64,7 @@ import { gsap } from 'gsap';
 import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 
 // setup declarations
@@ -87,6 +87,7 @@ let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, p
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
 let practicePaints = [practice1, practice2, practice3];
 let isDrawingDisabled = false;
+let drawingBox;
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -256,23 +257,21 @@ function init() {
 	);
 
 	// MARK: Model setup
-	scene.add(tableGroup)
-	scene.add(office_group)
+	scene.add(tableGroup);
+	scene.add(office_group);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup)
-
+	desk_manager = new DeskManager(scene, tableGroup);
 
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
 
-	tableGroup.position.set(0, -3, 0)
-
+	tableGroup.position.set(0, -3, 0);
 
 	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(false) // Initially set the questionnaire to be invisible until desk is locked in place
+	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
+	question_panel.setQuestionnaireVisibility(false); // Initially set the questionnaire to be invisible until desk is locked in place
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -302,13 +301,13 @@ function init() {
 
 	// MARK: Key Input
 	// Keyboard buttonpress listener for testing in browser
-	document.addEventListener('keydown', function(event) {
+	document.addEventListener('keydown', function (event) {
 		switch (event.keyCode) {
 			case 87: // W
-				question_panel.moveInputCubesDown();	
+				question_panel.moveInputCubesDown();
 				break;
 			case 65: // A
-			 	question_panel.resetInputCubes();
+				question_panel.resetInputCubes();
 				break;
 		}
 	});
@@ -374,19 +373,37 @@ function init() {
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
 
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup);
-
 	// buttons
 	red_button = new DeskButton(scene);
 	red_button.createButton(new THREE.Vector3(0, 0, 0), '#b30000', 'Lock');
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene);
-	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 1/3', 0.07);
+	nextButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#ff7300',
+		'Practice 1/3',
+		0.07,
+	);
 	nextButton.makeInvisible();
 
-	// drawing
+	// testing drawing box
+	const boxGeometry = new THREE.BoxGeometry(1, 0.5, 1.25);
+	drawingBox = new THREE.Mesh(
+		boxGeometry,
+		new THREE.MeshStandardMaterial({
+			color: 'red',
+			transparent: true,
+			opacity: 0.3,
+		}),
+	);
+	// making its origin in the center of the cube
+	boxGeometry.computeBoundingBox();
+	const boxCenter = boxGeometry.boundingBox.getCenter(new THREE.Vector3());
+	boxGeometry.translate(-boxCenter.x, -boxCenter.y, -boxCenter.z);
+	drawingBox.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
+
+	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
@@ -394,7 +411,7 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		scene.add(svgPaintsArray[i].mesh);
+		drawingBox.add(svgPaintsArray[i].mesh);
 	});
 
 	practicePaints.forEach((paint, i) => {
@@ -407,6 +424,9 @@ function init() {
 		scene.add(practicePaints[i].mesh);
 	});
 
+	// scene.add(drawingBox);
+	desk_manager.addMesh(drawingBox);
+	drawingBox.position.y = 1
 }
 
 
@@ -670,9 +690,9 @@ function handleButton() {
 			// todo move paints
 
 			svgWithPositionsArray.forEach((obj, i) => {
-				svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
-				svgPaintsArray[i].mesh.position.x = obj.position.x;
-				svgPaintsArray[i].mesh.position.y = obj.position.y;
+				// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+				// svgPaintsArray[i].mesh.position.x = obj.position.x;
+				// svgPaintsArray[i].mesh.position.y = obj.position.y;
 				svgPaintsArray[i].mesh.visible = true;
 			})
 
