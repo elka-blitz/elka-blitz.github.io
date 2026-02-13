@@ -576,22 +576,10 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		// Generate CSV and trigger download
-		// This is currently done on controller button press, but can be triggered prgrammattically
-		// Should be triggered alongside 
-		
-		// downloadCSV(JSON.stringify(logData));
-
-		// questionnaire_instance.setQuestionnaireSlide(2)
-		// question_panel.nextQuestionnaireSlide()
-		// question_panel.refresh()
-		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
-		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
-
-		// Draw previous shape at stylus position when back button is pressed, for testing purposes
-		// let previousPaintingArray = paint_exporter_instance.getPreviousPaintingArray()
-
-		// paint_exporter_instance.loadPreviousMesh(stylus.position.x, stylus.position.y, stylus.position.z)
+		// Back button tests 'download all meshes' functionality
+		// No error handling for no mesh condition, only press when there are meshes to export!
+		// TODO: Refactor, function name not reflective
+		paint_exporter_instance.downloadJSON()
 	}
   }
 
