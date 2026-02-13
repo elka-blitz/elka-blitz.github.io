@@ -394,7 +394,8 @@ function init() {
 		new THREE.MeshStandardMaterial({
 			color: 'red',
 			transparent: true,
-			opacity: 0,
+			opacity: 0.2,
+			visible: false,
 		}),
 	);
 	// making its origin in the center of the cube
@@ -402,6 +403,8 @@ function init() {
 	const boxCenter = boxGeometry.boundingBox.getCenter(new THREE.Vector3());
 	boxGeometry.translate(-boxCenter.x, -boxCenter.y, -boxCenter.z);
 	drawingBox.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
+	drawingBox.rotateY(Math.PI / 2);
+	drawingBox.rotateX(-Math.PI / 3); // angle towards
 
 	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
@@ -426,7 +429,7 @@ function init() {
 
 	// scene.add(drawingBox);
 	desk_manager.addMesh(drawingBox);
-	drawingBox.position.y = 1
+	drawingBox.position.y = 1;
 }
 
 
@@ -687,6 +690,7 @@ function handleButton() {
 			desk_manager.clearSurface();
 			task1Text.updateText('Task 1 Complete');
 			loadSVGs(svgWithPositionsArray);
+			drawingBox.rotateX(-Math.PI / 3);
 
 			// todo move paints
 
