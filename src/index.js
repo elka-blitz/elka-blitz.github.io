@@ -58,9 +58,11 @@ import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import { buffer } from "three/examples/jsm/nodes/Nodes.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
+import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
@@ -207,7 +209,27 @@ const right_hand_container = new THREE.Group();
 
 let logData = []
 
+let paint_exporter_instance;
+
+let canvas
+let takeScreenshot = false
+let canvasblob
+
 init();
+
+// TODO: Adjust function so screenshots are stored in memory and exported all at once
+// TODO: Consider moving the camera directly in front of scene-to-capture before screenshot
+const saveBlob = (function() {
+  const a = document.createElement('a');
+  document.body.appendChild(a);
+  a.style.display = 'none';
+  return function saveData(blob, fileName) {
+     const url = window.URL.createObjectURL(blob);
+     a.href = url;
+     a.download = fileName;
+     a.click();
+  };
+}());
 
 function init() {
 	// MARK: Scene Setup
@@ -226,7 +248,7 @@ function init() {
 	scene.add(player);
 	player.add(camera);
 
-	const canvas = document.querySelector('canvas.webgl');
+	canvas = document.querySelector('canvas.webgl');
 
 	const controls = new OrbitControls(camera, canvas);
 	controls.target.set(0, 1.6, 0);
@@ -280,7 +302,7 @@ function init() {
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup);
 
-	tableGroup.position.set(0, 0, 0);
+	tableGroup.position.set(0, -3, 0);
 	office_group.position.set(0, -0.3, 0);
 	office_group.rotateY(Math.PI / 5);
 
@@ -303,7 +325,9 @@ function init() {
 	document.addEventListener('keydown', function(event) {
 		switch (event.keyCode) {
 			case 87: // W
-				question_panel.moveInputCubesDown();	
+				// question_panel.moveInputCubesDown();	
+				// paint_exporter_instance.screenShotCanvas(canvas)
+				takeScreenshot = true
 				break;
 			case 65: // A
 			 	// question_panel.resetInputCubes();
@@ -311,6 +335,8 @@ function init() {
 				break;
 		}
 	});
+
+	paint_exporter_instance = new paintExporter(scene, camera)
 
 	renderer.setAnimationLoop(animate);
 
@@ -515,6 +541,8 @@ function onFrame(timestamp, frame) {
 			);
 			interface_text.animateTextToCamera(camera)
 			question_panel.refresh()
+			// question_panel.spawnBoundingBoxes()
+			question_panel.makeCubesTransparent()
 		}
 	}
 
@@ -551,11 +579,19 @@ function onFrame(timestamp, frame) {
 		// Generate CSV and trigger download
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
-		downloadCSV(JSON.stringify(logData));
+		
+		// downloadCSV(JSON.stringify(logData));
+
 		// questionnaire_instance.setQuestionnaireSlide(2)
-		question_panel.nextQuestionnaireSlide()
+		// question_panel.nextQuestionnaireSlide()
+		// question_panel.refresh()
 		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
+
+		// Draw previous shape at stylus position when back button is pressed, for testing purposes
+		// let previousPaintingArray = paint_exporter_instance.getPreviousPaintingArray()
+
+		// paint_exporter_instance.loadPreviousMesh(stylus.position.x, stylus.position.y, stylus.position.z)
 	}
   }
 
@@ -588,6 +624,14 @@ function animate() {
   onFrame();
 
   renderer.render(scene, camera);
+  if (takeScreenshot == true) {
+
+	canvas.toBlob((blob) => {
+		saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
+	});
+
+	takeScreenshot = false
+  }
 }
 
 function handleDrawing(controller) {
@@ -601,6 +645,9 @@ function handleDrawing(controller) {
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
+	//   console.log(painter.mesh.geometry.attributes.position.array)
+	// MARK: Paint save
+	// paint_exporter_instance.savePainting(painter.mesh.uuid) // Save painting with uuid, can be used to reference painting later for export or other functions
     }
   }
 }
@@ -757,6 +804,13 @@ function onSelectStart(e) {
 // MARK: Front Button Release
 function onSelectEnd() {
   this.userData.isSelecting = false;
+	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
+	try {
+	paint_exporter_instance.saveMesh(this.userData.painter.mesh) // Save painting with uuid, can be used to reference painting later for export or other functions
+	}
+	catch (error) {
+		console.error("Error saving painting array:", error);
+	}
 }
 
 // MARK: SVG Function
