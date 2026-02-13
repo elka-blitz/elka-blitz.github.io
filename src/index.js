@@ -213,12 +213,17 @@ let paint_exporter_instance;
 
 let canvas
 let takeScreenshot = false
-let canvasblob
+
+// MARK: DeltaTime
+let accumulatedTime = 0;
+let logInterval = 0.2; // 5 times per second
+let lastFrameTime = 0
 
 init();
 
-// TODO: Adjust function so screenshots are stored in memory and exported all at once
-// TODO: Consider moving the camera directly in front of scene-to-capture before screenshot
+// Screenshot save function. Unfortunately only works in browser window
+// Not in VR
+// Keep just in case
 const saveBlob = (function() {
   const a = document.createElement('a');
   document.body.appendChild(a);
@@ -436,7 +441,8 @@ function init() {
 
 
 // MARK: OnFrame
-function onFrame(timestamp, frame) {
+function onFrame(time, frame) {
+
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
@@ -460,15 +466,6 @@ function onFrame(timestamp, frame) {
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
-	// Stylus logging
-	// Get positional data for timestamp
-	logData.push({
-		t: Date.now(),
-		s: stylus ? stylus.position.clone() : null,
-		// deskLocked: desk_locked
-		// TODO: Buttonpushed variable
-	});
-	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -591,9 +588,32 @@ function onFrame(timestamp, frame) {
   question_panel.updateBoxGradientFade()
 }
 
-// MARK: Animate Function
-function animate() {
+// MARK: Animate Func
+function animate(time, frame) {
 
+	// MARK: Stylus Logging
+	// Deltatime to prevent 60x log pers seconds
+	// Also prevents logging inconsistency due to hardware and framerate
+	const deltaTime = (time - lastFrameTime) * 0.001
+	lastFrameTime = time
+
+	accumulatedTime += deltaTime
+
+	while (accumulatedTime >= logInterval) {
+		console.log("Logged at", time);
+		accumulatedTime -= logInterval;
+
+		logData.push({
+			t: Date.now(),
+			s: stylus ? stylus.position : null,
+			a: stylus ? stylus.angularVelocity : null,
+			l: stylus ? stylus.linearVelocity : null,
+			r: stylus ? stylus.rotation : null,
+			q: stylus ? stylus.quaternion : null,
+		});
+		// TODO: Prevent variable from storing too much and crashing the VRE
+		// Maybe periodic export?
+	}
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
