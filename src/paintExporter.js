@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { csvMaker, downloadCSV } from './csvFunctions';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import canvasScreenshot from 'canvas-screenshot';
-import txtFile from './stringed_mesh.txt';
 
 // console.log(txtFile)
 
