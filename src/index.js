@@ -71,7 +71,7 @@ let BROWSER_buttonPressed = false;
 
 // setup declarations
 let camera, scene, renderer;
-let stylus;
+let stylus = null;
 let gamepad1;
 let gamepadInterface;
 let contextText, task1Text;
@@ -599,7 +599,7 @@ function animate(time, frame) {
 
 	accumulatedTime += deltaTime
 
-	while (accumulatedTime >= logInterval) {
+	while (accumulatedTime >= logInterval && stylus != null) {
 		console.log("Logged at", time);
 		accumulatedTime -= logInterval;
 
@@ -613,6 +613,7 @@ function animate(time, frame) {
 		});
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Maybe periodic export?
+		// (╯°□°）╯︵ ┻━┻
 	}
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw
