@@ -586,7 +586,7 @@ function onFrame(timestamp, frame) {
   question_panel.updateBoxGradientFade()
 }
 
-// MARK: Animate Function
+// MARK: Animate Func
 function animate() {
 
 	// UIText.sync()
