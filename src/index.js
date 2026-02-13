@@ -64,7 +64,7 @@ import { gsap } from 'gsap';
 import questionnaireManager from './questionnaireManager.js'
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
 
 // setup declarations
@@ -394,7 +394,7 @@ function init() {
 		new THREE.MeshStandardMaterial({
 			color: 'red',
 			transparent: true,
-			opacity: 0.3,
+			opacity: 0,
 		}),
 	);
 	// making its origin in the center of the cube
@@ -617,7 +617,8 @@ function handleDrawing(controller) {
   const painter = isPracticeMode ? practicePaints[practiceShapeIndex] : svgPaintsArray[shapeIndex];
 
   if (gamepad1) {
-    cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
+		const relativePos = getRelativePosition(stylus, drawingBox);
+    cursor.set(relativePos.x, relativePos.y, relativePos.z);
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -684,19 +685,17 @@ function handleButton() {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
 			desk_manager.clearSurface();
-			task1Text.updateText("Task 1 Complete");
+			task1Text.updateText('Task 1 Complete');
 			loadSVGs(svgWithPositionsArray);
 
 			// todo move paints
 
 			svgWithPositionsArray.forEach((obj, i) => {
 				// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
-				// svgPaintsArray[i].mesh.position.x = obj.position.x;
-				// svgPaintsArray[i].mesh.position.y = obj.position.y;
+				svgPaintsArray[i].mesh.position.x = obj.position.x;
+				svgPaintsArray[i].mesh.position.y = obj.position.y;
 				svgPaintsArray[i].mesh.visible = true;
-			})
-
-
+			});
 		}
 	}
 }
@@ -863,6 +862,19 @@ function loadSVGs(svgObjs) {
 		});
 	});
 }
+
+function getRelativePosition(child, parent) {
+	// Get the world position of the child
+	const worldPosition = new THREE.Vector3();
+	child.getWorldPosition(worldPosition);
+
+	// Convert the world position to the local position relative to the parent
+	const localPosition = worldPosition.clone();
+	parent.worldToLocal(localPosition);
+
+	return localPosition;
+}
+
 
 
 function debugGamepad(gamepad) {
