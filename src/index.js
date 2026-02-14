@@ -603,15 +603,6 @@ function animate(time, frame) {
 		console.log("Logged at", time);
 		accumulatedTime -= logInterval;
 
-		// console.log({
-		// 	t: Date.now(),
-		// 	s: stylus ? stylus.position : null,
-		// 	a: stylus ? stylus.angularVelocity : null,
-		// 	l: stylus ? stylus.linearVelocity : null,
-		// 	r: stylus ? stylus.rotation : null,
-		// 	q: stylus ? stylus.quaternion : null,
-		// })
-
 		console.log('changecheck: ', time, stylus.position, stylus.angularVelocity)
 		
 		// Update variables explicitly locally
@@ -620,9 +611,6 @@ function animate(time, frame) {
 		let stylus_linearVelocity 		= [stylus.linearVelocity.x, stylus.linearVelocity.y, stylus.linearVelocity.z]
 		let stylus_rotation 			= [stylus.rotation._x, stylus.rotation._y, stylus.rotation._z]
 		let stylus_quaternion 			= [stylus.quaternion]
-
-		// console.log(stylus_position)
-		// This does change per iteration
 
 		// Explicitly update a linepush variable
 		push_line = {
@@ -642,6 +630,7 @@ function animate(time, frame) {
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
 	}
+
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
