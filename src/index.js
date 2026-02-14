@@ -104,11 +104,11 @@ const svgArray = [
 	'assets/base.svg',
 	'assets/door_bottom.svg',
 	'assets/door_top.svg',
-	// 'assets/window.svg',
-	// 'assets/window2.svg',
-	// 'assets/window_curtain.svg',
-	// 'assets/banner_short.svg',
-	// 'assets/banner_long.svg',
+	'assets/window.svg',
+	'assets/window2.svg',
+	'assets/window_curtain.svg',
+	'assets/banner_short.svg',
+	'assets/banner_long.svg',
 ];
 
 const practiceSvgArray = [
@@ -121,11 +121,11 @@ const svgWithPositionsArray = [
 	{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
 	{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
 	{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
-	// { url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
-	// { url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
-	// { url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-	// { url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
-	// { url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
+	{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
+	{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
+	{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
+	{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
+	{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
 ];
 
 let wasChangeButton = false;
@@ -388,14 +388,15 @@ function init() {
 	nextButton.makeInvisible();
 
 	// testing drawing box
-	const boxGeometry = new THREE.BoxGeometry(1, 0.5, 1.25);
+	const boxGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 	drawingBox = new THREE.Mesh(
 		boxGeometry,
 		new THREE.MeshStandardMaterial({
 			color: 'red',
 			transparent: true,
+			side: THREE.DoubleSide, // optional, shows both sides
 			opacity: 0.2,
-			visible: false,
+			visible: BROWSER_TESTING,
 		}),
 	);
 	// making its origin in the center of the cube
@@ -404,7 +405,7 @@ function init() {
 	boxGeometry.translate(-boxCenter.x, -boxCenter.y, -boxCenter.z);
 	drawingBox.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
 	drawingBox.rotateY(Math.PI / 2);
-	drawingBox.rotateX(-Math.PI / 3); // angle towards
+	drawingBox.rotateX(Math.PI / 3); // angle towards
 
 	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
@@ -429,7 +430,7 @@ function init() {
 
 	// scene.add(drawingBox);
 	desk_manager.addMesh(drawingBox);
-	drawingBox.position.y = 1;
+	drawingBox.position.y = 0.82;
 }
 
 
@@ -691,6 +692,9 @@ function handleButton() {
 			task1Text.updateText('Task 1 Complete');
 			loadSVGs(svgWithPositionsArray);
 			drawingBox.rotateX(-Math.PI / 3);
+			drawingBox.position.x += 0.2
+			drawingBox.position.y += 0.2
+			// drawingBox.position.z -= 0.5
 
 			// todo move paints
 

@@ -31,9 +31,6 @@ export default class DeskManager {
 		this.desk_positioning_confirmed = false;
 		this.desk_locked_in_place = false;
 
-		// Set up drawing zone
-		// Transparent cube
-
 		// drawing surface
 		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
