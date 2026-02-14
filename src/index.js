@@ -207,6 +207,8 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
+// MARK: Data Logging Variables
+let push_line = {}
 let logData = []
 
 let paint_exporter_instance;
@@ -577,7 +579,8 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
-		textDownload(JSON.stringify(logData))
+		console.log(logData)
+		textDownload(JSON.stringify(logData), 'why_i_oughta')
 
 	}
   }
@@ -600,16 +603,43 @@ function animate(time, frame) {
 		console.log("Logged at", time);
 		accumulatedTime -= logInterval;
 
-		logData.push({
+		// console.log({
+		// 	t: Date.now(),
+		// 	s: stylus ? stylus.position : null,
+		// 	a: stylus ? stylus.angularVelocity : null,
+		// 	l: stylus ? stylus.linearVelocity : null,
+		// 	r: stylus ? stylus.rotation : null,
+		// 	q: stylus ? stylus.quaternion : null,
+		// })
+
+		console.log('changecheck: ', time, stylus.position, stylus.angularVelocity)
+		
+		// Update variables explicitly locally
+		let stylus_position			 	= [stylus.position.x, stylus.position.y, stylus.position.z]
+		let stylus_angular_velocity		= [stylus.angularVelocity.x, stylus.angularVelocity.y, stylus.angularVelocity.z]
+		let stylus_linearVelocity 		= [stylus.linearVelocity.x, stylus.linearVelocity.y, stylus.linearVelocity.z]
+		let stylus_rotation 			= [stylus.rotation._x, stylus.rotation._y, stylus.rotation._z]
+		let stylus_quaternion 			= [stylus.quaternion]
+
+		// console.log(stylus_position)
+		// This does change per iteration
+
+		// Explicitly update a linepush variable
+		push_line = {
 			t: Date.now(),
-			s: stylus ? stylus.position : null,
-			a: stylus ? stylus.angularVelocity : null,
-			l: stylus ? stylus.linearVelocity : null,
-			r: stylus ? stylus.rotation : null,
-			q: stylus ? stylus.quaternion : null,
-		});
+			s: stylus_position,
+			a: stylus_angular_velocity,
+			l: stylus_linearVelocity,
+			r: stylus_rotation,
+			q: stylus_quaternion
+		}
+		
+		console.log('Pushline:', push_line)
+
+		logData.push(push_line);
+
 		// TODO: Prevent variable from storing too much and crashing the VRE
-		// Maybe periodic export?
+		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
 	}
 	// UIText.sync()

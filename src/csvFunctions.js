@@ -6,6 +6,6 @@ export const textDownload = (data, title) => {
 
 	link.href = url;
 	var date = new Date();
-	link.download = `title_${date.getDate()}_${date.getMonth()}_${date.getFullYear()}_${date.getTime()}.txt`
+	link.download = `${title}_${date.getDate()}_${date.getMonth()}_${date.getFullYear()}_${date.getTime()}.txt`
 	link.click();
 };
