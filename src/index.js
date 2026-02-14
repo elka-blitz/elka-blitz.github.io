@@ -692,8 +692,9 @@ function handleButton() {
 			task1Text.updateText('Task 1 Complete');
 			loadSVGs(svgWithPositionsArray);
 			drawingBox.rotateX(-Math.PI / 3);
-			drawingBox.position.x += 0.2
-			drawingBox.position.y += 0.2
+			drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+			drawingBox.position.x += 0.2;
+			drawingBox.position.y += 0.2;
 			// drawingBox.position.z -= 0.5
 
 			// todo move paints
