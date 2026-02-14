@@ -48,7 +48,8 @@ import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
-import  DeskManager  from './DeskManager.js'
+import  DeskManager  from './DeskManager.js';
+import DrawParent from './DrawParent';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -87,6 +88,7 @@ let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, p
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
 let practicePaints = [practice1, practice2, practice3];
 let isDrawingDisabled = false;
+let pracBox, task1Box, task1ParentManager;
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -256,23 +258,21 @@ function init() {
 	);
 
 	// MARK: Model setup
-	scene.add(tableGroup)
-	scene.add(office_group)
+	scene.add(tableGroup);
+	scene.add(office_group);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup)
-
+	desk_manager = new DeskManager(scene, tableGroup);
 
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
 
-	tableGroup.position.set(0, -3, 0)
-
+	tableGroup.position.set(0, -3, 0);
 
 	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(false) // Initially set the questionnaire to be invisible until desk is locked in place
+	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
+	question_panel.setQuestionnaireVisibility(false); // Initially set the questionnaire to be invisible until desk is locked in place
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -302,13 +302,13 @@ function init() {
 
 	// MARK: Key Input
 	// Keyboard buttonpress listener for testing in browser
-	document.addEventListener('keydown', function(event) {
+	document.addEventListener('keydown', function (event) {
 		switch (event.keyCode) {
 			case 87: // W
-				question_panel.moveInputCubesDown();	
+				question_panel.moveInputCubesDown();
 				break;
 			case 65: // A
-			 	question_panel.resetInputCubes();
+				question_panel.resetInputCubes();
 				break;
 		}
 	});
@@ -374,19 +374,28 @@ function init() {
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
 
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup);
-
 	// buttons
 	red_button = new DeskButton(scene);
 	red_button.createButton(new THREE.Vector3(0, 0, 0), '#b30000', 'Lock');
 	red_button.makeInvisible();
 
 	nextButton = new DeskButton(scene);
-	nextButton.createButton(new THREE.Vector3(0, 0, 0), '#ff7300', 'Practice 1/3', 0.07);
+	nextButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#ff7300',
+		'Practice 1/3',
+		0.07,
+	);
 	nextButton.makeInvisible();
 
-	// drawing
+	const pracParent = new DrawParent("blue", BROWSER_TESTING)
+	pracBox = pracParent.getParent();
+
+	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
+	task1Box = task1ParentManager.getParent();
+
+
+	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
@@ -394,7 +403,7 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		scene.add(svgPaintsArray[i].mesh);
+		task1Box.add(svgPaintsArray[i].mesh);
 	});
 
 	practicePaints.forEach((paint, i) => {
@@ -404,8 +413,14 @@ function init() {
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
-		scene.add(practicePaints[i].mesh);
+		pracBox.add(practicePaints[i].mesh);
 	});
+
+	// scene.add(drawingBox);
+	desk_manager.addMesh(task1Box);
+	desk_manager.addMesh(pracBox);
+	task1Box.position.y = 0.82;
+	pracBox.position.y = 0.82;
 
 }
 
@@ -594,10 +609,19 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = isPracticeMode ? practicePaints[practiceShapeIndex] : svgPaintsArray[shapeIndex];
+  let painter;
+
+  if (isPracticeMode) {
+	  painter = practicePaints[practiceShapeIndex];
+  } else if (shapeIndex === -1) {
+	  painter = svgPaintsArray[0];
+  } else {
+	  painter = svgPaintsArray[shapeIndex];
+  }
 
   if (gamepad1) {
-    cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
+	const relativePos = getRelativePosition(stylus, task1Box);
+    cursor.set(relativePos.x, relativePos.y, relativePos.z);
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
       painter.update();
@@ -626,6 +650,8 @@ function handleButton() {
 		} else {
 			isPracticeMode = false;
 			isDrawingDisabled = true;
+			stylus.userData.painter = svgPaintsArray[0];
+			pracBox.visible = false;
 
 			desk_manager.clearSurface();
 			practicePaints.forEach((paint) => {
@@ -664,15 +690,18 @@ function handleButton() {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
 			desk_manager.clearSurface();
-			task1Text.updateText("Task 1 Complete");
+			task1Text.updateText('Task 1 Complete');
+			loadSVGs(svgWithPositionsArray);
+			task1ParentManager.makeVertical();
 
 			// todo move paints
 
-			// make all paints visible for full drawing
-			svgPaintsArray.forEach((paint) => {
-				paint.mesh.visible = true;
+			svgWithPositionsArray.forEach((obj, i) => {
+				// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+				svgPaintsArray[i].mesh.position.x = obj.position.x;
+				svgPaintsArray[i].mesh.position.y = obj.position.y;
+				svgPaintsArray[i].mesh.visible = true;
 			});
-
 		}
 	}
 }
@@ -798,6 +827,61 @@ function loadSVG(url, position) {
 		desk_manager.placeSVG(group, position)
 	});
 }
+
+function loadSVGs(svgObjs) {
+	const groups = [];
+	const loader = new SVGLoader();
+
+	svgObjs.map((obj, i) => {
+		loader.load(obj.url, function (data) {
+			const group = new THREE.Group();
+
+			let renderOrder = 0;
+
+			for (const path of data.paths) {
+				const strokeColor = path.userData.style.fill;
+
+				const material = new THREE.MeshBasicMaterial({
+					color: 'black',
+					opacity: path.userData.style.strokeOpacity,
+					transparent: true,
+					side: THREE.DoubleSide,
+					depthWrite: false,
+				});
+
+				for (const subPath of path.subPaths) {
+					const geometry = SVGLoader.pointsToStroke(
+						subPath.getPoints(),
+						path.userData.style,
+					);
+					geometry.rotateZ(Math.PI); // rotate right side up
+
+					if (geometry) {
+						const mesh = new THREE.Mesh(geometry, material);
+						mesh.renderOrder = renderOrder++;
+
+						group.add(mesh);
+					}
+				}
+			}
+			desk_manager.placeSVG(group, obj.position, i);
+		});
+	});
+}
+
+function getRelativePosition(child, parent) {
+	// Get the world position of the child
+	const worldPosition = new THREE.Vector3();
+	child.getWorldPosition(worldPosition);
+
+	// Convert the world position to the local position relative to the parent
+	const localPosition = worldPosition.clone();
+	parent.worldToLocal(localPosition);
+
+	return localPosition;
+}
+
+
 
 function debugGamepad(gamepad) {
   gamepad.buttons.forEach((btn, index) => {
