@@ -48,7 +48,8 @@ import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
-import  DeskManager  from './DeskManager.js'
+import  DeskManager  from './DeskManager.js';
+import DrawParent from './DrawParent';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -87,7 +88,7 @@ let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, p
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
 let practicePaints = [practice1, practice2, practice3];
 let isDrawingDisabled = false;
-let drawingBox;
+let pracBox, task1Box, task1ParentManager;
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -387,25 +388,12 @@ function init() {
 	);
 	nextButton.makeInvisible();
 
-	// testing drawing box
-	const boxGeometry = new THREE.PlaneGeometry(0.5, 0.2);
-	drawingBox = new THREE.Mesh(
-		boxGeometry,
-		new THREE.MeshStandardMaterial({
-			color: 'red',
-			transparent: true,
-			side: THREE.DoubleSide, // optional, shows both sides
-			opacity: 0.2,
-			visible: BROWSER_TESTING,
-		}),
-	);
-	// making its origin in the center of the cube
-	boxGeometry.computeBoundingBox();
-	const boxCenter = boxGeometry.boundingBox.getCenter(new THREE.Vector3());
-	boxGeometry.translate(-boxCenter.x, -boxCenter.y, -boxCenter.z);
-	drawingBox.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
-	drawingBox.rotateY(Math.PI / 2);
-	drawingBox.rotateX(Math.PI / 3); // angle towards
+	const pracParent = new DrawParent("blue", BROWSER_TESTING)
+	pracBox = pracParent.getParent();
+
+	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
+	task1Box = task1ParentManager.getParent();
+
 
 	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
@@ -415,7 +403,7 @@ function init() {
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
-		drawingBox.add(svgPaintsArray[i].mesh);
+		task1Box.add(svgPaintsArray[i].mesh);
 	});
 
 	practicePaints.forEach((paint, i) => {
@@ -425,12 +413,15 @@ function init() {
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
-		scene.add(practicePaints[i].mesh);
+		pracBox.add(practicePaints[i].mesh);
 	});
 
 	// scene.add(drawingBox);
-	desk_manager.addMesh(drawingBox);
-	drawingBox.position.y = 0.82;
+	desk_manager.addMesh(task1Box);
+	desk_manager.addMesh(pracBox);
+	task1Box.position.y = 0.82;
+	pracBox.position.y = 0.82;
+
 }
 
 
@@ -618,10 +609,18 @@ function handleDrawing(controller) {
   if (!controller) return;
 
   const userData = controller.userData;
-  const painter = isPracticeMode ? practicePaints[practiceShapeIndex] : svgPaintsArray[shapeIndex];
+  let painter;
+
+  if (isPracticeMode) {
+	  painter = practicePaints[practiceShapeIndex];
+  } else if (shapeIndex === -1) {
+	  painter = svgPaintsArray[0];
+  } else {
+	  painter = svgPaintsArray[shapeIndex];
+  }
 
   if (gamepad1) {
-		const relativePos = getRelativePosition(stylus, drawingBox);
+	const relativePos = getRelativePosition(stylus, task1Box);
     cursor.set(relativePos.x, relativePos.y, relativePos.z);
     if (userData.isSelecting || isDrawing) {
       painter.lineTo(cursor);
@@ -651,6 +650,8 @@ function handleButton() {
 		} else {
 			isPracticeMode = false;
 			isDrawingDisabled = true;
+			stylus.userData.painter = svgPaintsArray[0];
+			pracBox.visible = false;
 
 			desk_manager.clearSurface();
 			practicePaints.forEach((paint) => {
@@ -691,11 +692,7 @@ function handleButton() {
 			desk_manager.clearSurface();
 			task1Text.updateText('Task 1 Complete');
 			loadSVGs(svgWithPositionsArray);
-			drawingBox.rotateX(-Math.PI / 3);
-			drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-			drawingBox.position.x += 0.2;
-			drawingBox.position.y += 0.2;
-			// drawingBox.position.z -= 0.5
+			task1ParentManager.makeVertical();
 
 			// todo move paints
 
