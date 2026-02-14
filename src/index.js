@@ -62,7 +62,9 @@ import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import questionnaireManager from './questionnaireManager.js'
+import speedMeter from "./speedMeter.js";
 import { update } from "three/examples/jsm/libs/tween.module.js";
+
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -206,6 +208,8 @@ const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
 let logData = []
+
+const speed_meter = speedMeter()
 
 init();
 
@@ -416,7 +420,7 @@ function onFrame(timestamp, frame) {
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		interface_text.updateText('Tap desk with stylus to lock')
+		// interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
 	}
 	else if (desk_locked && !prev_desk_locked) {
@@ -434,6 +438,9 @@ function onFrame(timestamp, frame) {
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
+
+		// MARK: Speedometer Logic
+		
 
 	// Stylus logging
 	// Get positional data for timestamp
