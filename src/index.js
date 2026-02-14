@@ -43,7 +43,6 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
-import { csvMaker, downloadCSV } from './csvFunctions';
 import { getController, getControllerGrip } from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -65,6 +64,7 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
+import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
@@ -72,7 +72,7 @@ let BROWSER_buttonPressed = false;
 
 // setup declarations
 let camera, scene, renderer;
-let stylus;
+let stylus = null;
 let gamepad1;
 let gamepadInterface;
 let contextText, task1Text;
@@ -209,18 +209,26 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
-let logData = []
+// MARK: Data Logging Variables
+let push_line = {}
+let stylus_data_log = []
+let task_event_data_log = []
 
 let paint_exporter_instance;
 
 let canvas
 let takeScreenshot = false
-let canvasblob
+
+// MARK: DeltaTime
+let accumulatedTime = 0;
+let logInterval = 0.2; // 5 times per second
+let lastFrameTime = 0
 
 init();
 
-// TODO: Adjust function so screenshots are stored in memory and exported all at once
-// TODO: Consider moving the camera directly in front of scene-to-capture before screenshot
+// Screenshot save function. Unfortunately only works in browser window
+// Not in VR
+// Keep just in case
 const saveBlob = (function() {
   const a = document.createElement('a');
   document.body.appendChild(a);
@@ -451,7 +459,8 @@ function init() {
 
 
 // MARK: OnFrame
-function onFrame(timestamp, frame) {
+function onFrame(time, frame) {
+
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
@@ -475,15 +484,6 @@ function onFrame(timestamp, frame) {
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
-	// Stylus logging
-	// Get positional data for timestamp
-	logData.push({
-		t: Date.now(),
-		s: stylus ? stylus.position.clone() : null,
-		// deskLocked: desk_locked
-		// TODO: Buttonpushed variable
-	});
-	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -591,10 +591,24 @@ function onFrame(timestamp, frame) {
 		laserSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
-		// Back button tests 'download all meshes' functionality
-		// No error handling for no mesh condition, only press when there are meshes to export!
-		// TODO: Refactor, function name not reflective
+		// Generate CSV and trigger download
+		// This is currently done on controller button press, but can be triggered prgrammattically
+		// Should be triggered alongside 
+		// downloadCSV(JSON.stringify(logData));
+		console.log(stylus_data_log)
+		
+		// MARK: Export
+		// Export the stylus data log
+		textDownload(JSON.stringify(stylus_data_log), 'stylus_data_log')
+
+		// Export the event data log
+		// TODO: Push event data here
+		textDownload(JSON.stringify(task_event_data_log), 'task_event_data')
+
+		// Export Paintings
+		// TODO: Error handling for no paint mesh condition
 		paint_exporter_instance.downloadJSON()
+
 	}
   }
 
@@ -602,7 +616,47 @@ function onFrame(timestamp, frame) {
 }
 
 // MARK: Animate Func
-function animate() {
+function animate(time, frame) {
+
+	// MARK: Stylus Logging
+	// Deltatime to prevent 60x log pers seconds
+	// Also prevents logging inconsistency due to hardware and framerate
+	const deltaTime = (time - lastFrameTime) * 0.001
+	lastFrameTime = time
+
+	accumulatedTime += deltaTime
+
+	while (accumulatedTime >= logInterval && stylus != null) {
+		console.log("Logged at", time);
+		accumulatedTime -= logInterval;
+
+		console.log('changecheck: ', time, stylus.position, stylus.angularVelocity)
+		
+		// Update variables explicitly locally
+		let stylus_position			 	= [stylus.position.x, stylus.position.y, stylus.position.z]
+		let stylus_angular_velocity		= [stylus.angularVelocity.x, stylus.angularVelocity.y, stylus.angularVelocity.z]
+		let stylus_linearVelocity 		= [stylus.linearVelocity.x, stylus.linearVelocity.y, stylus.linearVelocity.z]
+		let stylus_rotation 			= [stylus.rotation._x, stylus.rotation._y, stylus.rotation._z]
+		let stylus_quaternion 			= [stylus.quaternion]
+
+		// Explicitly update a linepush variable
+		push_line = {
+			t: Date.now(),
+			s: stylus_position,
+			a: stylus_angular_velocity,
+			l: stylus_linearVelocity,
+			r: stylus_rotation,
+			q: stylus_quaternion
+		}
+		
+		console.log('Pushline:', push_line)
+
+		stylus_data_log.push(push_line);
+
+		// TODO: Prevent variable from storing too much and crashing the VRE
+		// Periodic export maybe?
+		// (╯°□°）╯︵ ┻━┻
+	}
 
 	// UIText.sync()
 	// if desk is locked, initiate ability to draw

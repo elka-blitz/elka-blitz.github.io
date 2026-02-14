@@ -1,8 +1,7 @@
 import * as THREE from "three";
 
-import { csvMaker, downloadCSV } from './csvFunctions';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import canvasScreenshot from 'canvas-screenshot';
+import { textDownload } from './csvFunctions';
 
 // console.log(txtFile)
 
@@ -60,7 +59,7 @@ export default class paintExporter {
 
             this.deconstructed_meshes.push(meshData)
         })
-        downloadCSV(JSON.stringify(this.deconstructed_meshes))
+        textDownload(JSON.stringify(this.deconstructed_meshes), 'deconstructed_meshes')
     }
 
 
@@ -112,6 +111,6 @@ export default class paintExporter {
 
             this.deconstructed_meshes.push(meshData)
         })
-        downloadCSV(JSON.stringify(this.deconstructed_meshes))
+        textDownload(JSON.stringify(this.deconstructed_meshes), 'deconstructed_meshes')
     }
 }
