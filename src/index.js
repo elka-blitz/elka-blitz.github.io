@@ -211,7 +211,8 @@ const right_hand_container = new THREE.Group();
 
 // MARK: Data Logging Variables
 let push_line = {}
-let logData = []
+let stylus_data_log = []
+let task_event_data_log = []
 
 let paint_exporter_instance;
 
@@ -594,8 +595,15 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
-		console.log(logData)
-		textDownload(JSON.stringify(logData), 'why_i_oughta')
+		console.log(stylus_data_log)
+		
+		// MARK: Export
+		// Export the stylus data log
+		textDownload(JSON.stringify(stylus_data_log), 'stylus_data_log')
+
+		// Export the event data log
+		// TODO: Push event data here
+		textDownload(JSON.stringify(task_event_data_log), 'task_event_data')
 
 	}
   }
@@ -639,7 +647,7 @@ function animate(time, frame) {
 		
 		console.log('Pushline:', push_line)
 
-		logData.push(push_line);
+		stylus_data_log.push(push_line);
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?

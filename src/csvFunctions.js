@@ -5,7 +5,8 @@ export const textDownload = (data, title) => {
 	const link = document.createElement('a');
 
 	link.href = url;
-	var date = new Date();
-	link.download = `${title}_${date.getDate()}_${date.getMonth()}_${date.getFullYear()}_${date.getTime()}.txt`
+	let date = new Date();
+	let human_readable_time = date.toISOString()
+	link.download = `${title}_${date.getDate()}_${date.getMonth()}_${date.getFullYear()}_${human_readable_time}.txt`
 	link.click();
 };
