@@ -605,6 +605,10 @@ function onFrame(time, frame) {
 		// TODO: Push event data here
 		textDownload(JSON.stringify(task_event_data_log), 'task_event_data')
 
+		// Export Paintings
+		// TODO: Error handling for no paint mesh condition
+		paint_exporter_instance.downloadJSON()
+
 	}
   }
 
