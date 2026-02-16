@@ -530,7 +530,7 @@ function onFrame(time, frame) {
 
 	  // change material
 	  if (nextButton.returnExists() === true) {
-		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
+		  if (nextButton.pressCheck(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
 			
 				// User feedback for button press
@@ -538,7 +538,7 @@ function onFrame(time, frame) {
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 				laserSound.play(); // Sound effect for button press
 		  }
-		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
+		  wasChangeButton = nextButton.pressCheck(stylus.position, scene, 'white');
 
 
 	  }
@@ -597,7 +597,6 @@ function onFrame(time, frame) {
 				0.3,
 				0.2
 			);
-			resultButton.makeVisible();
 			resultButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
