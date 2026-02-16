@@ -28,7 +28,7 @@ fout = open(sys.argv[1][:-3] + 'csv', 'w', newline='')
 writer = csv.writer(fout)
 
 # De Facto Headings
-data_to_write = [['time', 'x', 'y', 'z', 'ang_vel_x', 'ang_vel_y', 'ang_vel_z'
+data_to_write = [['time', 'x', 'y', 'z', 'ang_vel_x', 'ang_vel_y', 'ang_vel_z',
                     'lin_vel_x', 'lin_vel_y', 'lin_vel_z',
                     'rotation_x', 'rotation_y', 'rotation_z',
                     'quaternion'

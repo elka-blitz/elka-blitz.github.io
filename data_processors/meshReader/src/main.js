@@ -42,7 +42,7 @@ const renderer = new THREE.WebGLRenderer({antialias: true, canvas})
 renderer.setAnimationLoop(animate);
 renderer.setSize(temp.width, temp.height)
 
-// camera.position.y = 1.6
+// camera.position.y = -0.8
 camera.position.z = 0.1
 
 
@@ -60,9 +60,7 @@ function animate() {
 function reconstructMeshFromJSON(jsonString) {
   const meshData = JSON.parse(jsonString);
   console.log(Object.keys(meshData).length)
-  console.log(Object.keys(meshData[0]))
-  console.log(Object.keys(meshData[1]))
-  console.log(Object.keys(meshData[2]))
+
 
     for (const i in meshData) {
         console.log('meshobj1:', meshData[i])
