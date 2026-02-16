@@ -65,8 +65,10 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
+import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
+
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -222,6 +224,8 @@ let takeScreenshot = false
 let accumulatedTime = 0;
 let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
+
+const speed_meter = new speedMeter()
 
 init();
 
@@ -464,7 +468,7 @@ function onFrame(time, frame) {
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		interface_text.updateText('Tap desk with stylus to lock')
+		// interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
 	}
 	else if (desk_locked && !prev_desk_locked) {
@@ -476,13 +480,23 @@ function onFrame(time, frame) {
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
 	}
 
-	prev_desk_locked = desk_locked // Framediff for desk lock check
+	prev_desk_locked = desk_locked // Framediff for desk lock check	
 
 	interface_text.sync()
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
+		// MARK: Speed function
+		// This returns a number representing the stylus speed
+		// This number can be used to represent stylus speed
+		// Unsure how best to utilise it. Example below makes a unicode speed bar
+		// let speed = speed_meter.getSpeed(stylus.position)
+		// interface_text.updateText('▮'.repeat(speed))
+
+		// Stylus logging
+		// Get positional data for timestamp
+	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
