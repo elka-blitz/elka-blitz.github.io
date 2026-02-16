@@ -595,7 +595,7 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
-		console.log(stylus_data_log)
+
 		
 		// MARK: Export
 		// Export the stylus data log
@@ -627,10 +627,7 @@ function animate(time, frame) {
 	accumulatedTime += deltaTime
 
 	while (accumulatedTime >= logInterval && stylus != null) {
-		console.log("Logged at", time);
 		accumulatedTime -= logInterval;
-
-		console.log('changecheck: ', time, stylus.position, stylus.angularVelocity)
 		
 		// Update variables explicitly locally
 		let stylus_position			 	= [stylus.position.x, stylus.position.y, stylus.position.z]
@@ -648,8 +645,6 @@ function animate(time, frame) {
 			r: stylus_rotation,
 			q: stylus_quaternion
 		}
-		
-		console.log('Pushline:', push_line)
 
 		stylus_data_log.push(push_line);
 
@@ -681,7 +676,7 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
-  if (takeScreenshot == true) {
+  if (takeScreenshot === true) {
 
 	canvas.toBlob((blob) => {
 		saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
@@ -707,14 +702,14 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
 	const relativePos = getRelativePosition(stylus, task1Box);
-    cursor.set(relativePos.x, relativePos.y, relativePos.z);
     if (userData.isSelecting || isDrawing) {
-      painter.lineTo(cursor);
-      painter.update();
-	//   console.log(painter.mesh.geometry.attributes.position.array)
-	// MARK: Paint save
-	// paint_exporter_instance.savePainting(painter.mesh.uuid) // Save painting with uuid, can be used to reference painting later for export or other functions
-    }
+		cursor.set(relativePos.x, relativePos.y, relativePos.z);
+		painter.lineTo(cursor);
+      	painter.update();
+
+    } else {
+		painter.moveTo(relativePos.x, relativePos.y, relativePos.z); 	// moves current path to pen
+	}
   }
 }
 
@@ -734,12 +729,12 @@ function handleButton() {
 				paint.mesh.visible = false;
 			});
 			practicePaints[practiceShapeIndex].mesh.visible = true;
-			stylus.userData.painter = practicePaints[practiceShapeIndex];
+			// stylus.userData.painter = practicePaints[practiceShapeIndex];
 
 		} else {
 			isPracticeMode = false;
 			isDrawingDisabled = true;
-			stylus.userData.painter = svgPaintsArray[0];
+			// stylus.userData.painter = svgPaintsArray[0];
 			pracBox.visible = false;
 
 			desk_manager.clearSurface();
@@ -770,7 +765,7 @@ function handleButton() {
 			});
 
 			svgPaintsArray[shapeIndex].mesh.visible = true;
-			stylus.userData.painter = svgPaintsArray[shapeIndex];
+			// stylus.userData.painter = svgPaintsArray[shapeIndex];
 
 
 		}
