@@ -530,7 +530,7 @@ function onFrame(time, frame) {
 
 	  // change material
 	  if (nextButton.returnExists() === true) {
-		  if (nextButton.pressCheck(stylus.position, scene, "white") === true && !wasChangeButton) {
+		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
 			  handleButton();
 			
 				// User feedback for button press
@@ -538,13 +538,17 @@ function onFrame(time, frame) {
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 				laserSound.play(); // Sound effect for button press
 		  }
-		  wasChangeButton = nextButton.pressCheck(stylus.position, scene, 'white');
+		  wasChangeButton = nextButton.pressCheckReusable(
+				stylus.position,
+				scene,
+				'white',
+			);
 
 
 	  }
 		if (resultButton.returnExists() === true) {
 		  if (
-				resultButton.pressCheckReusable(stylus.position, scene, 'white') ===
+				resultButton.pressCheck(stylus.position, scene, 'white') ===
 					true &&
 				!wasResultButton
 			) {
@@ -555,11 +559,7 @@ function onFrame(time, frame) {
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 				laserSound.play(); // Sound effect for button press
 			}
-			wasResultButton = nextButton.pressCheckReusable(
-				stylus.position,
-				scene,
-				'white',
-			);
+			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 
 
 	  }
