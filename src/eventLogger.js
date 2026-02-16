@@ -1,3 +1,4 @@
+// Class for logging events
 // Timber!
 import { textDownload } from "./csvFunctions"
 
@@ -29,9 +30,9 @@ export default class EventLogger {
         this.stylus_data_log.push(this.stylus_data_push_line)
     }
 
-    logTaskEventData(data_title) {
+    logEventData(data_title) {
         // Automatically adds timestamp
-        // This function logs arbitray task titles with its timestamp
+        // This function logs arbitrary task titles with its timestamp
         this.task_event_data_push_line = {
             timestamp: Date.now(),
             event: data_title

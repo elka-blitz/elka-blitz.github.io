@@ -594,7 +594,7 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
-
+		event_logger.logEventData('Back button pressed')
 		
 		// MARK: Export
 		// Export all data
@@ -770,6 +770,7 @@ function handleButton() {
 
 // MARK: Connect Event
 function onControllerConnected(e) {
+	event_logger.logEventData('Controller Connected')
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
