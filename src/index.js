@@ -49,6 +49,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js';
 import DrawParent from './DrawParent';
+import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -209,10 +210,8 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
-// MARK: Data Logging Variables
-let push_line = {}
-let stylus_data_log = []
-let task_event_data_log = []
+// MARK: Data Log
+let event_logger = new EventLogger() // Global event logger instance, can be used to push data from any function or class
 
 let paint_exporter_instance;
 
@@ -598,12 +597,8 @@ function onFrame(time, frame) {
 
 		
 		// MARK: Export
-		// Export the stylus data log
-		textDownload(JSON.stringify(stylus_data_log), 'stylus_data_log')
-
-		// Export the event data log
-		// TODO: Push event data here
-		textDownload(JSON.stringify(task_event_data_log), 'task_event_data')
+		// Export all data
+		event_logger.downloadAllData() // Download stylus and task event data as text files
 
 		// Export Paintings
 		// TODO: Error handling for no paint mesh condition
@@ -629,24 +624,7 @@ function animate(time, frame) {
 	while (accumulatedTime >= logInterval && stylus != null) {
 		accumulatedTime -= logInterval;
 		
-		// Update variables explicitly locally
-		let stylus_position			 	= [stylus.position.x, stylus.position.y, stylus.position.z]
-		let stylus_angular_velocity		= [stylus.angularVelocity.x, stylus.angularVelocity.y, stylus.angularVelocity.z]
-		let stylus_linearVelocity 		= [stylus.linearVelocity.x, stylus.linearVelocity.y, stylus.linearVelocity.z]
-		let stylus_rotation 			= [stylus.rotation._x, stylus.rotation._y, stylus.rotation._z]
-		let stylus_quaternion 			= [stylus.quaternion]
-
-		// Explicitly update a linepush variable
-		push_line = {
-			t: Date.now(),
-			s: stylus_position,
-			a: stylus_angular_velocity,
-			l: stylus_linearVelocity,
-			r: stylus_rotation,
-			q: stylus_quaternion
-		}
-
-		stylus_data_log.push(push_line);
+		event_logger.logStylusData(stylus)
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
