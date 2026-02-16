@@ -17,9 +17,9 @@ export default class DeskManager {
 
 
 		// Get model height
-		const box = new THREE.Box3().setFromObject(desk_asset_instance);
-		const size = box.getSize(new THREE.Vector3());
-		this.height = size.y;
+		// const box = new THREE.Box3().setFromObject(desk_asset_instance);
+		// const size = box.getSize(new THREE.Vector3());
+		// this.height = size.y;
 
 		// 3D drawing zone instance variables
 		this.drawingzone_identifier = '';
@@ -31,32 +31,20 @@ export default class DeskManager {
 		this.desk_positioning_confirmed = false;
 		this.desk_locked_in_place = false;
 
-		// Set up drawing zone
-		// Transparent cube
-		const drawing_zone = new THREE.Mesh(
-			new THREE.BoxGeometry(0.5, 0.5, 0.5),
-			new THREE.MeshStandardMaterial({
-				color: '#ffffff',
-				transparent: true,
-				opacity: 0.3,
-			}),
-		);
-		drawing_zone.position.y = 1;
-		drawing_zone.name = 'drawing_zone';
-		drawing_zone.visible = false;
-		desk_asset_instance.add(drawing_zone);
-
 		// drawing surface
 		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#B3B3B3',
 			side: THREE.DoubleSide, // optional, shows both sides
+			transparent: true,
+			opacity: 0.3,
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
 		drawingSurface.position.y = 0.82; // slightly above model
 		drawingSurface.rotateY(Math.PI / 2);
 		drawingSurface.rotateX(Math.PI / 3);	// angle towards
+
 
 		desk_asset_instance.add(drawingSurface);
 		drawingSurface.visible = false;
@@ -75,7 +63,6 @@ export default class DeskManager {
 	getDesk() {
 		return this.desk_asset_instance;
 	}
-
 
 	isDeskPositioned() {
 		return this.desk_positioned;
@@ -246,5 +233,10 @@ export default class DeskManager {
 	clearSurface() {
 		this.surface.clear()
 	}
+
+	addMesh(mesh) {
+		this.desk_asset_instance.add(mesh)
+	}
+
 }
 
