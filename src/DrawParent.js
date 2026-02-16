@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export default class DrawParent {
 	constructor(color, BROWSER_TESTING) {		// todo remove because both are just for testing purposes
-		const boxGeometry = new THREE.PlaneGeometry(0.7, 0.5);
+		const boxGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		this.drawingBox = new THREE.Mesh(
 			boxGeometry,
 			new THREE.MeshBasicMaterial({

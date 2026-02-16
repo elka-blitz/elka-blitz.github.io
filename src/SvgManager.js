@@ -34,7 +34,7 @@ export default class SvgManager {
 		];
 		shuffle(this.array);
 
-		const rectGeometry = new THREE.PlaneGeometry(0.7, 0.5);
+		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#c6c6c6',
 			side: THREE.DoubleSide, // optional, shows both sides

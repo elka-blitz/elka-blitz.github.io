@@ -72,7 +72,7 @@ import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 
@@ -122,6 +122,7 @@ let wasResultButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
+let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
 
@@ -209,8 +210,8 @@ let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
 
 // MARK: Positions
-const originalPos = {x: -0.5, y: 1.8, z: 1}
-const yourDrawingPos = {x: 0.5, y: 1.8, z: 1}
+const originalPos = {x: -0.5, y: 0.4, z: 1}
+const yourDrawingPos = {x: 0.5, y: 0.4, z: 1}
 
 // Environment switcher instance
 let environment_switcher;
@@ -399,8 +400,16 @@ function init() {
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
-	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + 0.5, 1, 0.3, originalPos.z,);
-	yourDrawingText = new TextPanel(scene, "Your Drawing", yourDrawingPos.x, yourDrawingPos.y + 0.5, 1, 0.3, yourDrawingPos.z);
+	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 1, 0.3, originalPos.z,);
+	yourDrawingText = new TextPanel(
+		scene,
+		'Your Drawing',
+		yourDrawingPos.x,
+		yourDrawingPos.y + deskCoords.y + 0.3,
+		1,
+		0.3,
+		yourDrawingPos.z,
+	);
 
 	// buttons
 	red_button = new DeskButton(scene);
@@ -602,6 +611,7 @@ function onFrame(time, frame) {
 				desk_manager.getDesk(),
 				scene,
 			);
+			deskCoords = desk_manager.getDeskCoordinates()
 			interface_text.animateTextToCamera(camera)
 			question_panel.refresh()
 			// question_panel.spawnBoundingBoxes()
@@ -826,7 +836,7 @@ function handleShowResultButton() {
 	scene.add(original);
 	original.position.set(
 		originalPos.x,
-		originalPos.y,
+		originalPos.y + deskCoords.y,
 		-originalPos.z,
 	)
 
@@ -888,7 +898,7 @@ function onControllerConnected(e) {
 		interface_text.updateText('Draw on the outline!');
 		contextText.makeVisible();
 		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-
+		deskCoords = desk_manager.getDeskCoordinates();
 
 
 	}

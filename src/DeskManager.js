@@ -69,6 +69,8 @@ export default class DeskManager {
 	}
 
 	getDeskCoordinates() {
+		let coords = this.desk_asset_instance.position;
+		coords.y += 0.75; // model height
 		return this.desk_asset_instance.position;
 	}
 
