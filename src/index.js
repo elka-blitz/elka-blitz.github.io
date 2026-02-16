@@ -597,6 +597,12 @@ function onFrame(time, frame) {
 				0.3,
 				0.2
 			);
+			resultButton.makeVisible();
+			resultButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+			);
 			interface_text.animateTextToCamera(camera)
 			question_panel.refresh()
 			// question_panel.spawnBoundingBoxes()
@@ -798,14 +804,8 @@ function handleButton() {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
 			resultButton.makeVisible();
-			resultButton.hoverButtonByDesk(
-				camera,
-				desk_manager.getDesk(),
-				scene,
-				0,
-				0,
-			);
 			desk_manager.clearSurface();
+			desk_manager.makeSurfaceInvisible();
 			svgPaintsArray.forEach((paint) => {
 				paint.mesh.visible = false;
 			});

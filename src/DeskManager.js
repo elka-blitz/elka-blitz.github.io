@@ -238,5 +238,12 @@ export default class DeskManager {
 		this.desk_asset_instance.add(mesh)
 	}
 
+	makeSurfaceInvisible() {
+		this.surface.visible = false;
+	}
+	makeSurfaceVisible() {
+		this.surface.visible = true;
+	}
+
 }
 
