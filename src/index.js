@@ -53,6 +53,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import SvgManager from './SvgManager';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -67,7 +68,7 @@ import questionnaireManager from './questionnaireManager.js'
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 
 // setup declarations
@@ -103,33 +104,13 @@ const coloursArray = [
 	'purple',
 ];
 
-const svgArray = [
-	'assets/base.svg',
-	'assets/door_bottom.svg',
-	'assets/door_top.svg',
-	'assets/window.svg',
-	'assets/window2.svg',
-	'assets/window_curtain.svg',
-	'assets/banner_short.svg',
-	'assets/banner_long.svg',
-];
-
 const practiceSvgArray = [
 	'assets/window.svg',
 	'assets/door_top.svg',
 	'assets/window_curtain.svg',
 ];
 
-const svgWithPositionsArray = [
-	{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
-	{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
-	{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
-	{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
-	{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
-	{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-	{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
-	{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
-];
+let svgWithPositionsArray = [];
 
 let wasChangeButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
@@ -426,6 +407,9 @@ function init() {
 
 	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
 	task1Box = task1ParentManager.getParent();
+
+	// MARK: svgs
+	svgWithPositionsArray = new SvgManager().getSVGArray()
 
 
 	// MARK: drawing and paints setup
@@ -752,12 +736,14 @@ function handleButton() {
 	// if not practice mode
 	else {
 		// task1
-		if (shapeIndex < svgArray.length - 1) {
+		if (shapeIndex < svgWithPositionsArray.length - 1) {
 			isDrawingDisabled = false;
 			shapeIndex += 1;
 			desk_manager.clearSurface();
-			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(`Next ${shapeIndex + 1}/${svgArray.length}`);
+			loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+			nextButton.updateLabel(
+				`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
+			);
 
 
 			svgPaintsArray.forEach((paint) => {
