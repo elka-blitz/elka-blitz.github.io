@@ -42,14 +42,14 @@ window.addEventListener('resize', () => {
 
 import * as THREE from "three";
 
-import { TextPanel, UIText } from './UIText.js';
-import { getController, getControllerGrip } from './controllerFunctions';
+import { TextPanel, UIText } from './helper_classes/UIText.js';
+import { getController, getControllerGrip } from './helper_classes/controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import  DeskButton  from "./DeskButtons.js";
-import  DeskManager  from './DeskManager.js';
-import DrawParent from './DrawParent';
-import EventLogger from "./eventLogger.js";
+import  DeskButton  from "./helper_classes/DeskButtons.js";
+import  DeskManager  from './helper_classes/DeskManager.js';
+import DrawParent from './helper_classes/DrawParent';
+import EventLogger from "./helper_classes/eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -61,12 +61,12 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { getFilledRect } from './shapeFunctions';
+import { getFilledRect } from './helper_classes/shapeFunctions';
 import { gsap } from 'gsap';   
-import paintExporter from "./paintExporter.js";
-import questionnaireManager from './questionnaireManager.js'
-import speedMeter from "./speedMeter.js";
-import { textDownload } from './csvFunctions';
+import paintExporter from "./helper_classes/paintExporter.js";
+import questionnaireManager from './helper_classes/questionnaireManager.js'
+import speedMeter from "./helper_classes/speedMeter.js";
+import { textDownload } from './helper_classes/csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
