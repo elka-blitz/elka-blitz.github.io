@@ -50,6 +50,7 @@ import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js';
 import DrawParent from './DrawParent';
 import EnvironmentSwitcher from "./environmentSwitcher.js";
+import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -65,8 +66,10 @@ import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
+import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
+
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -210,10 +213,8 @@ let right_hand_override = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
-// MARK: Data Logging Variables
-let push_line = {}
-let stylus_data_log = []
-let task_event_data_log = []
+// MARK: Data Log
+let event_logger = new EventLogger() // Global event logger instance, can be used to push data from any function or class
 
 let paint_exporter_instance;
 
@@ -227,6 +228,8 @@ let lastFrameTime = 0
 
 // Environment switcher instance
 let environment_switcher;
+
+const speed_meter = new speedMeter()
 
 init();
 
@@ -469,7 +472,7 @@ function onFrame(time, frame) {
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		interface_text.updateText('Tap desk with stylus to lock')
+		// interface_text.updateText('Tap desk with stylus to lock')
 		interface_text.animateTextToCamera(camera)
 	}
 	else if (desk_locked && !prev_desk_locked) {
@@ -481,13 +484,23 @@ function onFrame(time, frame) {
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
 	}
 
-	prev_desk_locked = desk_locked // Framediff for desk lock check
+	prev_desk_locked = desk_locked // Framediff for desk lock check	
 
 	interface_text.sync()
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
+		// MARK: Speed function
+		// This returns a number representing the stylus speed
+		// This number can be used to represent stylus speed
+		// Unsure how best to utilise it. Example below makes a unicode speed bar
+		// let speed = speed_meter.getSpeed(stylus.position)
+		// interface_text.updateText('▮'.repeat(speed))
+
+		// Stylus logging
+		// Get positional data for timestamp
+	
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -599,15 +612,11 @@ function onFrame(time, frame) {
 		// This is currently done on controller button press, but can be triggered prgrammattically
 		// Should be triggered alongside 
 		// downloadCSV(JSON.stringify(logData));
-		console.log(stylus_data_log)
+		event_logger.logEventData('Back button pressed')
 		
 		// MARK: Export
-		// Export the stylus data log
-		textDownload(JSON.stringify(stylus_data_log), 'stylus_data_log')
-
-		// Export the event data log
-		// TODO: Push event data here
-		textDownload(JSON.stringify(task_event_data_log), 'task_event_data')
+		// Export all data
+		event_logger.downloadAllData() // Download stylus and task event data as text files
 
 		// Export Paintings
 		// TODO: Error handling for no paint mesh condition
@@ -631,31 +640,9 @@ function animate(time, frame) {
 	accumulatedTime += deltaTime
 
 	while (accumulatedTime >= logInterval && stylus != null) {
-		console.log("Logged at", time);
 		accumulatedTime -= logInterval;
-
-		console.log('changecheck: ', time, stylus.position, stylus.angularVelocity)
 		
-		// Update variables explicitly locally
-		let stylus_position			 	= [stylus.position.x, stylus.position.y, stylus.position.z]
-		let stylus_angular_velocity		= [stylus.angularVelocity.x, stylus.angularVelocity.y, stylus.angularVelocity.z]
-		let stylus_linearVelocity 		= [stylus.linearVelocity.x, stylus.linearVelocity.y, stylus.linearVelocity.z]
-		let stylus_rotation 			= [stylus.rotation._x, stylus.rotation._y, stylus.rotation._z]
-		let stylus_quaternion 			= [stylus.quaternion]
-
-		// Explicitly update a linepush variable
-		push_line = {
-			t: Date.now(),
-			s: stylus_position,
-			a: stylus_angular_velocity,
-			l: stylus_linearVelocity,
-			r: stylus_rotation,
-			q: stylus_quaternion
-		}
-		
-		console.log('Pushline:', push_line)
-
-		stylus_data_log.push(push_line);
+		event_logger.logStylusData(stylus)
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
@@ -685,7 +672,7 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
-  if (takeScreenshot == true) {
+  if (takeScreenshot === true) {
 
 	canvas.toBlob((blob) => {
 		saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
@@ -711,14 +698,14 @@ function handleDrawing(controller) {
 
   if (gamepad1) {
 	const relativePos = getRelativePosition(stylus, task1Box);
-    cursor.set(relativePos.x, relativePos.y, relativePos.z);
     if (userData.isSelecting || isDrawing) {
-      painter.lineTo(cursor);
-      painter.update();
-	//   console.log(painter.mesh.geometry.attributes.position.array)
-	// MARK: Paint save
-	// paint_exporter_instance.savePainting(painter.mesh.uuid) // Save painting with uuid, can be used to reference painting later for export or other functions
-    }
+		cursor.set(relativePos.x, relativePos.y, relativePos.z);
+		painter.lineTo(cursor);
+      	painter.update();
+
+    } else {
+		painter.moveTo(relativePos.x, relativePos.y, relativePos.z); 	// moves current path to pen
+	}
   }
 }
 
@@ -738,12 +725,12 @@ function handleButton() {
 				paint.mesh.visible = false;
 			});
 			practicePaints[practiceShapeIndex].mesh.visible = true;
-			stylus.userData.painter = practicePaints[practiceShapeIndex];
+			// stylus.userData.painter = practicePaints[practiceShapeIndex];
 
 		} else {
 			isPracticeMode = false;
 			isDrawingDisabled = true;
-			stylus.userData.painter = svgPaintsArray[0];
+			// stylus.userData.painter = svgPaintsArray[0];
 			pracBox.visible = false;
 
 			desk_manager.clearSurface();
@@ -774,7 +761,7 @@ function handleButton() {
 			});
 
 			svgPaintsArray[shapeIndex].mesh.visible = true;
-			stylus.userData.painter = svgPaintsArray[shapeIndex];
+			// stylus.userData.painter = svgPaintsArray[shapeIndex];
 
 
 		}
@@ -801,6 +788,7 @@ function handleButton() {
 
 // MARK: Connect Event
 function onControllerConnected(e) {
+	event_logger.logEventData('Controller Connected')
 	console.log('Controller connected:', e.data);
   if (e.data.profiles.includes("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
