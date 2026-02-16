@@ -54,7 +54,7 @@ export default class SvgManager {
 	
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
-		const padding = 0.1
+		const padding = 0.04
 
 		const scale = Math.min(
 			(this.surface.geometry.parameters.width - padding )/size.x,

@@ -210,8 +210,8 @@ let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
 
 // MARK: Positions
-const originalPos = {x: -0.5, y: 0.4, z: 1}
-const yourDrawingPos = {x: 0.5, y: 0.4, z: 1}
+const originalPos = {x: -0.5, y: 0.4, z: 1.01}
+const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 
 // Environment switcher instance
 let environment_switcher;
@@ -400,14 +400,13 @@ function init() {
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
-	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 1, 0.3, originalPos.z,);
+	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 0.5, 0.1, originalPos.z,);
 	yourDrawingText = new TextPanel(
 		scene,
 		'Your Drawing',
 		yourDrawingPos.x,
 		yourDrawingPos.y + deskCoords.y + 0.3,
-		1,
-		0.3,
+		0.5, 0.1,
 		yourDrawingPos.z,
 	);
 
@@ -829,14 +828,28 @@ function handleShowResultButton() {
 
 	desk_manager.clearSurface();
 	task1Text.makeInvisible();
+
 	originalText.makeVisible();
+	originalText.setPosition({
+		x: originalPos.x,
+		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: originalPos.z,
+	});
+
 	yourDrawingText.makeVisible();
+	yourDrawingText.setPosition({
+		x: yourDrawingPos.x,
+		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: yourDrawingPos.z,
+	});
+
+
 	loadSVG("assets/task1.svg", CENTER_POSITION, true);
 	const original = svgManager.getSurface();
 	scene.add(original);
 	original.position.set(
 		originalPos.x,
-		originalPos.y + deskCoords.y,
+		originalPos.y + desk_manager.getDeskCoordinates().y,
 		-originalPos.z,
 	)
 
