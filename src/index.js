@@ -49,6 +49,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js';
 import DrawParent from './DrawParent';
+import EnvironmentSwitcher from "./environmentSwitcher.js";
 import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
@@ -225,6 +226,9 @@ let accumulatedTime = 0;
 let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
 
+// Environment switcher instance
+let environment_switcher;
+
 const speed_meter = new speedMeter()
 
 init();
@@ -291,8 +295,8 @@ function init() {
 	);
 
 	// MARK: Model setup
+	environment_switcher = new EnvironmentSwitcher(scene, office_group)
 	scene.add(tableGroup);
-	scene.add(office_group);
 
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup);
