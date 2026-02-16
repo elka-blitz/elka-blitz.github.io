@@ -209,7 +209,7 @@ const right_hand_container = new THREE.Group();
 
 let logData = []
 
-const speed_meter = speedMeter()
+const speed_meter = new speedMeter()
 
 init();
 
@@ -432,12 +432,17 @@ function onFrame(timestamp, frame) {
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
 	}
 
-	prev_desk_locked = desk_locked // Framediff for desk lock check
+	prev_desk_locked = desk_locked // Framediff for desk lock check	
 
 	interface_text.sync()
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
+
+		// Speed
+		console.log(stylus.position.x)
+		let speed = speed_meter.getSpeed(stylus.position)
+		interface_text.updateText('▮'.repeat(speed))
 
 		// MARK: Speedometer Logic
 		
