@@ -1,7 +1,6 @@
 import * as THREE from "three";
 
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import canvasScreenshot from 'canvas-screenshot';
 import { textDownload } from './csvFunctions';
 
 // console.log(txtFile)
