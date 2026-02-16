@@ -439,13 +439,12 @@ function onFrame(timestamp, frame) {
 	// MARK: Gamepad Condition
 	if (gamepad1) {
 
-		// Speed
-		console.log(stylus.position.x)
-		let speed = speed_meter.getSpeed(stylus.position)
-		interface_text.updateText('▮'.repeat(speed))
-
-		// MARK: Speedometer Logic
-		
+		// MARK: Speed function
+		// This returns a number representing the stylus speed
+		// This number can be used to represent stylus speed
+		// Unsure how best to utilise it. Example below makes a unicode speed bar
+		// let speed = speed_meter.getSpeed(stylus.position)
+		// interface_text.updateText('▮'.repeat(speed))
 
 	// Stylus logging
 	// Get positional data for timestamp
