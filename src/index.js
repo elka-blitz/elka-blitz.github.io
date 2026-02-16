@@ -802,7 +802,17 @@ function handleButton() {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
 			resultButton.makeVisible();
+			resultButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+				0,
+				0,
+			);
 			desk_manager.clearSurface();
+			svgPaintsArray.forEach((paint) => {
+				paint.mesh.visible = false;
+			});
 			task1Text.updateText('Task 1 Complete' +
 				'\nAre you ready to see your drawing?');
 		}
@@ -872,11 +882,6 @@ function onControllerConnected(e) {
 			scene,
 			0.3,
 			0.2,
-		);
-		resultButton.hoverButtonByDesk(
-			camera,
-			desk_manager.getDesk(),
-			scene, 0,0
 		);
 		isPracticeMode = true;
 		desk_manager.spawnDrawingSurface();
