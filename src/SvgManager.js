@@ -34,8 +34,46 @@ export default class SvgManager {
 		];
 		shuffle(this.array);
 
+		const rectGeometry = new THREE.PlaneGeometry(0.7, 0.5);
+		const rectMaterial = new THREE.MeshBasicMaterial({
+			color: '#c6c6c6',
+			side: THREE.DoubleSide, // optional, shows both sides
+			transparent: true,
+			opacity: 1,
+		});
+
+		this.surface = new THREE.Mesh(rectGeometry, rectMaterial);
+
+
 	}
 	getSVGArray() {
 		return this.array;
+	}
+
+	svgSurface(svgGroup, scene) {
+	
+		const box = new THREE.Box3().setFromObject(svgGroup);
+		const size = box.getSize(new THREE.Vector3());
+		const padding = 0.1
+
+		const scale = Math.min(
+			(this.surface.geometry.parameters.width - padding )/size.x,
+			(this.surface.geometry.parameters.height - padding )/size.y,
+		);
+
+		svgGroup.scale.setScalar(scale);
+
+		// centering
+		box.setFromObject(svgGroup);
+		const center = box.getCenter(new THREE.Vector3());
+		svgGroup.position.sub(center);
+		svgGroup.position.z = -0.01;
+
+		this.surface.add(svgGroup);
+		this.surface.rotateY(Math.PI);
+	}
+	
+	getSurface() {
+		return this.surface;
 	}
 }
