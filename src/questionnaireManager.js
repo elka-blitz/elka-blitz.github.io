@@ -109,13 +109,19 @@ export default class questionnaireManager {
         // this.question_panel.quaternion.set(this.panel_quaternion.x, this.panel_quaternion.y, this.panel_quaternion.z, this.panel_quaternion.w)
 
         // Rotate cube so that the panel surface appears horizontal
-        this.question_panel.rotateX(-Math.PI / 2)
-        this.question_panel.rotateZ(Math.PI)
+        // this.question_panel.rotateX(-Math.PI / 2)
+        // this.question_panel.rotateZ(Math.PI)
+
 
         this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
 
 
         // this.question_panel.rotateY(Math.PI/2)
+        
+        // Re-set input cube positions relative to the panel
+        this.input_cubes.forEach((cube, index) => {
+            cube.position.set(this.input_cube_start_position.x + 0.095, this.input_cube_start_position.y -0.07, this.input_cube_start_position.z + index * (0.08 + this.input_cube_offset_between))
+        })
 
     }
 
@@ -138,6 +144,8 @@ export default class questionnaireManager {
     getQuestionnaireData() {
         return this.questionnaire_data
     }
+
+
 
     setPos(position_vector, quaternion) {
         // MARK: Set Position
@@ -170,7 +178,7 @@ export default class questionnaireManager {
     setQuestionnaireVisibility(visibility_boolean) {
         this.question_panel.visible = visibility_boolean
         this.input_cubes.forEach(cube => {
-            cube.visible = visibility_boolean;
+            cube.visibility = visibility_boolean;
         })
     }
 
@@ -230,7 +238,7 @@ export default class questionnaireManager {
         }
         
         this.input_cubes.forEach(cube => {
-            cube.position.y -= local_offset_holder 
+            cube.position.x -= local_offset_holder 
             cube.material.transparent = true;
             cube.material.opacity = 0.3;
             console.log(cube.material.opacity)
@@ -273,6 +281,7 @@ export default class questionnaireManager {
                 // console.log('Input cube index:', cube_index)
                 // console.log('Quesitonnaire index:', this.question_index)
                 // console.log('Slide index:', this.q_slide_index)
+                console.log('Answer box: ', this.cube_index, '\nQuestion Row: ', this.question_index, '\nSlide Number: ', this.question_slide_index)
 
                 // this.nextQuestionnaireSlide()
 
