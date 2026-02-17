@@ -1,19 +1,3 @@
-
-/*
-File structure:
-	- event listeners
-	- imports
-	- declarations
-	- init function
-	- onFrame function (events)
-	- animate function (drawing)
-	- handleDrawing
-	- handleButton
-	- controller functions (onControllerConnected, onSelectStart, onSelectEnd
-	- loadSVG
-	- debugGamepad
-*/
-
 // event listeners
 window.addEventListener('unload', function () {
   document.documentElement.innerHTML = '';
@@ -76,7 +60,7 @@ const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 
-// setup declarations
+// MARK: setup declarations
 let camera, scene, renderer;
 let stylus = null;
 let gamepad1;
@@ -92,11 +76,15 @@ const sizes = {
 // drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
-let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, practice2, practice3;
-let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
+let practice1, practice2, practice3;
 let practicePaints = [practice1, practice2, practice3];
+let svgPaintsArray;
 let isDrawingDisabled = false;
-let pracBox, task1Box, task1ParentManager;
+let pracBox,
+	task1Box, task1ParentManager,
+	task2Box, task2ParentManager,
+	task3Box, task3ParentManager,
+	task4Box, task4ParentManager;
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -110,16 +98,18 @@ const coloursArray = [
 ];
 
 const practiceSvgArray = [
-	'assets/window.svg',
-	'assets/door_top.svg',
-	'assets/window_curtain.svg',
+	'assets/task1/window.svg',
+	'assets/task1/door_top.svg',
+	'assets/task1/window_curtain.svg',
 ];
 
 let svgWithPositionsArray = [];
 
 let wasChangeButton = false;
 let wasResultButton = false;
+let wasNextTaskButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
+let taskNum = 1;
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
@@ -147,7 +137,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton;
+let red_button, nextButton, resultButton, nextTaskButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -235,8 +225,8 @@ const saveBlob = (function() {
   };
 }());
 
+// MARK: INIT FUNC
 function init() {
-	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
@@ -282,15 +272,15 @@ function init() {
 	);
 
 	// MARK: Model setup
-	environment_switcher = new EnvironmentSwitcher(scene, office_group)
+	environment_switcher = new EnvironmentSwitcher(scene, office_group);
 	scene.add(tableGroup);
 
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup);
 
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
 
 	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
@@ -327,18 +317,18 @@ function init() {
 	document.addEventListener('keydown', function (event) {
 		switch (event.keyCode) {
 			case 87: // W
-				// question_panel.moveInputCubesDown();	
+				// question_panel.moveInputCubesDown();
 				// paint_exporter_instance.screenShotCanvas(canvas)
-				takeScreenshot = true
+				takeScreenshot = true;
 				break;
 			case 65: // A
-			 	// question_panel.resetInputCubes();
-				question_panel.refresh()
+				// question_panel.resetInputCubes();
+				question_panel.refresh();
 				break;
 		}
 	});
 
-	paint_exporter_instance = new paintExporter(scene, camera)
+	paint_exporter_instance = new paintExporter(scene, camera);
 
 	renderer.setAnimationLoop(animate);
 
@@ -387,7 +377,7 @@ function init() {
 	right_hand_container.add(hand2);
 	scene.add(right_hand_container);
 
-	// Add text initialisation
+	// MARK: UI Elements
 	interface_text = new UIText(scene);
 
 	const contextTextStr =
@@ -400,17 +390,26 @@ function init() {
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
-	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 0.5, 0.1, originalPos.z,);
+	originalText = new TextPanel(
+		scene,
+		'Original',
+		originalPos.x,
+		originalPos.y + deskCoords.y + 0.3,
+		0.5,
+		0.1,
+		originalPos.z,
+	);
 	yourDrawingText = new TextPanel(
 		scene,
 		'Your Drawing',
 		yourDrawingPos.x - 0.2,
 		yourDrawingPos.y + deskCoords.y + 0.3,
-		0.5, 0.1,
+		0.5,
+		0.1,
 		yourDrawingPos.z,
 	);
 
-	// buttons
+	// MARK: Buttons
 	red_button = new DeskButton(scene);
 	red_button.createButton(new THREE.Vector3(0, 0, 0), '#b30000', 'Lock');
 	red_button.makeInvisible();
@@ -433,44 +432,54 @@ function init() {
 	);
 	resultButton.makeInvisible();
 
-	const pracParent = new DrawParent("blue", BROWSER_TESTING)
+	nextTaskButton = new DeskButton(scene);
+	nextTaskButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#0f94e6',
+		'Next Task',
+		0.09,
+	);
+	nextTaskButton.makeInvisible();
+
+	// MARK: Drawing and paints setup
+	const pracParent = new DrawParent('blue', BROWSER_TESTING);
 	pracBox = pracParent.getParent();
 
-	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
+	// todo make list?
+	task1ParentManager = new DrawParent('red', BROWSER_TESTING);
 	task1Box = task1ParentManager.getParent();
 
-	// MARK: svgs
-	svgManager = new SvgManager()
-	svgWithPositionsArray = svgManager.getSVGArray()
+	task2ParentManager = new DrawParent('yellow', BROWSER_TESTING);
+	task2Box = task2ParentManager.getParent();
 
+	task3ParentManager = new DrawParent('blue', BROWSER_TESTING);
+	task3Box = task3ParentManager.getParent();
 
-	// MARK: drawing and paints setup
-	svgPaintsArray.forEach((paint, i) => {
-		svgPaintsArray[i] = new TubePainter();
-		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
-			color: "black",
-			linewidth: 4,
-		});
-		svgPaintsArray[i].setSize(0.2);
-		task1Box.add(svgPaintsArray[i].mesh);
-	});
+	task4ParentManager = new DrawParent('green', BROWSER_TESTING);
+	task4Box = task4ParentManager.getParent();
+
+	svgManager = new SvgManager();
+	svgWithPositionsArray = svgManager.getSVGArray();
+
+	svgManager.setupPaints(1, task1Box);
+	svgManager.setupPaints(2, task2Box);
+	svgManager.setupPaints(3, task3Box);
+	svgPaintsArray = svgManager.getPaintsArray(1);
 
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: "black",
+			color: 'black',
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
 		pracBox.add(practicePaints[i].mesh);
 	});
 
-	// scene.add(drawingBox);
 	desk_manager.addMesh(task1Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
-
 }
 
 
@@ -571,14 +580,32 @@ function onFrame(time, frame) {
 
 
 	  }
+		if (nextTaskButton.returnExists() === true) {
+			if (
+				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
+				!wasNextTaskButton
+			) {
+				handleNextTaskButton();
 
+				// User feedback for button press
+				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
+			}
+			wasNextTaskButton = nextTaskButton.pressCheck(
+				stylus.position,
+				scene,
+				'white',
+			);
+		}
+		// MARK: Browser Testing Button Input
 		if (BROWSER_TESTING){
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
 				handleButton();
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
-				handleShowResultButton();
+				handleNextTaskButton();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -610,6 +637,7 @@ function onFrame(time, frame) {
 				desk_manager.getDesk(),
 				scene,
 			);
+			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			deskCoords = desk_manager.getDeskCoordinates()
 			interface_text.animateTextToCamera(camera)
 			question_panel.refresh()
@@ -722,6 +750,7 @@ function animate(time, frame) {
   }
 }
 
+// MARK: HandleDrawing
 function handleDrawing(controller) {
   if (!controller) return;
 
@@ -734,6 +763,17 @@ function handleDrawing(controller) {
 	  painter = svgPaintsArray[0];
   } else {
 	  painter = svgPaintsArray[shapeIndex];
+  }
+
+  let currentBox;
+  switch (taskNum) {
+	  case 1: currentBox = task1Box;
+	  break;
+	  case 2: currentBox = task2Box;
+	  break;
+	  case 3: currentBox = task3Box;
+	  break;
+
   }
 
   if (gamepad1) {
@@ -749,6 +789,7 @@ function handleDrawing(controller) {
   }
 }
 
+// MARK: Handle button functions
 function handleButton() {
 
 	if (isPracticeMode) {
@@ -762,6 +803,20 @@ function handleButton() {
 
 function handleShowResultButton() {
 	ShowResultsMode()
+}
+
+function handleNextTaskButton() {
+	shapeIndex = -1;
+	taskNum += 1;
+
+	svgWithPositionsArray = svgManager.getTaskArray(2);
+	svgPaintsArray = svgManager.getPaintsArray(2);
+
+	desk_manager.makeSurfaceVisible();
+	nextButton.makeVisible();
+	task1Text.makeVisible();
+	task1Text.updateText("Task 2: Florist");
+	TaskMode();
 }
 
 // MARK: Connect Event
@@ -787,6 +842,7 @@ function onControllerConnected(e) {
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 	}
 
+  	// MARK: Browser Testing setup
 	if (BROWSER_TESTING) {
 		// normal setup
 		stylus = e.target;
@@ -854,7 +910,7 @@ function onSelectEnd() {
 	}
 }
 
-// MARK: SVG Function
+// MARK: SVG Load Functions
 function loadSVG(url, position, isResult) {
 	const loader = new SVGLoader();
 
@@ -935,11 +991,7 @@ function loadSVGs(svgObjs) {
 	});
 }
 
-
-
-// MARK: Task functions
-
-// MARK MODE: Practice
+// MARK: MODE: Practice
 const PracticeMode = () => {
 	// iterating
 	if (practiceShapeIndex < practiceSvgArray.length - 1) {
@@ -974,9 +1026,10 @@ const PracticeMode = () => {
 
 }
 
-// MARK MODE: Task
+// MARK: MODE: Task
 const TaskMode = () => {
 	if (shapeIndex < svgWithPositionsArray.length - 1) {
+		console.log(taskNum, svgPaintsArray, shapeIndex, 'isDrawingDisabled', isDrawingDisabled)
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
@@ -1002,12 +1055,12 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		task1Text.updateText(
-			'Task 1 Complete' + '\nAre you ready to see your drawing?',
+			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 		);
 	}
 }
 
-// MARK MODE: Show Results
+// MARK: MODE: Show Results
 const ShowResultsMode = () => {
 	isDrawingDisabled = true;
 
@@ -1028,7 +1081,7 @@ const ShowResultsMode = () => {
 		z: yourDrawingPos.z,
 	});
 
-	loadSVG('assets/task1.svg', CENTER_POSITION, true);
+	loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
 	const original = svgManager.getSurface();
 	scene.add(original);
 	original.position.set(

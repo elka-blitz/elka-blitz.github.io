@@ -1,6 +1,26 @@
 import * as THREE from 'three';
 
-import { gsap } from 'gsap';
+import { TubePainter } from 'three/examples/jsm/misc/TubePainter';
+
+let paint1,
+	paint2,
+	paint3,
+	paint4,
+	paint5,
+	paint6,
+	paint7,
+	paint8,
+	practice1,
+	practice2,
+	practice3,
+	t2paint1,
+	t2paint2,
+	t2paint3,
+	t2paint4,
+	t2paint5,
+	t2paint6,
+	t2paint7,
+	t2paint8;
 
 function shuffle(array) {
 	let currentIndex = array.length;
@@ -23,16 +43,49 @@ export default class SvgManager {
 	// Class to manage desk movement, drawzone spawning and interaction
 	constructor() {
 		this.array = [
-			{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task1/base.svg', position: { x: 0, y: 0 } },
+			{ url: 'assets/task1/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
+			{ url: 'assets/task1/door_top.svg', position: { x: -0.05, y: -0.015 } },
+			{ url: 'assets/task1/window.svg', position: { x: 0.04, y: -0.02 } },
+			{ url: 'assets/task1/window2.svg', position: { x: 0.04, y: 0.03 } },
+			{ url: 'assets/task1/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
+			{ url: 'assets/task1/banner_short.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.075 } },
+		];
+
+		this.t2Array = [
+			{ url: 'assets/task2/awning.svg', position: { x: 0, y: 0 } },
+			{ url: 'assets/task2/bush.svg', position: { x: -0.05, y: 0.06 } },
+			{ url: 'assets/task2/door.svg', position: { x: -0.05, y: -0.015 } },
+			{ url: 'assets/task2/door_window.svg', position: { x: 0.04, y: -0.02 } },
+			{ url: 'assets/task2/flower.svg', position: { x: 0.04, y: 0.03 } },
+			{ url: 'assets/task2/outline.svg', position: { x: 0.04, y: -0.025 } },
+			{ url: 'assets/task2/window.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task2/windowsill.svg', position: { x: 0, y: -0.075 } },
 		];
 		shuffle(this.array);
+		shuffle(this.t2Array);
+	
+		this.t1Paints = [
+			paint1,
+			paint2,
+			paint3,
+			paint4,
+			paint5,
+			paint6,
+			paint7,
+			paint8,
+		];
+		this.t2Paints = [
+			t2paint1,
+			t2paint2,
+			t2paint3,
+			t2paint4,
+			t2paint5,
+			t2paint6,
+			t2paint7,
+			t2paint8,
+		];
 
 		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
@@ -48,6 +101,46 @@ export default class SvgManager {
 	}
 	getSVGArray() {
 		return this.array;
+	}
+
+	getTaskArray(taskNum) {
+		switch (taskNum) {
+			case 1:
+				return this.array;
+			case 2:
+				return this.t2Array;
+		}
+	}
+	getPaintsArray(taskNum) {
+		switch (taskNum) {
+			case 1:
+				return this.t1Paints;
+			case 2:
+				return this.t2Paints;
+		}
+	}
+
+	setupPaints(taskNum, box) {
+		const colorArray = ['red', 'yellow', 'blue'];
+		let paintArray = [];
+		switch (taskNum) {
+			case 1:
+				paintArray = this.t1Paints
+				break;
+			case 2:
+				paintArray = this.t2Paints;
+				break;
+		}
+		paintArray.forEach((paint, i) => {
+			paintArray[i] = new TubePainter();
+			paintArray[i].mesh.material = new THREE.LineBasicMaterial({
+				color: colorArray[taskNum-1],
+				linewidth: 4,
+			});
+			paintArray[i].setSize(0.2);
+			box.add(paintArray[i].mesh);
+		});
+		
 	}
 
 	svgSurface(svgGroup, scene) {
