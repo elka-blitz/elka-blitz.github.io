@@ -1098,4 +1098,6 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
+	nextTaskButton.makeVisible();
+
 }
