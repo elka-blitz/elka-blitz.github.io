@@ -404,7 +404,7 @@ function init() {
 	yourDrawingText = new TextPanel(
 		scene,
 		'Your Drawing',
-		yourDrawingPos.x,
+		yourDrawingPos.x - 0.2,
 		yourDrawingPos.y + deskCoords.y + 0.3,
 		0.5, 0.1,
 		yourDrawingPos.z,
@@ -448,7 +448,7 @@ function init() {
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
-			color: coloursArray[i],
+			color: "black",
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
@@ -458,7 +458,7 @@ function init() {
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: coloursArray[i],
+			color: "black",
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
