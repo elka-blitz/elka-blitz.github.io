@@ -15,11 +15,19 @@ File structure:
 */
 
 // event listeners
-window.addEventListener('unload', function () {
-  document.documentElement.innerHTML = '';
+window.addEventListener("unload", () => {
+	try {
+		if (survey?.root && scene) scene.remove(survey.root);
+	} catch (e) {
+		// ignore unload cleanup errors
+	}
+	document.documentElement.innerHTML = "";
 });
 
 window.addEventListener('resize', () => {
+
+	if (!renderer || !camera) return;
+
 	// Update sizes
 	sizes.width = window.innerWidth;
 	sizes.height = window.innerHeight;
@@ -42,27 +50,26 @@ window.addEventListener('resize', () => {
 
 import * as THREE from "three";
 
-import { TextPanel, UIText } from './UIText.js';
-import { csvMaker, downloadCSV } from './csvFunctions';
-import { getController, getControllerGrip } from './controllerFunctions';
-
+import { csvMaker, downloadCSV } from "./csvFunctions";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import  DeskButton  from "./DeskButtons.js";
-import  DeskManager  from './DeskManager.js'
+import { GamepadWrapper } from "gamepad-wrapper";
+import { getController, getControllerGrip } from "./controllerFunctions";
+import { getFilledRect } from "./shapeFunctions";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { GamepadWrapper } from 'gamepad-wrapper';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-import { Text } from 'troika-three-text';
+import { gsap } from "gsap";
+import { createSurveyPanelUI, loadInterFont } from "./questionnaireManager.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+import { TextPanel, UIText } from "./UIText.js";
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { VRButton } from "three/addons/webxr/VRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
-import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { getFilledRect } from './shapeFunctions';
-import { gsap } from 'gsap';   
-import questionnaireManager from './questionnaireManager.js'
-import { update } from "three/examples/jsm/libs/tween.module.js";
+import { XRHandModelFactory } from "three/examples/jsm/webxr/XRHandModelFactory.js";
+
+import DeskButton from "./DeskButtons.js";
+import DeskManager from "./DeskManager.js";
+
+const C = (hex) => new THREE.Color(hex);
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -87,6 +94,48 @@ let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, p
 let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
 let practicePaints = [practice1, practice2, practice3];
 let isDrawingDisabled = false;
+
+// survey
+let survey = null;
+
+const pages = [
+	{
+		id: "panel1",
+		questions: [
+			"How pleasant or enjoyable did you feel during this task?",
+			"How mentally activated or stimulated did you feel during this task?",
+			"How frustrated did you feel during this task?",
+		],
+	},
+	{
+		id: "panel2",
+		questions: [
+			"I feel just the right amount of challenge.",
+			"My thoughts and actions flowed smoothly while drawing.",
+			"I was completely absorbed in what I was doing.",
+			"I knew exactly what to do at each step of the task.",
+		],
+	},
+	{
+		id: "panel3",
+		questions: [
+			"How mentally demanding was the drawing task?",
+			"How hard did you have to work to accomplish your level of performance?",
+			"How rushed or pressured did you feel?",
+			"How successful were you in accomplishing the task?",
+		],
+	},
+];
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function updateMouseNDC(e) {
+	if (!renderer) return;
+	const rect = renderer.domElement.getBoundingClientRect();
+	mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+	mouse.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+}
 
 // todo organise this into a class or something
 const coloursArray = [
@@ -207,19 +256,22 @@ const right_hand_container = new THREE.Group();
 
 let logData = []
 
-init();
+function loadGLTF(gltfLoader, url) {
+	return new Promise((resolve, reject) => {
+		gltfLoader.load(url, (gltf) => resolve(gltf), undefined, reject);
+	});
+}
 
-function init() {
+init().catch(console.error);
+
+async function init() {
+	await loadInterFont();
+
 	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
-	camera = new THREE.PerspectiveCamera(
-		50,
-		window.innerWidth / window.innerHeight,
-		0.01,
-		50,
-	);
 
+	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 50);
 	camera.position.set(0, 1.6, 3);
 
 	const player = new THREE.Group();
@@ -240,49 +292,23 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
-		tableGroup.add(gltf.scene);
-	});
 
-	gltfLoader.load(
-		'./assets/office_environment.glb',
-		function (gltf) {
-			office_group.add(gltf.scene);
-		},
-		undefined,
-		function (error) {
-			console.error(error);
-		},
-	);
+	const [deskGltf, officeGltf] = await Promise.all([
+		loadGLTF(gltfLoader, './assets/Desk.glb'),
+		loadGLTF(gltfLoader, './assets/office_environment.glb'),
+	]);
+
+	tableGroup.add(deskGltf.scene);
+	office_group.add(officeGltf.scene);
 
 	// MARK: Model setup
 	scene.add(tableGroup)
 	scene.add(office_group)
 
-	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup)
-
-
-	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
-
-	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera, tableGroup) // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(true) // Initially set the questionnaire to be invisible until desk is locked in place
-
-
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
-
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup);
-
-	tableGroup.position.set(0, 0, 0);
-	office_group.position.set(0, -0.3, 0);
-	office_group.rotateY(Math.PI / 5);
 
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
@@ -290,6 +316,51 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
+
+	survey = createSurveyPanelUI(pages, (answers) => {
+		console.log("Survey done:", answers);
+	});
+	survey.root.position.set(0, 1.5, 0);   // x, y, z in meters-ish
+	survey.root.rotation.set(0, 0, 0);   // face the camera if camera looks toward -Z
+	survey.root.scale.setScalar(1.0);
+
+// IMPORTANT: only add to ONE parent
+	scene.add(survey.root);
+
+	// MARK: Desk
+	desk_manager = new DeskManager(scene, tableGroup)
+
+	// office_group.scale.set(0.5, 0.5, 0.5)
+	office_group.position.set(0, -0.3, 0)
+	office_group.rotateY(Math.PI / 5)
+
+	tableGroup.position.set(0, -3, 0)
+
+	// Initialise desk manager
+	desk_manager = new DeskManager(scene, tableGroup);
+
+	tableGroup.position.set(0, -3, 0);
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
+
+	window.addEventListener("error", () => {
+		console.log("Three programs:", renderer.info.programs);
+	});
+
+// mouse hover
+	renderer.domElement.addEventListener("mousemove", (e) => {
+		updateMouseNDC(e);
+		raycaster.setFromCamera(mouse, camera);
+		survey.handlePointer({ raycaster, isHover: true });
+	});
+
+// mouse click
+	renderer.domElement.addEventListener("mousedown", (e) => {
+		if (e.button !== 0) return;
+		updateMouseNDC(e);
+		raycaster.setFromCamera(mouse, camera);
+		survey.handlePointer({ raycaster, isSelect: true });
+	});
 
 	// MARK: Session Init
 	const sessionInit = {
@@ -300,17 +371,16 @@ function init() {
 
 	// MARK: Key Input
 	// Keyboard buttonpress listener for testing in browser
-	document.addEventListener('keydown', function(event) {
-		switch (event.keyCode) {
-			case 87: // W
-				question_panel.moveInputCubesDown();	
-				break;
-			case 65: // A
+	// document.addEventListener('keydown', function(event) {
+		// switch (event.keyCode) {
+			// case 87: // W
+				// question_panel.moveInputCubesDown();
+				// break;
+			// case 65: // A
 			 	// question_panel.resetInputCubes();
-				question_panel.refresh()
-				break;
-		}
-	});
+				// break;
+		// }
+	// });
 
 	renderer.setAnimationLoop(animate);
 
@@ -467,7 +537,7 @@ function onFrame(timestamp, frame) {
 			}
 		}
 
-		question_panel.inputChecker(stylus.position)
+		// question_panel.inputChecker(stylus.position)
 
 	  // change material
 	  if (nextButton.returnExists() === true) {
@@ -514,7 +584,6 @@ function onFrame(timestamp, frame) {
 				0.2
 			);
 			interface_text.animateTextToCamera(camera)
-			question_panel.refresh()
 		}
 	}
 
@@ -525,7 +594,7 @@ function onFrame(timestamp, frame) {
 				child.material.opacity = 0.5;
 			}
 
-			question_panel.makeCubesTransparent();
+			// question_panel.makeCubesTransparent();
 		});
 	}
 
@@ -553,56 +622,74 @@ function onFrame(timestamp, frame) {
 		// Should be triggered alongside 
 		downloadCSV(JSON.stringify(logData));
 		// questionnaire_instance.setQuestionnaireSlide(2)
-		question_panel.nextQuestionnaireSlide()
+		// question_panel.nextQuestionnaireSlide()
 		// console.log(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 		// question_panel.setPos(desk_manager.getDeskCoordinates(), desk_manager.getDeskQuaternion())
 	}
   }
 
-  question_panel.updateBoxGradientFade()
+  // question_panel.updateBoxGradientFade()
 }
 
 // MARK: Animate Function
-function animate() {
+function animate(timestamp, frame) {
+	// Safety: if init hasn't finished setting up UI/desk yet, just render
+	if (!renderer || !scene || !camera || !desk_manager || !interface_text) {
+		if (renderer && scene && camera) renderer.render(scene, camera);
+		return;
+	}
 
-	// UIText.sync()
+	// Allow the app to run even before MX Ink connects
+	if (!stylus) {
+		onFrame(timestamp, frame);
+		if (survey) survey.update();
+		renderer.render(scene, camera);
+		return;
+	}
+
 	// if desk is locked, initiate ability to draw
 	if (desk_set) {
 		if (gamepad1) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
-			// debugGamepad(gamepad1, gamepad1.buttons[5].pressed);
 
 			if (isDrawing && !prevIsDrawing) {
 				const painter = stylus.userData.painter;
-				painter.moveTo(stylus.position);
+				if (painter) painter.moveTo(stylus.position);
 			}
 		}
+
 		if (!isDrawingDisabled) {
 			handleDrawing(stylus);
 		}
-
 	}
-	gsap.ticker.tick()
-  // Render
-  onFrame();
 
-  renderer.render(scene, camera);
+	gsap.ticker.tick();
+
+	onFrame(timestamp, frame);
+
+	if (survey) survey.update();
+
+	renderer.render(scene, camera);
 }
 
 function handleDrawing(controller) {
-  if (!controller) return;
+	if (!controller || !controller.position) return;
 
-  const userData = controller.userData;
-  const painter = isPracticeMode ? practicePaints[practiceShapeIndex] : svgPaintsArray[shapeIndex];
+	const userData = controller.userData;
+	const painter = isPracticeMode
+		? practicePaints[practiceShapeIndex]
+		: svgPaintsArray[shapeIndex];
 
-  if (gamepad1) {
-    cursor.set(stylus.position.x, stylus.position.y, stylus.position.z);
-    if (userData.isSelecting || isDrawing) {
-      painter.lineTo(cursor);
-      painter.update();
-    }
-  }
+	if (!painter) return;
+
+	if (gamepad1) {
+		cursor.copy(controller.position); // ✅ use controller, not global stylus
+		if (userData.isSelecting || isDrawing) {
+			painter.lineTo(cursor);
+			painter.update();
+		}
+	}
 }
 
 function handleButton() {
