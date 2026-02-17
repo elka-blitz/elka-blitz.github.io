@@ -63,7 +63,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { getFilledRect } from './shapeFunctions';
+import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
@@ -750,116 +750,18 @@ function handleDrawing(controller) {
 }
 
 function handleButton() {
-	// if practice mode, use practice objects
+
 	if (isPracticeMode) {
-		// iterating
-		if (practiceShapeIndex < practiceSvgArray.length - 1) {
-			practiceShapeIndex += 1;
-			desk_manager.clearSurface();
-			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(
-				`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
-			);
-
-			practicePaints.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-			practicePaints[practiceShapeIndex].mesh.visible = true;
-			// stylus.userData.painter = practicePaints[practiceShapeIndex];
-
-		} else {
-			isPracticeMode = false;
-			isDrawingDisabled = true;
-			// stylus.userData.painter = svgPaintsArray[0];
-			pracBox.visible = false;
-
-			desk_manager.clearSurface();
-			practicePaints.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-
-			nextButton.changeColor('#359743');
-			nextButton.updateLabel("Begin");
-			contextText.makeInvisible();
-			task1Text.makeVisible();
-
-		}
+		PracticeMode();
 	}
 	// if not practice mode
 	else {
-		// task1
-		if (shapeIndex < svgWithPositionsArray.length - 1) {
-			isDrawingDisabled = false;
-			shapeIndex += 1;
-			desk_manager.clearSurface();
-			loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
-			nextButton.updateLabel(
-				`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
-			);
-
-
-			svgPaintsArray.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-
-			svgPaintsArray[shapeIndex].mesh.visible = true;
-			// stylus.userData.painter = svgPaintsArray[shapeIndex];
-
-
-		}
-		// end of task 1
-		else {
-			isDrawingDisabled = true;
-			nextButton.makeInvisible();
-			resultButton.makeVisible();
-			desk_manager.clearSurface();
-			desk_manager.makeSurfaceInvisible();
-			svgPaintsArray.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-			task1Text.updateText('Task 1 Complete' +
-				'\nAre you ready to see your drawing?');
-		}
+		TaskMode();
 	}
 }
 
 function handleShowResultButton() {
-	isDrawingDisabled = true;
-
-	desk_manager.clearSurface();
-	task1Text.makeInvisible();
-
-	originalText.makeVisible();
-	originalText.setPosition({
-		x: originalPos.x,
-		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: originalPos.z,
-	});
-
-	yourDrawingText.makeVisible();
-	yourDrawingText.setPosition({
-		x: yourDrawingPos.x,
-		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: yourDrawingPos.z,
-	});
-
-
-	loadSVG("assets/task1.svg", CENTER_POSITION, true);
-	const original = svgManager.getSurface();
-	scene.add(original);
-	original.position.set(
-		originalPos.x,
-		originalPos.y + desk_manager.getDeskCoordinates().y,
-		-originalPos.z,
-	)
-
-	task1ParentManager.makeVertical();
-	svgWithPositionsArray.forEach((obj, i) => {
-		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
-		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.y = obj.position.y;
-		svgPaintsArray[i].mesh.visible = true;
-	});
+	ShowResultsMode()
 }
 
 // MARK: Connect Event
@@ -1033,29 +935,114 @@ function loadSVGs(svgObjs) {
 	});
 }
 
-function getRelativePosition(child, parent) {
-	// Get the world position of the child
-	const worldPosition = new THREE.Vector3();
-	child.getWorldPosition(worldPosition);
 
-	// Convert the world position to the local position relative to the parent
-	const localPosition = worldPosition.clone();
-	parent.worldToLocal(localPosition);
 
-	return localPosition;
+// MARK: Task functions
+
+// MARK MODE: Practice
+const PracticeMode = () => {
+	// iterating
+	if (practiceShapeIndex < practiceSvgArray.length - 1) {
+		practiceShapeIndex += 1;
+		desk_manager.clearSurface();
+		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+		nextButton.updateLabel(
+			`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
+		);
+
+		practicePaints.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		practicePaints[practiceShapeIndex].mesh.visible = true;
+
+	} else {
+		isPracticeMode = false;
+		isDrawingDisabled = true;
+		pracBox.visible = false;
+
+		desk_manager.clearSurface();
+		practicePaints.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+
+		nextButton.changeColor('#359743');
+		nextButton.updateLabel("Begin");
+		contextText.makeInvisible();
+		task1Text.makeVisible();
+
+	}
+
 }
 
+// MARK MODE: Task
+const TaskMode = () => {
+	if (shapeIndex < svgWithPositionsArray.length - 1) {
+		isDrawingDisabled = false;
+		shapeIndex += 1;
+		desk_manager.clearSurface();
+		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+		nextButton.updateLabel(
+			`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
+		);
 
+		svgPaintsArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
 
-function debugGamepad(gamepad) {
-  gamepad.buttons.forEach((btn, index) => {
-    if (btn.pressed) {
-      console.log(`BTN ${index} - Pressed: ${btn.pressed} - Touched: ${btn.touched} - Value: ${btn.value}`);
-    }
-
-    if (btn.touched) {
-      console.log(`BTN ${index} - Pressed: ${btn.pressed} - Touched: ${btn.touched} - Value: ${btn.value}`);
-    }
-  });
+		svgPaintsArray[shapeIndex].mesh.visible = true;
+	}
+	// end of task
+	else {
+		isDrawingDisabled = true;
+		nextButton.makeInvisible();
+		resultButton.makeVisible();
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
+		svgPaintsArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		task1Text.updateText(
+			'Task 1 Complete' + '\nAre you ready to see your drawing?',
+		);
+	}
 }
 
+// MARK MODE: Show Results
+const ShowResultsMode = () => {
+	isDrawingDisabled = true;
+
+	desk_manager.clearSurface();
+	task1Text.makeInvisible();
+
+	originalText.makeVisible();
+	originalText.setPosition({
+		x: originalPos.x,
+		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: originalPos.z,
+	});
+
+	yourDrawingText.makeVisible();
+	yourDrawingText.setPosition({
+		x: yourDrawingPos.x,
+		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: yourDrawingPos.z,
+	});
+
+	loadSVG('assets/task1.svg', CENTER_POSITION, true);
+	const original = svgManager.getSurface();
+	scene.add(original);
+	original.position.set(
+		originalPos.x,
+		originalPos.y + desk_manager.getDeskCoordinates().y,
+		-originalPos.z,
+	);
+
+	task1ParentManager.makeVertical();
+	svgWithPositionsArray.forEach((obj, i) => {
+		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+		svgPaintsArray[i].mesh.position.x = obj.position.x;
+		svgPaintsArray[i].mesh.position.y = obj.position.y;
+		svgPaintsArray[i].mesh.visible = true;
+	});
+
+}

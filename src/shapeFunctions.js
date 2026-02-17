@@ -147,3 +147,15 @@ export const getCube = (width, height, depth, color) => {
 		new THREE.MeshStandardMaterial({ color: color }),
 	);
 }
+
+export function getRelativePosition(child, parent) {
+	// Get the world position of the child
+	const worldPosition = new THREE.Vector3();
+	child.getWorldPosition(worldPosition);
+
+	// Convert the world position to the local position relative to the parent
+	const localPosition = worldPosition.clone();
+	parent.worldToLocal(localPosition);
+
+	return localPosition;
+}
