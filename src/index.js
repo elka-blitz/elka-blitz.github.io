@@ -55,6 +55,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import SvgManager from './SvgManager';
 import { Text } from 'troika-three-text';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
@@ -73,13 +74,14 @@ import { update } from "three/examples/jsm/libs/tween.module.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
+let BROWSER_buttonPressed2 = false;
 
 // setup declarations
 let camera, scene, renderer;
 let stylus = null;
 let gamepad1;
 let gamepadInterface;
-let contextText, task1Text;
+let contextText, task1Text, originalText, yourDrawingText;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -107,38 +109,20 @@ const coloursArray = [
 	'purple',
 ];
 
-const svgArray = [
-	'assets/base.svg',
-	'assets/door_bottom.svg',
-	'assets/door_top.svg',
-	'assets/window.svg',
-	'assets/window2.svg',
-	'assets/window_curtain.svg',
-	'assets/banner_short.svg',
-	'assets/banner_long.svg',
-];
-
 const practiceSvgArray = [
 	'assets/window.svg',
 	'assets/door_top.svg',
 	'assets/window_curtain.svg',
 ];
 
-const svgWithPositionsArray = [
-	{ url: 'assets/base.svg', position: { x: 0, y: 0 } },
-	{ url: 'assets/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
-	{ url: 'assets/door_top.svg', position: { x: -0.05, y: -0.015 } },
-	{ url: 'assets/window.svg', position: { x: 0.04, y: -0.02 } },
-	{ url: 'assets/window2.svg', position: { x: 0.04, y: 0.03 } },
-	{ url: 'assets/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-	{ url: 'assets/banner_short.svg', position: { x: 0, y: -0.08 } },
-	{ url: 'assets/banner_long.svg', position: { x: 0, y: -0.075 } },
-];
+let svgWithPositionsArray = [];
 
 let wasChangeButton = false;
+let wasResultButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
+let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
 
@@ -156,15 +140,14 @@ let desk_set = false
 let tableGroup = new THREE.Group()
 let backPushed = false
 let prevBackPushed = false
-let desk_manager
+let desk_manager, svgManager;
 let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button;
-let nextButton;
+let red_button, nextButton, resultButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -225,6 +208,10 @@ let takeScreenshot = false
 let accumulatedTime = 0;
 let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
+
+// MARK: Positions
+const originalPos = {x: -0.5, y: 0.4, z: 1.01}
+const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 
 // Environment switcher instance
 let environment_switcher;
@@ -413,6 +400,15 @@ function init() {
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
+	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 0.5, 0.1, originalPos.z,);
+	yourDrawingText = new TextPanel(
+		scene,
+		'Your Drawing',
+		yourDrawingPos.x - 0.2,
+		yourDrawingPos.y + deskCoords.y + 0.3,
+		0.5, 0.1,
+		yourDrawingPos.z,
+	);
 
 	// buttons
 	red_button = new DeskButton(scene);
@@ -428,18 +424,31 @@ function init() {
 	);
 	nextButton.makeInvisible();
 
+	resultButton = new DeskButton(scene);
+	resultButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#359743',
+		'Show!',
+		0.07,
+	);
+	resultButton.makeInvisible();
+
 	const pracParent = new DrawParent("blue", BROWSER_TESTING)
 	pracBox = pracParent.getParent();
 
 	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
 	task1Box = task1ParentManager.getParent();
 
+	// MARK: svgs
+	svgManager = new SvgManager()
+	svgWithPositionsArray = svgManager.getSVGArray()
+
 
 	// MARK: drawing and paints setup
 	svgPaintsArray.forEach((paint, i) => {
 		svgPaintsArray[i] = new TubePainter();
 		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
-			color: coloursArray[i],
+			color: "black",
 			linewidth: 4,
 		});
 		svgPaintsArray[i].setSize(0.2);
@@ -449,7 +458,7 @@ function init() {
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: coloursArray[i],
+			color: "black",
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
@@ -484,7 +493,7 @@ function onFrame(time, frame) {
 		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
 	}
 
-	prev_desk_locked = desk_locked // Framediff for desk lock check	
+	prev_desk_locked = desk_locked // Framediff for desk lock check
 
 	interface_text.sync()
 
@@ -500,7 +509,7 @@ function onFrame(time, frame) {
 
 		// Stylus logging
 		// Get positional data for timestamp
-	
+
 	  // desk lock event		calibration > practice mode
 	  if (red_button.returnExists() === true) {
 		if (
@@ -537,7 +546,28 @@ function onFrame(time, frame) {
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 				laserSound.play(); // Sound effect for button press
 		  }
-		  wasChangeButton = nextButton.pressCheckReusable(stylus.position, scene, "white")
+		  wasChangeButton = nextButton.pressCheckReusable(
+				stylus.position,
+				scene,
+				'white',
+			);
+
+
+	  }
+		if (resultButton.returnExists() === true) {
+		  if (
+				resultButton.pressCheck(stylus.position, scene, 'white') ===
+					true &&
+				!wasResultButton
+			) {
+				handleShowResultButton();
+
+				// User feedback for button press
+				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+				laserSound.play(); // Sound effect for button press
+			}
+			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 
 
 	  }
@@ -547,7 +577,11 @@ function onFrame(time, frame) {
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
 				handleButton();
 			}
+			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
+				handleShowResultButton();
+			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
+			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
 		}
 
 		if (!desk_set){
@@ -571,6 +605,12 @@ function onFrame(time, frame) {
 				0.3,
 				0.2
 			);
+			resultButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+			);
+			deskCoords = desk_manager.getDeskCoordinates()
 			interface_text.animateTextToCamera(camera)
 			question_panel.refresh()
 			// question_panel.spawnBoundingBoxes()
@@ -748,12 +788,14 @@ function handleButton() {
 	// if not practice mode
 	else {
 		// task1
-		if (shapeIndex < svgArray.length - 1) {
+		if (shapeIndex < svgWithPositionsArray.length - 1) {
 			isDrawingDisabled = false;
 			shapeIndex += 1;
 			desk_manager.clearSurface();
-			loadSVG(svgArray[shapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(`Next ${shapeIndex + 1}/${svgArray.length}`);
+			loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+			nextButton.updateLabel(
+				`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
+			);
 
 
 			svgPaintsArray.forEach((paint) => {
@@ -769,21 +811,55 @@ function handleButton() {
 		else {
 			isDrawingDisabled = true;
 			nextButton.makeInvisible();
+			resultButton.makeVisible();
 			desk_manager.clearSurface();
-			task1Text.updateText('Task 1 Complete');
-			loadSVGs(svgWithPositionsArray);
-			task1ParentManager.makeVertical();
-
-			// todo move paints
-
-			svgWithPositionsArray.forEach((obj, i) => {
-				// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
-				svgPaintsArray[i].mesh.position.x = obj.position.x;
-				svgPaintsArray[i].mesh.position.y = obj.position.y;
-				svgPaintsArray[i].mesh.visible = true;
+			desk_manager.makeSurfaceInvisible();
+			svgPaintsArray.forEach((paint) => {
+				paint.mesh.visible = false;
 			});
+			task1Text.updateText('Task 1 Complete' +
+				'\nAre you ready to see your drawing?');
 		}
 	}
+}
+
+function handleShowResultButton() {
+	isDrawingDisabled = true;
+
+	desk_manager.clearSurface();
+	task1Text.makeInvisible();
+
+	originalText.makeVisible();
+	originalText.setPosition({
+		x: originalPos.x,
+		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: originalPos.z,
+	});
+
+	yourDrawingText.makeVisible();
+	yourDrawingText.setPosition({
+		x: yourDrawingPos.x,
+		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: yourDrawingPos.z,
+	});
+
+
+	loadSVG("assets/task1.svg", CENTER_POSITION, true);
+	const original = svgManager.getSurface();
+	scene.add(original);
+	original.position.set(
+		originalPos.x,
+		originalPos.y + desk_manager.getDeskCoordinates().y,
+		-originalPos.z,
+	)
+
+	task1ParentManager.makeVertical();
+	svgWithPositionsArray.forEach((obj, i) => {
+		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+		svgPaintsArray[i].mesh.position.x = obj.position.x;
+		svgPaintsArray[i].mesh.position.y = obj.position.y;
+		svgPaintsArray[i].mesh.visible = true;
+	});
 }
 
 // MARK: Connect Event
@@ -835,7 +911,7 @@ function onControllerConnected(e) {
 		interface_text.updateText('Draw on the outline!');
 		contextText.makeVisible();
 		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-
+		deskCoords = desk_manager.getDeskCoordinates();
 
 
 	}
@@ -877,7 +953,7 @@ function onSelectEnd() {
 }
 
 // MARK: SVG Function
-function loadSVG(url, position) {
+function loadSVG(url, position, isResult) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
@@ -912,7 +988,7 @@ function loadSVG(url, position) {
 			}
 		}
 
-		desk_manager.placeSVG(group, position)
+		isResult ? svgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
 	});
 }
 

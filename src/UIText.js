@@ -139,4 +139,10 @@ export class TextPanel {
 	updateText(text) {
 		this.text.text = text;
 	}
+
+	setPosition(position) {
+		this.rect.position.set(position.x, position.y, -position.z);
+		this.text.position.set(position.x, position.y, -(position.z - 0.01));
+	}
+
 }

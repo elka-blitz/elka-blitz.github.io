@@ -5,12 +5,12 @@ export default class DrawParent {
 		const boxGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		this.drawingBox = new THREE.Mesh(
 			boxGeometry,
-			new THREE.MeshStandardMaterial({
-				color: color,
-				transparent: true,
+			new THREE.MeshBasicMaterial({
+				color: '#c6c6c6',
 				side: THREE.DoubleSide, // optional, shows both sides
-				opacity: 0.2,
-				visible: BROWSER_TESTING,
+				transparent: true,
+				opacity: 1,
+				visible: false,
 			}),
 		);
 		// making its origin in the center of the cube
@@ -27,9 +27,11 @@ export default class DrawParent {
 	}
 
 	makeVertical() {
+		this.drawingBox.material.visible = true
 		this.drawingBox.rotateX(-Math.PI / 3);
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-		this.drawingBox.position.x += 0.2;
-		this.drawingBox.position.y += 0.2;
+		this.drawingBox.position.x += 0.5; // x and z are flipped
+		this.drawingBox.position.z += 0.5;
+		this.drawingBox.position.y += 0.35;
 	}
 }

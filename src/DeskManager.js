@@ -69,7 +69,11 @@ export default class DeskManager {
 	}
 
 	getDeskCoordinates() {
-		return this.desk_asset_instance.position;
+		return {
+			x:  this.desk_asset_instance.position.x,
+			y:  this.desk_asset_instance.position.y + 0.75,
+			z:  this.desk_asset_instance.position.z,
+		};
 	}
 
 	getDeskQuaternion() {
@@ -236,6 +240,13 @@ export default class DeskManager {
 
 	addMesh(mesh) {
 		this.desk_asset_instance.add(mesh)
+	}
+
+	makeSurfaceInvisible() {
+		this.surface.visible = false;
+	}
+	makeSurfaceVisible() {
+		this.surface.visible = true;
 	}
 
 }
