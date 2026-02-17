@@ -387,7 +387,7 @@ function init() {
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
 
-	let leftHandModel = handModelFactory.createHandModel(hand1, 'boxes');
+	let leftHandModel = handModelFactory.createHandModel(hand1, 'mesh');
 	hand1.add(leftHandModel);
 	left_hand_container.add(hand1);
 	scene.add(left_hand_container);
@@ -395,7 +395,7 @@ function init() {
 	// Hand 2
 	hand2 = renderer.xr.getHand(1);
 
-	let rightHandModel = handModelFactory.createHandModel(hand2, 'boxes');
+	let rightHandModel = handModelFactory.createHandModel(hand2, 'mesh');
 	hand2.add(rightHandModel);
 	right_hand_container.add(hand2);
 	scene.add(right_hand_container);
