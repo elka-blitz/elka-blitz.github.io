@@ -549,7 +549,7 @@ function onFrame(time, frame) {
 				// User feedback for button press
 				interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
+				clickSound.play(); // Sound effect for button press
 		  }
 		  wasChangeButton = nextButton.pressCheckReusable(
 				stylus.position,
@@ -570,7 +570,7 @@ function onFrame(time, frame) {
 				// User feedback for button press
 				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
+				clickSound.play(); // Sound effect for button press
 			}
 			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 
@@ -650,7 +650,7 @@ function onFrame(time, frame) {
 		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
-		laserSound.play();	
+		clickNoise.play();	
 		interface_text.flashText('#ff0000', 100) 
 
 		// Generate CSV and trigger download
