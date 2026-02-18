@@ -644,7 +644,7 @@ function onFrame(time, frame) {
 		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
-		clickNoise.play();	
+		clickSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
 		// Generate CSV and trigger download
