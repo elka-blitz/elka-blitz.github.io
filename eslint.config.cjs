@@ -13,10 +13,10 @@ module.exports = {
 			'error',
 			{
 				ignoreCase: false,
-				ignoreDeclarationSort: false,
+				ignoreDeclarationSort: true,
 				ignoreMemberSort: false,
 				memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-				allowSeparatedGroups: false,
+				allowSeparatedGroups: true,
 			},
 		],
 		'no-unused-vars': [

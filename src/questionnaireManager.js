@@ -1,309 +1,699 @@
 import * as THREE from "three";
+import ThreeMeshUI from "three-mesh-ui";
+import { Text as TroikaText } from "troika-three-text";
 
-export default class questionnaireManager {
-    // Who wants to be a questionnaire?
-    constructor(scene, camera, desk_group) {
-        this.scene = scene
-        this.camera = camera
-        // MARK: Loading Images
-        this.question_panels_1 = ['assets/question_1.png', 'assets/question_2.png', 'assets/question_3.png', 'assets/question_4.png', 'assets/question_5.png', 'assets/question_6.png', 'assets/question_7.png', 'assets/question_8.png']
-        this.question_slide_index = 0;
+// CONSTANTS & HELPERS //
+// pixels to metres
+const PX_TO_M = 0.001;
+const px = (v) => v * PX_TO_M;
 
-        this.textureLoader = new THREE.TextureLoader();
-        this.q_slide = this.textureLoader.load(this.question_panels_1[this.question_slide_index])
+// hex to three.js color
+const C = (hex) => new THREE.Color(hex);
 
-        //MARK: Panel Setup
-        this.boxWidth = 0.5; // 0.1125
-        this.boxHeight = 0.414493294; // 0.5*
-        this.boxDepth = 0.00001;
-        this.loaded_images = []
-        this.geometry = new THREE.BoxGeometry(this.boxWidth, this.boxHeight, this.boxDepth);
+// font
+const FONT_URL = "assets/fonts/Inter/Inter-Regular.ttf";
 
-        this.drawMaterials = [
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshBasicMaterial({ map: this.q_slide }),
-            new THREE.MeshBasicMaterial({ map: this.q_slide }),
+// grow progress bar from left
+const leftAnchorX = (trackW, w) => (-trackW / 2) + (w / 2);
 
-        ];
+// 7-box likert
+export const LIKERT_7 = [
+    { value: 1, label: "Strongly\nDisagree" },
+    { value: 2, label: "Disagree" },
+    { value: 3, label: "Somewhat\nDisagree" },
+    { value: 4, label: "Neutral" },
+    { value: 5, label: "Somewhat\nAgree" },
+    { value: 6, label: "Agree" },
+    { value: 7, label: "Strongly\nAgree" },
+];
 
-        this.question_panel = new THREE.Mesh(this.geometry, this.drawMaterials);
+// styles
+const TILE_STYLES = {
+    default: { bg: 0xffffff, border: 0xffffff, text: 0x004142, bgOpacity: 0.4 },
+    hover: { bg: 0xffffff, border: 0x02c6c9, text: 0x004142, bgOpacity: 0.4 },
+    selected: { bg: 0xffffff, border: 0x135de5, text: 0x135de5, bgOpacity: 1.0 },
+};
 
-        this.panel_position = new THREE.Vector3(0, 0.76, 0)
-        this.panel_quaternion = new THREE.Quaternion()
+const UI_COLORS = {
+    // panel
+    panelBg: 0xffffff,
+    panelOpacity: 0.95,
 
-        this.desk_group = desk_group
-        // this.scene.add(this.question_panel)
-        this.desk_group.add(this.question_panel)
+    // progress bar
+    progressTrack: 0xe8ebf1,
+    progressFill: 0x02c6c9,
 
-        this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
+    // next / done button
+    nextDisabledBg: 0xffffff,
+    nextDisabledBorder: 0xc6cdcc,
+    nextDisabledText: 0xc6cdcc,
+    nextDisabledOpacity: 0.4,
 
-        this.question_panel.rotateX(-Math.PI / 2)
-        // this.question_panel.rotateY(-Math.PI /2)
-        this.question_panel.rotateZ(-Math.PI / 2)
-        
-        // MARK: Input Cubes       
-        this.input_cube_gradient_colors = ['#ffe68e', '#ffdb70', '#ffd054', '#ffc538', '#ffb91c'] // gradient colors for the input cubes, from light yellow to dark orange
-        this.input_cube_geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-        this.input_cube_material = new THREE.MeshStandardMaterial({ color: '#ffb91c' });
-        this.input_cube_material.transparent = true;
-        this.input_cube_material.opacity = 0.3;
-        this.input_cubes = []
+    nextEnabledBg: 0xffffff,
+    nextEnabledBorder: 0x02c6c9,
+    nextEnabledText: 0x02c6c9,
+    nextEnabledOpacity: 0.4,
+};
 
-        this.input_cube_offset_between = 0.01
-        this.downward_offset_ratio = 0.620910117
+// layout spec
+const SPEC = {
+    // panel padding
+    padding: { left: 24, top: 16, right: 24, bottom: 32 },
 
-        this.input_cube_start_position = new THREE.Vector3(0, 0.8, -0.18) // relative to panel center
-        this.input_cube_sequence_offset = 0.07 * this.downward_offset_ratio // how much the cubes move down as the questionnaire progresses
+    // height of progress bar
+    progressH: 8,
 
-        this.prevIsSelecting = false
-        this.isSelecting = false
+    // gap between prog bar + button and questions
+    gapAfterTopRow: 72,
 
-        this.question_index = 0
-        this.questionnaire_data = []
+    // question block (question text + row of tiles)
+    questionGroupH: 127,
+    gapBetweenQuestions: 24,
+    qGapToTiles: 8,
 
-        this.spawnBoundingBoxes()
-    }
+    // button
+    nextFixedW: 96,
+    nextH: 32,
+    nextFontPx: 12,
 
-    async loadImage(image_path){
-        this.loaded_images.push = await this.loader.loadAsync(image_path)
-    }
+    // question text row height
+    qRowH: 28,
 
+    // likert boxes
+    tile: {
+        count: 7,
+        size: 100,
+        gap: 8,
+        borderW: 2,
+        radius: 16,
+        numberFontPx: 32,
+        labelFontPx: 12,
+    },
+};
 
-    getImage(index) {
-        return this.loaded_images[index]
-    }
+// tile
+const TILE = SPEC.tile;
+const TILE_SIZE = px(TILE.size);
+const TILE_GAP  = px(TILE.gap);
+const TILE_ROW_W_PX = TILE.count * TILE.size + (TILE.count - 1) * TILE.gap;
+const TILE_ROW_W = px(TILE_ROW_W_PX);
 
-    // MARK Refresh
-    refresh() {
-        // MARK: Refresh
-        // Load image from assets
-        this.q_slide = this.textureLoader.load(this.question_panels_1[this.question_slide_index])
+// offsets (z)
+const Z_PANEL_CONTENT = 0.002;
+const Z_HITPLANE = 0.01;
+const Z_UI = 0.001;
 
-        // Remove question panel from scene
-        // this.scene.remove(this.question_panel)
-        this.desk_group.remove(this.question_panel)
-
-        // Re-init cube drawing with new materials and new index
-        this.drawMaterials = [
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshStandardMaterial({ transparent: true, opacity: 0 }),
-            new THREE.MeshBasicMaterial({ map: this.q_slide }),
-            new THREE.MeshBasicMaterial({ map: this.q_slide }),
-        ];
-
-        this.question_panel = new THREE.Mesh(this.geometry, this.drawMaterials);
-
-        // Re-add cube to screen
-        // this.scene.add(this.question_panel)
-        this.desk_group.add(this.question_panel)
-        this.question_panel.rotateX(-Math.PI / 2)
-        // this.question_panel.rotateY(-Math.PI /2)
-        this.question_panel.rotateZ(-Math.PI / 2)
-
-        // this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
-        // this.question_panel.quaternion.set(this.panel_quaternion.x, this.panel_quaternion.y, this.panel_quaternion.z, this.panel_quaternion.w)
-
-        // Rotate cube so that the panel surface appears horizontal
-        // this.question_panel.rotateX(-Math.PI / 2)
-        // this.question_panel.rotateZ(Math.PI)
-
-
-        this.question_panel.position.set(this.panel_position.x, this.panel_position.y, this.panel_position.z)
-
-
-        // this.question_panel.rotateY(Math.PI/2)
-        
-        // Re-set input cube positions relative to the panel
-        this.input_cubes.forEach((cube, index) => {
-            cube.position.set(this.input_cube_start_position.x + 0.095, this.input_cube_start_position.y -0.07, this.input_cube_start_position.z + index * (0.08 + this.input_cube_offset_between))
-        })
-
-    }
-
-    nextQuestionnaireSlide() {
-        this.question_slide_index += 1
-        this.refresh()
-    }
-
-    // MARK: Gradient Fade
-    updateBoxGradientFade() {
-        // This function would be called in the main animation loop, and would update the opacity of the input cubes based on how long it has been since the user has interacted with them
-        // The cubes should gently pulsate to indicate that the user can interact with them, but should not be too distracting
-
-        this.input_cubes.forEach((cube, index) => {
-            let opacity = 0.2 + 0.1 * Math.sin(Date.now() * 0.005 + index) // pulsate between 0.3 and 0.4 opacity
-            cube.material.opacity = opacity
-        })
-    }
-
-    getQuestionnaireData() {
-        return this.questionnaire_data
-    }
-
-
-
-    setPos(position_vector, quaternion) {
-        // MARK: Set Position
-        this.panel_position.x = position_vector.x
-        this.panel_position.y = position_vector.y + 0.8 // Desktop coords
-        this.panel_position.z = position_vector.z
-
-        this.panel_quaternion.x = quaternion.x
-        this.panel_quaternion.y = quaternion.y
-        this.panel_quaternion.z = quaternion.z
-        this.panel_quaternion.w = quaternion.w
-
-        this.refresh()
-    }
-
-    addToDesk(desk_group) {
-        desk_group.add(this.question_panel)
-        this.panel_position.y = 0.8
-        // this.refresh()
-    }
-
-    makePanelVisible() {
-        this.question_panel.visible = true
-    }
-
-    makePanelInvisible() {
-        this.question_panel.visible = false
-    }
-
-    setQuestionnaireVisibility(visibility_boolean) {
-        this.question_panel.visible = visibility_boolean
-        this.input_cubes.forEach(cube => {
-            cube.visibility = visibility_boolean;
-        })
-    }
-
-    // MARK: Cube Transparency
-    makeCubesTransparent() {
-        this.input_cubes.forEach(cube => {
-            // cube.material.transparent = true;
-            // cube.material.opacity = 0.3;
-            cube.visible = false;
-        })
-    }
-
-    // Provisional function for testing bounding box locations
-    spawnBoundingBoxes() {
-        // MARK: Input Box Setup
-        // Start with one
-
-
-        // Set cube opacity to 0.5 and make it transparent
-        this.input_cube_material.transparent = true;
-        this.input_cube_material.opacity = 0.3;
-
-        let input_cube = new THREE.Mesh(this.input_cube_geometry, this.input_cube_material);
-        // this.question_panel.add(input_cube)
-        // this.desk_group.add(input_cube)
-
-        // Set cube position to be in front of the question panel
-        input_cube.position.set(0, 0.8, 0)
-
-        // Make a row of 5 boxes
-        for (let i = 0; i < 5; i++) {
-            let cube = input_cube.clone()
-            cube.position.set(this.input_cube_start_position.x + 0.095, this.input_cube_start_position.y -0.07, this.input_cube_start_position.z + i * (0.08 + this.input_cube_offset_between))
-            // this.question_panel.add(cube)
-            this.desk_group.add(cube)
-            this.input_cubes.push(cube)
+// bring forward UI to avoid clipping with panel
+function disableDepth(obj) {
+    obj.traverse((o) => {
+        if (!o.material) return;
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        for (const m of mats) {
+            m.transparent = true;
+            m.depthTest = false;
+            m.depthWrite = false;
         }
+    });
+    obj.renderOrder = 999;
+}
 
-        // Add bounding boxes to these cubes for interaction detection
-        this.input_cubes.forEach(cube => {
-            cube.geometry.computeBoundingBox()
-            // cube.boundingBox = cube.geometry.boundingBox.clone()
-            cube.updateMatrixWorld() // Ensure world matrix is up to date
-        })
+// block builder
+function makeBlock({
+                       w,
+                       h,
+                       bg = 0xffffff,
+                       bgOpacity = 1.0,
+                       borderColor = 0xffffff,
+                       borderW = px(0),
+                       radius = px(0),
+                   } = {}) {
+    const b = new ThreeMeshUI.Block({
+        width: w,
+        height: h,
+        padding: 0,
+        margin: 0,
+        justifyContent: "center",
+        alignContent: "center",
+        // visual styling
+        backgroundColor: C(bg),
+        backgroundOpacity: bgOpacity,
+        borderColor: C(borderColor),
+        borderWidth: borderW,
+        borderRadius: radius,
+    });
+    disableDepth(b);
+    return b;
+}
 
-        // Move them all down as the questionnaire progresses
+// update styling safely
+function blockSet(block, props) {
+    block.set(props); // update block properties (no recreation)
+    disableDepth(block);
+    block.traverse((o) => {
+        if (o.isMesh) o.renderOrder = 9999;
+    });
+}
+
+// layout-only blocks (invisible containers)
+function uiLayoutBlock(props) {
+    const b = new ThreeMeshUI.Block({
+        padding: 0,
+        margin: 0,
+        backgroundOpacity: 0,
+        ...props,
+    });
+    disableDepth(b);
+    return b;
+}
+
+
+// text object
+function makeTroikaText({ content, fontSize, color, maxWidth, anchorX = "center", anchorY = "middle", textAlign = "center", lineHeight = 1.0, } = {}) {
+    const t = new TroikaText();
+    t.text = content; t.font = FONT_URL; t.fontSize = fontSize; t.color = color; t.maxWidth = maxWidth; t.anchorX = anchorX; t.anchorY = anchorY; t.textAlign = textAlign; t.lineHeight = lineHeight; t.fillOpacity = 1.0;
+    t.renderOrder = 10000;
+    t.raycast = () => null;
+    t.sync();
+    return t;
+}
+
+// MAIN FUNCTIONS
+// make survey ui panel
+// all survey pages and survey finish behaviour
+export function createSurveyPanelUI(pages, onComplete = () => {}) {
+    const root = new THREE.Group();
+    const tileRefByNode = new Map(); // handling hover / select
+    const tilesByQuestion = new Map(); // to reset other tiles when one is selected
+
+    function findTileRef(node) {
+        return tileRefByNode.get(node) ?? null;
     }
 
-    // MARK: Move Down
-    moveInputCubesDown() {
-        console.log(this.question_index)
-        let local_offset_holder = 0.095
+    let pageIndex = 0;
 
-        if (this.question_index == 1) {
-            console.log('Using 0.19')
-            local_offset_holder = 0.1
-        }
-        
-        this.input_cubes.forEach(cube => {
-            cube.position.x -= local_offset_holder 
-            cube.material.transparent = true;
-            cube.material.opacity = 0.3;
-            console.log(cube.material.opacity)
-        })
+    // answer storage
+    // answers = {
+    //  "page_0": { 0: 6, 1; 4, 2: 7 },
+    //  "page_1": { 0: 3, 1: 5, 2: 4, 3: 7 }
+    // }
+
+    // pageID comes from getPageId(): page.id or `page_${pageIndex}` as fallback
+    // qIndex is the question index within that page
+    // likertValue is opt.value (1 -> 7)
+
+    // answers object only emitted via onComplete(answers) on the final page
+    const answers = Object.create(null); // keep user's selection
+
+    let pageGroup = null; // current page's contents
+
+    // progress bar state
+    let progressFillBlock = null; // moving bar
+    let progressTrackW = 0; // track width
+
+    let nextBtn = null;
+    let lastHovered = null;
+
+    // questions across all pages
+    // panel height is shorter for 3 questions vs 4 questions
+    const TOTAL_Q = pages.reduce((sum, p) => sum + (p.questions?.length ?? 0), 0);
+
+    function getPage() {
+        return pages[pageIndex];
     }
 
-    resetInputCubes() {
-        this.input_cubes.forEach((cube, index) => {
-            cube.position.set(this.input_cube_start_position.x + index * (0.08 + this.input_cube_offset_between), this.input_cube_start_position.y, this.input_cube_start_position.z)
-            cube.material.transparent = true;
-            cube.material.opacity = 0.3;
-        })
+    function getPageId() {
+        return getPage().id ?? `page_${pageIndex}`; // fallback id based on current pageIndex
     }
 
-    inputChecker(stylus_position_vector) {
-        //MARK: Input Box Logic
-        // Check if the user's input intersects with any of the input cube bounding boxes
-        // If so, move the questionnaire to the next slide and move the cubes down
-        // This function would be called in the main animation loop, and would check for intersection with the stylus position
-        // Log which cube was intersected
+    // returns answer bucket for CURRENT page
+    // ensures answers[pageId] exists, then returns it.
+    // bucket shape: bucket[qIndex = likertValue
+    function ensureBucket() {
+        const id = getPageId(); // top level key =
+        if (!answers[id]) answers[id] = Object.create(null);
+        return answers[id];
+    }
 
-        // Check if the stylus vector is within the bounding box of any of the input cubes
+    // check if every q is answered on page
+    // page is 'complete' when every qIndex has a non-null answer
+    // enables/disables the next button
+    function isPageComplete() {
+        const page = getPage();
+        const bucket = ensureBucket();
+        return page.questions.every((_, i) => bucket[i] != null);
+    }
 
-        let cube_index = 0
-
-
-        this.input_cubes.forEach(cube => {
-
-            let bounding_box = new THREE.Box3().setFromObject(cube)
-
-            this.prevIsSelecting = this.isSelecting
-            this.isSelecting = bounding_box.containsPoint(stylus_position_vector)
-            
-            cube_index += 1
-
-            // If an intersection is detected in any of the five cubes
-            if (this.isSelecting && !this.prevIsSelecting) {
-                
-                // TODO: Log the cube index for data collection purposes
-                // console.log('Input cube index:', cube_index)
-                // console.log('Quesitonnaire index:', this.question_index)
-                // console.log('Slide index:', this.q_slide_index)
-                console.log('Answer box: ', this.cube_index, '\nQuestion Row: ', this.question_index, '\nSlide Number: ', this.question_slide_index)
-
-                // this.nextQuestionnaireSlide()
-
-                this.question_index += 1
-
-                // MARK: Export Logic
-                this.questionnaire_data.push({
-                    question_index: this.question_index, // Question the user answered (1-3)
-                    cube_index: cube_index, // Answer the user gave (1-5 left to right)
-                    timestamp: Date.now(), // Time of response
-                    slide: this.question_slide_index, // Slide the user was on
-                })
-
-                if (this.question_index == 3) {
-                    this.nextQuestionnaireSlide()
-                    this.resetInputCubes()
-                    this.question_index = 0
-                }
-                else {
-                    this.moveInputCubesDown()
-                }
+    // total questions answered
+    function answeredCountAll() {
+        let n = 0;
+        for (const pageKey of Object.keys(answers)) {
+            const bucket = answers[pageKey];
+            for (const k of Object.keys(bucket)) {
+                if (bucket[k] != null) n++;
             }
-        })
+        }
+        return n;
     }
+
+    function clearPage() {
+        if (pageGroup) root.remove(pageGroup);
+        pageGroup = null;
+
+        progressFillBlock = null;
+        progressTrackW = 0;
+
+        nextBtn = null;
+        lastHovered = null;
+
+        tileRefByNode.clear();
+        tilesByQuestion.clear();
+    }
+
+    // reset button state
+    function setNextEnabled(enabled) {
+        if (!nextBtn) return;
+
+        nextBtn.userData.disabled = !enabled;
+
+        const bg = enabled ? UI_COLORS.nextEnabledBg : UI_COLORS.nextDisabledBg;
+        const border = enabled ? UI_COLORS.nextEnabledBorder : UI_COLORS.nextDisabledBorder;
+        const txt = enabled ? UI_COLORS.nextEnabledText : UI_COLORS.nextDisabledText;
+        const op = enabled ? UI_COLORS.nextEnabledOpacity : UI_COLORS.nextDisabledOpacity;
+
+        // update button rect
+        blockSet(nextBtn.userData.block, {
+            backgroundColor: C(bg),
+            backgroundOpacity: op,
+            borderColor: C(border),
+            borderWidth: px(2),
+            borderRadius: px(8),
+        });
+
+        nextBtn.userData.text.color = txt;
+        nextBtn.userData.text.sync();
+    }
+
+    function createProgressBar({ trackW, h, trackColor, fillColor, radius = px(4) }) {
+        const bar = new THREE.Group();
+
+        const track = makeBlock({ w: trackW, h, bg: trackColor, bgOpacity: 1, borderW: 0, radius });
+
+        const minFillW = Math.max(px(1), h);
+        const fill = makeBlock({ w: minFillW, h, bg: fillColor, bgOpacity: 1, borderW: 0, radius: 0 });
+
+        fill.position.set(leftAnchorX(trackW, minFillW), 0, 0.0012);
+
+        bar.add(track, fill);
+        bar.userData = { trackW, fill, minFillW, h };
+
+        return bar;
+    }
+
+    // update progress bar & whether button is enabled
+    function updateProgress() {
+        if (!progressFillBlock || !TOTAL_Q) return;
+
+        const bar = progressFillBlock.parent;
+        const { trackW, minFillW } = bar?.userData ?? {};
+        if (!trackW || !minFillW) return;
+
+        const answered = answeredCountAll();
+        const fillW = Math.min(trackW, Math.max(minFillW, (trackW / TOTAL_Q) * answered));
+
+        progressFillBlock.set({ width: fillW });
+        progressFillBlock.position.x = leftAnchorX(trackW, fillW);
+
+        setNextEnabled(isPageComplete());
+    }
+
+    // top row: progress bar & next / done button
+    function buildTopRow(innerW) {
+        const row = new THREE.Group();
+
+        // conv spec sizes to m
+        const gapW = px(SPEC.gapAfterTopRow);
+        const nextW = px(SPEC.nextFixedW);
+        const btnH  = px(SPEC.nextH);
+        const progressH = px(SPEC.progressH);
+
+        const rowH = Math.max(btnH, progressH);
+        row.userData.height = rowH;
+
+        const trackW = Math.max(px(1), innerW - gapW - nextW);
+        progressTrackW = trackW;
+
+        const barGroup = new THREE.Group();
+        barGroup.position.x = (-innerW / 2) + trackW / 2;
+
+        const progressBar = createProgressBar({
+            trackW,
+            h: progressH,
+            trackColor: UI_COLORS.progressTrack,
+            fillColor: UI_COLORS.progressFill,
+            radius: px(4),
+        });
+
+        progressBar.position.z = Z_UI;
+
+        progressFillBlock = progressBar.userData.fill;
+        barGroup.add(progressBar);
+
+        // button
+        const btnGroup = new THREE.Group();
+        const btnBlock = makeBlock({
+            w: nextW,
+            h: btnH,
+            bg: UI_COLORS.nextDisabledBg,
+            bgOpacity: UI_COLORS.nextDisabledOpacity,
+            borderColor: UI_COLORS.nextDisabledBorder,
+            borderW: px(2),
+            radius: px(8),
+        });
+        const label = makeTroikaText({
+            content: "Next",
+            fontSize: px(SPEC.nextFontPx),
+            color: UI_COLORS.nextDisabledText,
+            maxWidth: nextW * 0.9,
+            lineHeight: 1.0,
+        });
+        label.position.z = Z_UI;
+        btnBlock.add(label);
+        btnGroup.add(btnBlock);
+        btnGroup.position.x = (innerW / 2) - nextW / 2;
+
+        // store button refs and click behaviour
+        nextBtn = btnGroup;
+        nextBtn.userData.block = btnBlock;
+        nextBtn.userData.text = label;
+        nextBtn.userData.disabled = true;
+        nextBtn.userData.onSelect = () => {
+            if (nextBtn.userData.disabled) return;
+            if (pageIndex < pages.length - 1) {
+                pageIndex++;
+                renderPage();
+            } else {
+                onComplete(answers); // emit full answers object to the caller
+            }
+        };
+
+        row.add(barGroup);
+        row.add(btnGroup);
+        setNextEnabled(false);
+        return row;
+    }
+
+    // build interactable tile
+    function createLikertTile({ size, radius, borderW, value, label, styles, onSelect, }) {
+        const root = new THREE.Group();
+
+        // invisible hitbox for tiles (raycast reliability)
+        const hitPlane = new THREE.Mesh(
+          new THREE.PlaneGeometry(size, size),
+          new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide })
+        );
+
+        hitPlane.position.z = Z_HITPLANE;
+        hitPlane.userData.owner = root;
+        root.add(hitPlane);
+
+        // tile square bg
+        const block = makeBlock({ w: size, h: size, bg: styles.default.bg, bgOpacity: styles.default.bgOpacity, borderColor: styles.default.border, borderW, radius, });
+        block.userData.owner = root;
+
+        // text (number & label)
+        const num = makeTroikaText({ content: String(value), fontSize: px(SPEC.tile.numberFontPx), color: styles.default.text, maxWidth: size * 0.9, lineHeight: 1.0, });
+        num.position.set(0, px(18), Z_UI);
+        const lbl = makeTroikaText({ content: label, fontSize: px(SPEC.tile.labelFontPx), color: styles.default.text, maxWidth: size * 0.9, lineHeight: 1.0, });
+        lbl.position.set(0, px(-16), Z_UI);
+
+        // raycaster won't hit text
+        const contentGroup = new THREE.Group();
+        contentGroup.raycast = () => null;
+        contentGroup.add(num);
+        contentGroup.add(lbl);
+
+        root.add(block);
+        root.add(contentGroup);
+
+        root.userData.block = block;
+        root.userData.num = num;
+        root.userData.label = lbl;
+        root.userData.value = value;
+        root.userData.onSelect = onSelect;
+
+        // styling state switching
+        function setState(state) {
+            const s = styles[state];
+            blockSet(block, {
+                backgroundColor: C(s.bg),
+                backgroundOpacity: s.bgOpacity,
+                borderColor: C(s.border),
+                borderWidth: borderW,
+                borderRadius: radius,
+            });
+            num.color = s.text;
+            lbl.color = s.text;
+            num.sync();
+            lbl.sync();
+        }
+        setState("default");
+        return { root, setState };
+    }
+
+    // question section (question text, gap, row of 7 tiles)
+    function buildQuestionBlock(innerW, qText, qIndex) {
+        const group = new THREE.Group();
+
+        const tileSize = TILE_SIZE;
+        const gapX = TILE_GAP;
+        const gapY = px(SPEC.qGapToTiles);
+        const totalTilesW = TILE_ROW_W;
+        const leftX = -totalTilesW / 2 + tileSize / 2;
+
+        const col = uiLayoutBlock({
+            width: innerW,
+            height: px(SPEC.questionGroupH),
+            contentDirection: "column",
+            justifyContent: "start",
+            alignContent: "center",
+        });
+
+        const qRow = uiLayoutBlock({ width: innerW, height: px(SPEC.qRowH), justifyContent: "center", alignContent: "center" });
+        const q = makeTroikaText({
+            content: qText,
+            fontSize: px(18),
+            color: 0x111318,
+            maxWidth: innerW * 0.95,
+            textAlign: "center",
+            lineHeight: 1.15,
+        });
+        q.position.z = Z_UI;
+        qRow.add(q);
+
+        // gap
+        const spacer = uiLayoutBlock({ width: innerW, height: gapY });
+
+        // row container for tiles
+        const tilesRow = uiLayoutBlock({ width: innerW, height: tileSize, justifyContent: "center", alignContent: "center" });
+        const rowGroup = new THREE.Group();
+        const tiles = [];
+
+        // tile objects
+        LIKERT_7.forEach((opt, i) => {
+            const { root: tileNode, setState } = createLikertTile({
+                size: tileSize,
+                radius: px(TILE.radius),
+                borderW: px(TILE.borderW),
+                value: opt.value,
+                label: opt.label,
+                styles: TILE_STYLES,
+
+                // save answer for this q index to update visuals, progress, and button
+                onSelect: () => {
+                    const bucket = ensureBucket(); // selects a tile, store chosen likert value into current page's bucket at this qIndex
+                    bucket[qIndex] = opt.value; // answers[pageId][qIndex] = selected likert value
+
+                    (tilesByQuestion.get(qIndex) ?? []).forEach((t) =>
+                      t.setState(t.value === opt.value ? "selected" : "default")
+                    );
+
+                    updateProgress();
+                }
+            });
+
+            tileNode.userData.qIndex = qIndex;
+            tileNode.userData.value = opt.value;
+
+            tileRefByNode.set(tileNode, { qIndex, value: opt.value, setState });
+
+            tileNode.position.set(leftX + i * (tileSize + gapX), 0, 0);
+
+            tiles.push({ node: tileNode, setState, value: opt.value, qIndex });
+            rowGroup.add(tileNode);
+        });
+
+        tilesByQuestion.set(qIndex, tiles);
+        tilesRow.add(rowGroup);
+
+        // assemble
+        col.add(qRow);
+        col.add(spacer);
+        col.add(tilesRow);
+        group.add(col);
+        group.userData.col = col;
+        return group;
+    }
+
+    // page builder
+    function renderPage() {
+        clearPage();
+
+        const page = getPage();
+        const qCount = page.questions.length;
+
+        // inner width: 7*100 + 6*8 = 748
+        const innerWpx = TILE_ROW_W_PX;
+        const panelWpx = innerWpx + SPEC.padding.left + SPEC.padding.right;
+        const innerW = TILE_ROW_W;
+        const panelW = px(panelWpx);
+
+        const topRowApproxH = 44;
+
+        // total height for all question blocks & spacing
+        const questionsH =
+          qCount * SPEC.questionGroupH + Math.max(0, qCount - 1) * SPEC.gapBetweenQuestions;
+
+        // full panel height
+        const panelHpx =
+          SPEC.padding.top +
+          topRowApproxH +
+          SPEC.gapAfterTopRow +
+          questionsH +
+          SPEC.padding.bottom;
+        const panelH = px(panelHpx); // convert to world units
+
+        pageGroup = new THREE.Group();
+        // panel background
+        const panel = makeBlock({
+            w: panelW,
+            h: panelH,
+            bg: UI_COLORS.panelBg,
+            bgOpacity: UI_COLORS.panelOpacity,
+            borderColor: 0xffffff,
+            borderW: px(0),
+            radius: px(12),
+        });
+
+        pageGroup.add(panel);
+
+        // content slightly in front of panel (no z-fights!)
+        const content = new THREE.Group();
+        content.position.z = Z_PANEL_CONTENT;
+        pageGroup.add(content);
+
+        // top row (progress + button)
+        const topRow = buildTopRow(innerW);
+        const topRowH = topRow.userData.height ?? px(44);
+        topRow.position.y = (panelH / 2) - px(SPEC.padding.top) - (topRowH / 2);
+        topRow.position.z = Z_UI;   // extra pop just for bar + button
+        content.add(topRow);
+
+        // questions
+        const bucket = ensureBucket();
+        let y = topRow.position.y - px(SPEC.gapAfterTopRow) - px(20);
+
+        const qBlockH =
+          px(SPEC.qRowH) +
+          px(SPEC.qGapToTiles) +
+          TILE_SIZE;
+
+        // build each question
+        page.questions.forEach((qText, qIndex) => {
+            const qBlock = buildQuestionBlock(innerW, qText, qIndex);
+            qBlock.position.y = y;
+            content.add(qBlock);
+
+            const saved = bucket[qIndex]; // restore saved selection
+            if (saved != null) {
+                const tiles = tilesByQuestion.get(qIndex) ?? [];
+                tiles.forEach((t) => t.setState(t.value === saved ? "selected" : "default"));
+            }
+            y -= (qBlockH + px(SPEC.gapBetweenQuestions));
+        });
+
+        root.add(pageGroup);
+        updateProgress();
+    }
+
+    // call frames from render loop
+    function update() {
+        ThreeMeshUI.update();
+    }
+
+    // reset prev. hovered element back to default
+    function resetHover() {
+        if (!lastHovered) return;
+
+        const tileRef = findTileRef(lastHovered); // hovered = tile?
+        if (tileRef) {
+            const saved = ensureBucket()[tileRef.qIndex];
+            tileRef.setState(saved != null && saved === tileRef.value ? "selected" : "default");
+        } else if (lastHovered === nextBtn) { // hovered = button?
+            setNextEnabled(!nextBtn.userData.disabled);
+        }
+        lastHovered = null;
+    }
+
+    // raycasting for hover & click
+    function handlePointer({ raycaster, isHover = false, isSelect = false }) {
+        const hits = raycaster.intersectObject(root, true); // cast ray against entire survey ui
+        if (!hits.length) { // if nothing hit, reset hover if needed
+            if (isHover) resetHover();
+            return;
+        }
+
+        let target = hits[0].object; // start w/ closest object (hitbox) to resolve to tile owner
+        if (target.userData?.owner) target = target.userData.owner;
+
+        while (target && !target.userData?.onSelect && target.parent) { // get to clickable element
+            target = target.parent;
+        }
+
+        if (!target?.userData?.onSelect) { // reset hover if nothing clickable
+            if (isHover) resetHover();
+            return;
+        }
+
+        if (isHover && target !== lastHovered) {
+            resetHover();
+
+            const tileRef = findTileRef(target); // set tile style upon hover
+            if (tileRef) {
+                const saved = ensureBucket()[tileRef.qIndex];
+                const isSelected = saved != null && saved === tileRef.value;
+                tileRef.setState(isSelected ? "selected" : "hover");
+            } else if (target === nextBtn && !target.userData.disabled) { // set button style upon hover
+                blockSet(nextBtn.userData.block, { borderColor: C(0x135de5) });
+            }
+            lastHovered = target;
+        }
+
+        if (isSelect) { // select interaction
+            if (target === nextBtn && target.userData.disabled) return; // can't click button if disabled
+            target.userData.onSelect();
+        }
+    }
+
+    // build first page
+    renderPage();
+
+    return {
+        root,
+        update,
+        handlePointer,
+    };
+}
+
+export async function loadInterFont() {
+    return Promise.resolve();
 }
