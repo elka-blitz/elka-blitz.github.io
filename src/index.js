@@ -160,6 +160,11 @@ audioLoader.load('assets/laser.ogg', (buffer) => {
 	laserSound.setBuffer(buffer);
 });
 
+let clickSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/click_noise.ogg', (buffer) => {
+	clickSound.setBuffer(buffer);
+});
+
 scoreSound = new THREE.PositionalAudio(listener);
 audioLoader.load('assets/score.ogg', (buffer) => {
 	scoreSound.setBuffer(buffer);
@@ -529,7 +534,7 @@ function onFrame(time, frame) {
 
 				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
+				clickSound.play(); // Sound effect for button press
 				// TODO: Find click .ogg sound file to use instead of a laser sound
 			}
 		}
