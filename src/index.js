@@ -52,10 +52,8 @@ import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
 import { getController, getControllerGrip } from './controllerFunctions';
-
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GamepadWrapper } from "gamepad-wrapper";
-import { getController, getControllerGrip } from "./controllerFunctions";
 import { getFilledRect } from "./shapeFunctions";;
 import DrawParent from './DrawParent';
 import EnvironmentSwitcher from "./environmentSwitcher.js";
@@ -65,8 +63,9 @@ import { gsap } from "gsap";
 import { createSurveyPanelUI, loadInterFont } from "./questionnaireManager.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+import paintExporter from "./paintExporter.js";
+import SpeedMeter from "./speedMeter.js";
 import SvgManager from './SvgManager';
-import { TextPanel, UIText } from "./UIText.js";
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from "three/addons/webxr/VRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
@@ -246,7 +245,7 @@ const right_hand_container = new THREE.Group();
 // MARK: Data Log
 let event_logger = new EventLogger() // Global event logger instance, can be used to push data from any function or class
 
-let paint_exporter_instance;
+let paint_exporter_instance = new paintExporter()
 
 let canvas
 let takeScreenshot = false
@@ -263,7 +262,7 @@ const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 // Environment switcher instance
 let environment_switcher;
 
-const speed_meter = new speedMeter()
+const speed_meter = new SpeedMeter()
 
 function loadGLTF(gltfLoader, url) {
 	return new Promise((resolve, reject) => {
@@ -757,7 +756,7 @@ function animate(time, frame) {
 
 	gsap.ticker.tick();
 
-	onFrame(timestamp, frame);
+	onFrame(time, frame);
 
 	if (survey) survey.update();
 
