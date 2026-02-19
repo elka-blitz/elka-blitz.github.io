@@ -66,11 +66,11 @@ import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getFilledRect } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
-import questionnaireManager from './questionnaireManager.js'
 import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
-
+import ThreeMeshUI from 'three-mesh-ui'
+import questionnaireManager from "./questionnaireManager.js";
 
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -246,6 +246,8 @@ function init() {
 		50,
 	);
 
+
+
 	camera.position.set(0, 1.6, 3);
 
 	const player = new THREE.Group();
@@ -280,6 +282,11 @@ function init() {
 			console.error(error);
 		},
 	);
+	
+	// MARK: Questionnaire Setup
+	question_panel = new questionnaireManager(scene)
+	scene.add(question_panel.makeBlock(1, 1))
+
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, office_group)
@@ -291,10 +298,6 @@ function init() {
 	// office_group.scale.set(0.5, 0.5, 0.5)
 	office_group.position.set(0, -0.3, 0)
 	office_group.rotateY(Math.PI / 5)
-
-	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(false); // Initially set the questionnaire to be invisible until desk is locked in place
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -477,6 +480,7 @@ function init() {
 // MARK: OnFrame
 function onFrame(time, frame) {
 
+	ThreeMeshUI.update();
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
@@ -664,7 +668,6 @@ function onFrame(time, frame) {
 	}
   }
 
-  question_panel.updateBoxGradientFade()
 }
 
 // MARK: Animate Func
@@ -711,14 +714,6 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
-  if (takeScreenshot === true) {
-
-	canvas.toBlob((blob) => {
-		saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
-	});
-
-	takeScreenshot = false
-  }
 }
 
 function handleDrawing(controller) {
