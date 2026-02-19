@@ -10,9 +10,6 @@ let paint1,
 	paint6,
 	paint7,
 	paint8,
-	practice1,
-	practice2,
-	practice3,
 	t2paint1,
 	t2paint2,
 	t2paint3,
@@ -20,7 +17,15 @@ let paint1,
 	t2paint5,
 	t2paint6,
 	t2paint7,
-	t2paint8;
+	t2paint8,
+	t3paint1,
+	t3paint2,
+	t3paint3,
+	t3paint4,
+	t3paint5,
+	t3paint6,
+	t3paint7,
+	t3paint8;
 
 function shuffle(array) {
 	let currentIndex = array.length;
@@ -86,6 +91,16 @@ export default class SvgManager {
 			t2paint7,
 			t2paint8,
 		];
+		this.t3Paints = [
+			t3paint1,
+			t3paint2,
+			t3paint3,
+			t3paint4,
+			t3paint5,
+			t3paint6,
+			t3paint7,
+			t3paint8,
+		];
 
 		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
@@ -117,6 +132,8 @@ export default class SvgManager {
 				return this.t1Paints;
 			case 2:
 				return this.t2Paints;
+			case 3:
+				return this.t3Paints;
 		}
 	}
 
@@ -129,6 +146,9 @@ export default class SvgManager {
 				break;
 			case 2:
 				paintArray = this.t2Paints;
+				break;
+			case 3:
+				paintArray = this.t3Paints;
 				break;
 		}
 		paintArray.forEach((paint, i) => {

@@ -477,8 +477,12 @@ function init() {
 	});
 
 	desk_manager.addMesh(task1Box);
+	desk_manager.addMesh(task2Box);
+	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
+	task2Box.position.y = 0.82;
+	task3Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
 }
 
