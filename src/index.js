@@ -218,6 +218,7 @@ let environment_switcher;
 
 const speed_meter = new speedMeter()
 
+
 init();
 
 // Screenshot save function. Unfortunately only works in browser window
@@ -284,9 +285,9 @@ function init() {
 	);
 	
 	// MARK: Questionnaire Setup
-	question_panel = new questionnaireManager(scene)
-	scene.add(question_panel.makeBlock(1, 1))
-
+	// scene.add(q_container)
+	// q_container.position.set (1,1,-3)
+	// ThreeMeshUI.update()
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, office_group)
