@@ -144,11 +144,11 @@ let red_button, nextButton, resultButton, nextTaskButton;
 const listener = new THREE.AudioListener();
 const audioLoader = new THREE.AudioLoader();
 let scoreSound;
-let laserSound;
 
-laserSound = new THREE.PositionalAudio(listener);
-audioLoader.load('assets/laser.ogg', (buffer) => {
-	laserSound.setBuffer(buffer);
+
+let clickSound = new THREE.PositionalAudio(listener);
+audioLoader.load('assets/click_noise.ogg', (buffer) => {
+	clickSound.setBuffer(buffer);
 });
 
 scoreSound = new THREE.PositionalAudio(listener);
@@ -543,8 +543,7 @@ function onFrame(time, frame) {
 
 				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
-				// TODO: Find click .ogg sound file to use instead of a laser sound
+				clickSound.play(); // Sound effect for button press
 			}
 		}
 
@@ -558,7 +557,7 @@ function onFrame(time, frame) {
 				// User feedback for button press
 				interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
+				clickSound.play(); // Sound effect for button press
 		  }
 		  wasChangeButton = nextButton.pressCheckReusable(
 				stylus.position,
@@ -579,7 +578,7 @@ function onFrame(time, frame) {
 				// User feedback for button press
 				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				laserSound.play(); // Sound effect for button press
+				clickSound.play(); // Sound effect for button press
 			}
 			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 
@@ -683,7 +682,7 @@ function onFrame(time, frame) {
 		// MARK: Back Button
 		// Back button on controller
 		// TODO: Add commented framediff for every button on controller
-		laserSound.play();	
+		clickSound.play();	
 		interface_text.flashText('#ff0000', 100) 
 
 		// Generate CSV and trigger download
