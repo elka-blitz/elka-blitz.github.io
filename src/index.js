@@ -495,7 +495,8 @@ function onFrame(time, frame) {
 				0.2,
 			);
 			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
+				0,-0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
 			question_panel.refresh();
@@ -1066,6 +1067,10 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
 			task2ParentManager.makeVertical();
 			break;
+		case 3:
+			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+			task3ParentManager.makeVertical();
+			break;
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
@@ -1102,15 +1107,17 @@ const SetupNextTask = () => {
 	originalSvgManager.makeSurfaceInvisible();
 	yourDrawingText.makeInvisible();
 	scene.remove(svgManager.getSurface());
-	taskTextPanel.updateText('Task 2: Florist');
 
 	switch (taskNum) {
 		case 1: break;
 		case 2:
+			taskTextPanel.updateText('Task 2: Florist');
 			task1ParentManager.makeInvisible();
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
+			taskTextPanel.updateText('Task 3: Studio');
+			task2ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
 	}
 }
