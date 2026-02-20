@@ -349,7 +349,7 @@ function init() {
 						if (path.color.r = 1) {
 							path.subPaths.forEach(subPath => { // Each linedash I think
 								// Sample points along the curve
-								const points = subPath.getPoints(100); // Returns Vector2[]
+								const points = subPath.getPoints(10); // Returns Vector2[]
 
 								points.forEach(p => {
 									const point3D = new THREE.Vector3(p.x, p.y, 0);
@@ -360,14 +360,11 @@ function init() {
 									}
 								});
 
-
-
 							});
 								console.log('Closest point:', closestPoint);
 								console.log('Minimum distance:', minDistance);
 						}
 					});
-
 				})
 
 
