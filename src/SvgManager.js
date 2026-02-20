@@ -70,7 +70,7 @@ export default class SvgManager {
 		];
 		shuffle(this.array);
 		shuffle(this.t2Array);
-	
+
 		this.t1Paints = [
 			paint1,
 			paint2,
@@ -111,8 +111,6 @@ export default class SvgManager {
 		});
 
 		this.surface = new THREE.Mesh(rectGeometry, rectMaterial);
-
-
 	}
 	getSVGArray() {
 		return this.array;
@@ -142,7 +140,7 @@ export default class SvgManager {
 		let paintArray = [];
 		switch (taskNum) {
 			case 1:
-				paintArray = this.t1Paints
+				paintArray = this.t1Paints;
 				break;
 			case 2:
 				paintArray = this.t2Paints;
@@ -154,24 +152,22 @@ export default class SvgManager {
 		paintArray.forEach((paint, i) => {
 			paintArray[i] = new TubePainter();
 			paintArray[i].mesh.material = new THREE.LineBasicMaterial({
-				color: colorArray[taskNum-1],
+				color: colorArray[taskNum - 1],
 				linewidth: 4,
 			});
 			paintArray[i].setSize(0.2);
 			box.add(paintArray[i].mesh);
 		});
-		
 	}
 
 	svgSurface(svgGroup, scene) {
-	
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
-		const padding = 0.04
+		const padding = 0.04;
 
 		const scale = Math.min(
-			(this.surface.geometry.parameters.width - padding )/size.x,
-			(this.surface.geometry.parameters.height - padding )/size.y,
+			(this.surface.geometry.parameters.width - padding) / size.x,
+			(this.surface.geometry.parameters.height - padding) / size.y,
 		);
 
 		svgGroup.scale.setScalar(scale);
@@ -183,10 +179,22 @@ export default class SvgManager {
 		svgGroup.position.z = -0.01;
 
 		this.surface.add(svgGroup);
-		this.surface.rotateY(Math.PI);
+
 	}
-	
+
 	getSurface() {
 		return this.surface;
+	}
+
+	makeSurfaceInvisible() {
+		this.surface.visible = false;
+	}
+
+	makeSurfaceVisible() {
+		this.surface.visible = true;
+	}
+
+	clearSurface() {
+		this.surface.clear();
 	}
 }
