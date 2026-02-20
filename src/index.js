@@ -216,6 +216,12 @@ const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 // Environment switcher instance
 let environment_switcher;
 
+// MARK: Accuracy 
+let pathPoints
+let threeDimensionalPoints
+let targetPoint = new THREE.Vector3(5, -3, 2)
+
+
 const speed_meter = new speedMeter()
 
 init();
@@ -329,11 +335,80 @@ function init() {
 			case 87: // W
 				// question_panel.moveInputCubesDown();	
 				// paint_exporter_instance.screenShotCanvas(canvas)
-				takeScreenshot = true
+				console.log('Loading SVG')
+				const loader = new SVGLoader()
+
+				loader.load( './assets/base.svg', data => {
+					let min_distance = Infinity
+					let closestPoint = new THREE.Vector3()
+
+					console.log(data)
+
+					data.paths.forEach(subPath => {
+						pathLength = subPath.getLength()
+						const number_of_samples = 10 // Probably could be smaller given this is per linedash
+
+						// Sample points along the subpath
+						
+
+					})	
+					
+					const group = new THREE.Group();
+
+					for ( let i = 0; i < pathPoints.length; i ++ ) {
+						const path = pathPoints[ i ];
+						const material = new THREE.MeshBasicMaterial( {
+							color: path.color,
+							side: THREE.DoubleSide,
+							depthWrite: false
+						} );
+
+						const shapes = SVGLoader.createShapes( path );
+						for ( let j = 0; j < shapes.length; j ++ ) {
+							const shape = shapes[ j ];
+							const geometry = new THREE.ShapeGeometry( shape );
+							const mesh = new THREE.Mesh( geometry, material );
+							group.add( mesh );
+						}
+					}		
+
+					// group.scale.set(0.1)
+					// TODO: Figure out scaling
+					scene.add( group );
+					console.log('SVG Loaded')
+
+				})
+
+
 				break;
 			case 65: // A
-			 	// question_panel.resetInputCubes();
-				question_panel.refresh()
+				// Calculate distance to closest point on SVG					console.log('Converting SVG to 3d')
+				console.log('SVG Converted to 3d')
+
+				// The border and the template are different colour
+				// Separate based on colour
+				// That doesn't sound great in hindsight
+				pathPoints.forEach(path => {
+					if (path.color.r == 1) { // Red value
+						console.log(path)
+
+						// Translate to 3d
+						threeDimensionalPoints = path.subPaths.flatMap(subPath => 
+							subPath.getPoints().map(p => new THREE.Vector3(p.x, p.y, p.z))
+						);
+						console.log('pathpoints converted to 3d', threeDimensionalPoints)
+
+						// Sample points
+						path.subPaths.forEach(subPath => { // Goes through each dashpoint
+							
+						})
+					}
+				})
+
+				case 85: // S
+				// Taking threeDimensionalPoints, sample points along path
+					console.log('Sampling points along subpath')
+
 				break;
 		}
 	});
@@ -961,6 +1036,7 @@ function loadSVG(url, position, isResult) {
 		let renderOrder = 0;
 
 		for (const path of data.paths) {
+			// MARK: GetPaths
 			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
