@@ -219,7 +219,7 @@ let environment_switcher;
 // MARK: Accuracy 
 let pathPoints
 let threeDimensionalPoints
-let targetPoint = new THREE.Vector3(5, -3, 2)
+let targetPoint = new THREE.Vector3(6, -4, 2)
 
 
 const speed_meter = new speedMeter()
@@ -339,43 +339,34 @@ function init() {
 				const loader = new SVGLoader()
 
 				loader.load( './assets/base.svg', data => {
-					let min_distance = Infinity
+					let minDistance = Infinity
 					let closestPoint = new THREE.Vector3()
 
 					console.log(data)
 
-					data.paths.forEach(subPath => {
-						pathLength = subPath.getLength()
-						const number_of_samples = 10 // Probably could be smaller given this is per linedash
+					data.paths.forEach(path => {
 
-						// Sample points along the subpath
-						
+						if (path.color.r = 1) {
+							path.subPaths.forEach(subPath => { // Each linedash I think
+								// Sample points along the curve
+								const points = subPath.getPoints(100); // Returns Vector2[]
 
-					})	
-					
-					const group = new THREE.Group();
+								points.forEach(p => {
+									const point3D = new THREE.Vector3(p.x, p.y, 0);
+									const distance = point3D.distanceTo(targetPoint);
+									if (distance < minDistance) {
+										minDistance = distance;
+										closestPoint.copy(point3D);
+									}
+								});
 
-					for ( let i = 0; i < pathPoints.length; i ++ ) {
-						const path = pathPoints[ i ];
-						const material = new THREE.MeshBasicMaterial( {
-							color: path.color,
-							side: THREE.DoubleSide,
-							depthWrite: false
-						} );
 
-						const shapes = SVGLoader.createShapes( path );
-						for ( let j = 0; j < shapes.length; j ++ ) {
-							const shape = shapes[ j ];
-							const geometry = new THREE.ShapeGeometry( shape );
-							const mesh = new THREE.Mesh( geometry, material );
-							group.add( mesh );
+
+							});
+								console.log('Closest point:', closestPoint);
+								console.log('Minimum distance:', minDistance);
 						}
-					}		
-
-					// group.scale.set(0.1)
-					// TODO: Figure out scaling
-					scene.add( group );
-					console.log('SVG Loaded')
+					});
 
 				})
 
