@@ -66,7 +66,7 @@ let camera, scene, renderer;
 let stylus = null;
 let gamepad1;
 let gamepadInterface;
-let contextText, task1Text, originalText, yourDrawingText;
+let contextText, taskTextPanel, originalText, yourDrawingText;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -118,7 +118,7 @@ let desk_set = false
 let tableGroup = new THREE.Group()
 let backPushed = false
 let prevBackPushed = false
-let desk_manager, svgManager;
+let desk_manager, svgManager, originalSvgManager;
 let green = new THREE.Color('#80ed99');
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
@@ -374,10 +374,10 @@ function init() {
 		'\nThe three clients want to build a bakery, a studio and a library.' +
 		'\n\nPlease go ahead and draw some practice shapes. After that the tasks will begin. Good luck!';
 
-	const task1TextStr = 'Task 1: The Bakery';
+	const taskTextPanelStr = 'Task 1: The Bakery';
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
-	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
+	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
 	originalText = new TextPanel(
 		scene,
 		'Original',
@@ -449,9 +449,9 @@ function init() {
 	svgManager = new SvgManager();
 	svgWithPositionsArray = svgManager.getSVGArray();
 
+	originalSvgManager = new SvgManager();
+
 	svgManager.setupPaints(1, task1Box);
-	svgManager.setupPaints(2, task2Box);
-	svgManager.setupPaints(3, task3Box);
 	svgPaintsArray = svgManager.getPaintsArray(1);
 
 	practicePaints.forEach((paint, i) => {
@@ -467,10 +467,12 @@ function init() {
 	desk_manager.addMesh(task1Box);
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
+	desk_manager.addMesh(task4Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
+	task4Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
 }
 
@@ -495,7 +497,8 @@ function onFrame(time, frame) {
 				0.2,
 			);
 			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
+				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
 			question_panel.refresh();
@@ -610,8 +613,12 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				SetupNextTask();
-				TaskMode();
+				if (taskNum !== 4) {
+					SetupNextTask();
+					TaskMode();
+				} else {
+					FinishMode();
+				}
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
 				stylus.position,
@@ -634,10 +641,14 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y
-				SetupNextTask();
-				TaskMode();
+				if (taskNum !== 4) {
+					SetupNextTask();
+					TaskMode();
+				} else {
+					FinishMode();
+				}
 			}
-			if (gamepad1.buttons[3].pressed) {
+			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
 				ShowResultsMode();
 			}
@@ -836,10 +847,13 @@ function handleDrawing(controller) {
 		case 3:
 			currentBox = task3Box;
 			break;
+		case 4:
+			currentBox = task4Box;
+			break;
 	}
 
 	if (gamepad1) {
-		const relativePos = getRelativePosition(stylus, task1Box);
+		const relativePos = getRelativePosition(stylus, currentBox);
 		if (userData.isSelecting || isDrawing) {
 			cursor.set(relativePos.x, relativePos.y, relativePos.z);
 			painter.lineTo(cursor);
@@ -894,7 +908,7 @@ function loadSVG(url, position, isResult) {
 			}
 		}
 
-		isResult ? svgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
+		isResult ? originalSvgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
 	});
 }
 
@@ -983,7 +997,7 @@ const PracticeMode = () => {
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
 		contextText.makeInvisible();
-		task1Text.makeVisible();
+		taskTextPanel.makeVisible();
 
 	}
 
@@ -992,7 +1006,6 @@ const PracticeMode = () => {
 // MARK: MODE: Task
 const TaskMode = () => {
 	if (shapeIndex < svgWithPositionsArray.length - 1) {
-		console.log(taskNum, svgPaintsArray, shapeIndex, 'isDrawingDisabled', isDrawingDisabled)
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
@@ -1017,7 +1030,7 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-		task1Text.updateText(
+		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 		);
 	}
@@ -1029,8 +1042,9 @@ const ShowResultsMode = () => {
 
 	desk_manager.clearSurface();
 	desk_manager.makeSurfaceInvisible()
-	task1Text.makeInvisible();
+	taskTextPanel.makeInvisible();
 
+	// text
 	originalText.makeVisible();
 	originalText.setPosition({
 		x: originalPos.x,
@@ -1045,8 +1059,10 @@ const ShowResultsMode = () => {
 		z: yourDrawingPos.z,
 	});
 
-	loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
-	const original = svgManager.getSurface();
+	// original svg
+	originalSvgManager.clearSurface();
+	originalSvgManager.makeSurfaceVisible();
+	const original = originalSvgManager.getSurface();
 	scene.add(original);
 	original.position.set(
 		originalPos.x,
@@ -1056,13 +1072,24 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
+			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
-			task2ParentManager.makeInvisible();
+			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
+			task2ParentManager.makeVertical();
+			break;
+		case 3:
+			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+			task3ParentManager.makeVertical();
+			break;
+		case 4:
+			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
+			task4ParentManager.makeVertical();
 			break;
 	}
-	task1ParentManager.makeVertical();
+
 	svgWithPositionsArray.forEach((obj, i) => {
 		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
@@ -1076,6 +1103,11 @@ const ShowResultsMode = () => {
 }
 
 const SetupNextTask = () => {
+	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.visible = false;
+	});
+
+
 	desk_manager.makeSurfaceVisible()
 	nextButton.makeVisible();
 
@@ -1087,16 +1119,68 @@ const SetupNextTask = () => {
 
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
-	task1Text.makeInvisible();
+	taskTextPanel.makeVisible();
 	originalText.makeInvisible();
+	originalSvgManager.makeSurfaceInvisible();
 	yourDrawingText.makeInvisible();
 	scene.remove(svgManager.getSurface());
-	task1Text.updateText('Task 2: Florist');
 
 	switch (taskNum) {
 		case 1: break;
 		case 2:
+			taskTextPanel.updateText('Task 2: Florist');
 			task1ParentManager.makeInvisible();
+			svgManager.setupPaints(2, task2Box);
+			break;
+		case 3:
+			taskTextPanel.updateText('Task 3: Studio');
+			task2ParentManager.makeInvisible();
+			svgManager.setupPaints(3, task3Box);
+			break;
+		case 4:
+			taskTextPanel.updateText('Task 4: Library');
+			task3ParentManager.makeInvisible();
+			svgManager.setupPaints(4, task4Box);
 			break;
 	}
+}
+
+const FinishMode = () => {
+	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.visible = false;
+	});
+	taskTextPanel.makeVisible();
+	taskTextPanel.updateText('All Done! Behold!');
+
+	originalText.makeInvisible();
+	originalSvgManager.makeSurfaceInvisible();
+	svgManager.makeAllPaintsVisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+
+	const parentArray = [
+		task1ParentManager.getParent(),
+		task2ParentManager.getParent(),
+		task3ParentManager.getParent(),
+		task4ParentManager.getParent(),
+	];
+
+	parentArray.forEach((p, i) => {
+		p.material.visible = true;
+		switch (i) {
+			case 0:
+				p.position.z -= 1.5;
+				break;
+
+			case 1:
+				p.position.z -= 1;
+				break;
+
+			case 2:
+				break;
+			case 3:
+				p.position.z += 0.5;
+				break;
+		}
+	})
 }
