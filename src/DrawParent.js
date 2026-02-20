@@ -34,4 +34,8 @@ export default class DrawParent {
 		this.drawingBox.position.z += 0.5;
 		this.drawingBox.position.y += 0.35;
 	}
+
+	makeInvisible() {
+		this.drawingBox.material.visible = false;
+	}
 }

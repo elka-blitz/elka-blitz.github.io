@@ -1,19 +1,3 @@
-
-/*
-File structure:
-	- event listeners
-	- imports
-	- declarations
-	- init function
-	- onFrame function (events)
-	- animate function (drawing)
-	- handleDrawing
-	- handleButton
-	- controller functions (onControllerConnected, onSelectStart, onSelectEnd
-	- loadSVG
-	- debugGamepad
-*/
-
 // event listeners
 window.addEventListener('unload', function () {
   document.documentElement.innerHTML = '';
@@ -63,7 +47,7 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
-import { getFilledRect } from './shapeFunctions';
+import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import questionnaireManager from './questionnaireManager.js'
@@ -75,8 +59,9 @@ import { update } from "three/examples/jsm/libs/tween.module.js";
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
+let BROWSER_buttonPressed3 = false;
 
-// setup declarations
+// MARK: setup declarations
 let camera, scene, renderer;
 let stylus = null;
 let gamepad1;
@@ -92,45 +77,38 @@ const sizes = {
 // drawing declarations
 let isDrawing = false;
 let prevIsDrawing = false;
-let paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8, practice1, practice2, practice3;
-let svgPaintsArray = [paint1, paint2, paint3, paint4, paint5, paint6, paint7, paint8];
+let practice1, practice2, practice3;
 let practicePaints = [practice1, practice2, practice3];
+let svgPaintsArray;
 let isDrawingDisabled = false;
-let pracBox, task1Box, task1ParentManager;
+let pracBox,
+	task1Box, task1ParentManager,
+	task2Box, task2ParentManager,
+	task3Box, task3ParentManager,
+	task4Box, task4ParentManager;
 
 // todo organise this into a class or something
-const coloursArray = [
-	'red',
-	'orange',
-	'yellow',
-	'green',
-	'blue',
-	'cyan',
-	'purple',
-];
 
 const practiceSvgArray = [
-	'assets/window.svg',
-	'assets/door_top.svg',
-	'assets/window_curtain.svg',
+	'assets/task1/window.svg',
+	'assets/task1/door_top.svg',
+	'assets/task1/window_curtain.svg',
 ];
 
 let svgWithPositionsArray = [];
 
 let wasChangeButton = false;
 let wasResultButton = false;
+let wasNextTaskButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
+let taskNum = 1;
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
 
-// Stylus info
-let position = new THREE.Vector3();
-
 // Debugging stuff
-let debugVar = true
 let interface_text;
 
 // Desk declarations
@@ -147,7 +125,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton;
+let red_button, nextButton, resultButton, nextTaskButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -235,8 +213,8 @@ const saveBlob = (function() {
   };
 }());
 
+// MARK: INIT FUNC
 function init() {
-	// MARK: Scene Setup
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
@@ -282,15 +260,15 @@ function init() {
 	);
 
 	// MARK: Model setup
-	environment_switcher = new EnvironmentSwitcher(scene, office_group)
+	environment_switcher = new EnvironmentSwitcher(scene, office_group);
 	scene.add(tableGroup);
 
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup);
 
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0)
-	office_group.rotateY(Math.PI / 5)
+	office_group.position.set(0, -0.3, 0);
+	office_group.rotateY(Math.PI / 5);
 
 	// MARK: Panel
 	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
@@ -327,18 +305,18 @@ function init() {
 	document.addEventListener('keydown', function (event) {
 		switch (event.keyCode) {
 			case 87: // W
-				// question_panel.moveInputCubesDown();	
+				// question_panel.moveInputCubesDown();
 				// paint_exporter_instance.screenShotCanvas(canvas)
-				takeScreenshot = true
+				takeScreenshot = true;
 				break;
 			case 65: // A
-			 	// question_panel.resetInputCubes();
-				question_panel.refresh()
+				// question_panel.resetInputCubes();
+				question_panel.refresh();
 				break;
 		}
 	});
 
-	paint_exporter_instance = new paintExporter(scene, camera)
+	paint_exporter_instance = new paintExporter(scene, camera);
 
 	renderer.setAnimationLoop(animate);
 
@@ -387,7 +365,7 @@ function init() {
 	right_hand_container.add(hand2);
 	scene.add(right_hand_container);
 
-	// Add text initialisation
+	// MARK: UI Elements
 	interface_text = new UIText(scene);
 
 	const contextTextStr =
@@ -400,17 +378,26 @@ function init() {
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	task1Text = new TextPanel(scene, task1TextStr, 0, 1.6, 1, 0.3, 1.5);
-	originalText = new TextPanel(scene, "Original", originalPos.x, originalPos.y + deskCoords.y + 0.3, 0.5, 0.1, originalPos.z,);
+	originalText = new TextPanel(
+		scene,
+		'Original',
+		originalPos.x,
+		originalPos.y + deskCoords.y + 0.3,
+		0.5,
+		0.1,
+		originalPos.z,
+	);
 	yourDrawingText = new TextPanel(
 		scene,
 		'Your Drawing',
 		yourDrawingPos.x - 0.2,
 		yourDrawingPos.y + deskCoords.y + 0.3,
-		0.5, 0.1,
+		0.5,
+		0.1,
 		yourDrawingPos.z,
 	);
 
-	// buttons
+	// MARK: Buttons
 	red_button = new DeskButton(scene);
 	red_button.createButton(new THREE.Vector3(0, 0, 0), '#b30000', 'Lock');
 	red_button.makeInvisible();
@@ -433,161 +420,64 @@ function init() {
 	);
 	resultButton.makeInvisible();
 
-	const pracParent = new DrawParent("blue", BROWSER_TESTING)
+	nextTaskButton = new DeskButton(scene);
+	nextTaskButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#0f94e6',
+		'Next Task',
+		0.09,
+	);
+	nextTaskButton.makeInvisible();
+
+	// MARK: Drawing and paints setup
+	const pracParent = new DrawParent('blue', BROWSER_TESTING);
 	pracBox = pracParent.getParent();
 
-	task1ParentManager = new DrawParent("red", BROWSER_TESTING)
+	// todo make list?
+	task1ParentManager = new DrawParent('red', BROWSER_TESTING);
 	task1Box = task1ParentManager.getParent();
 
-	// MARK: svgs
-	svgManager = new SvgManager()
-	svgWithPositionsArray = svgManager.getSVGArray()
+	task2ParentManager = new DrawParent('yellow', BROWSER_TESTING);
+	task2Box = task2ParentManager.getParent();
 
+	task3ParentManager = new DrawParent('blue', BROWSER_TESTING);
+	task3Box = task3ParentManager.getParent();
 
-	// MARK: drawing and paints setup
-	svgPaintsArray.forEach((paint, i) => {
-		svgPaintsArray[i] = new TubePainter();
-		svgPaintsArray[i].mesh.material = new THREE.LineBasicMaterial({
-			color: "black",
-			linewidth: 4,
-		});
-		svgPaintsArray[i].setSize(0.2);
-		task1Box.add(svgPaintsArray[i].mesh);
-	});
+	task4ParentManager = new DrawParent('green', BROWSER_TESTING);
+	task4Box = task4ParentManager.getParent();
+
+	svgManager = new SvgManager();
+	svgWithPositionsArray = svgManager.getSVGArray();
+
+	svgManager.setupPaints(1, task1Box);
+	svgManager.setupPaints(2, task2Box);
+	svgManager.setupPaints(3, task3Box);
+	svgPaintsArray = svgManager.getPaintsArray(1);
 
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: "black",
+			color: 'black',
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
 		pracBox.add(practicePaints[i].mesh);
 	});
 
-	// scene.add(drawingBox);
 	desk_manager.addMesh(task1Box);
+	desk_manager.addMesh(task2Box);
+	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
+	task2Box.position.y = 0.82;
+	task3Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
-
 }
 
 
 // MARK: OnFrame
 function onFrame(time, frame) {
-
-
-	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
-	if (!desk_locked) {
-		// Smooth text animation to camera, prompting user to lock desk
-		// interface_text.updateText('Tap desk with stylus to lock')
-		interface_text.animateTextToCamera(camera)
-	}
-	else if (desk_locked && !prev_desk_locked) {
-		// Desk has just been locked, run fly-in animation and text update
-		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
-		interface_text.updateText('')
-
-		// Locate text permanently above desk for remainder of session
-		interface_text.positionTextRelativeToDesk(desk_manager.getDesk())
-	}
-
-	prev_desk_locked = desk_locked // Framediff for desk lock check
-
-	interface_text.sync()
-
-	// MARK: Gamepad Condition
-	if (gamepad1) {
-
-		// MARK: Speed function
-		// This returns a number representing the stylus speed
-		// This number can be used to represent stylus speed
-		// Unsure how best to utilise it. Example below makes a unicode speed bar
-		// let speed = speed_meter.getSpeed(stylus.position)
-		// interface_text.updateText('▮'.repeat(speed))
-
-		// Stylus logging
-		// Get positional data for timestamp
-
-	  // desk lock event		calibration > practice mode
-	  if (red_button.returnExists() === true) {
-		if (
-			red_button.pressCheck(stylus.position, scene, 'white') === true
-		) {
-			desk_manager.lock();
-			isPracticeMode = true;
-			desk_manager.spawnDrawingSurface();
-			scene.background = green;
-			red_button.makeInvisible();
-			nextButton.makeVisible();
-			desk_set = true;
-			interface_text.updateText("Draw on the outline!");
-			contextText.makeVisible();
-			loadSVG(practiceSvgArray[0], CENTER_POSITION);
-			stylus.userData.painter = practicePaints[0];
-
-				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
-				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				clickSound.play(); // Sound effect for button press
-			}
-		}
-
-		question_panel.inputChecker(stylus.position)
-
-	  // change material
-	  if (nextButton.returnExists() === true) {
-		  if (nextButton.pressCheckReusable(stylus.position, scene, "white") === true && !wasChangeButton) {
-			  handleButton();
-			
-				// User feedback for button press
-				interface_text.flashText('#059400', 100) // Flash text briefly #user feedback
-				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				clickSound.play(); // Sound effect for button press
-		  }
-		  wasChangeButton = nextButton.pressCheckReusable(
-				stylus.position,
-				scene,
-				'white',
-			);
-
-
-	  }
-		if (resultButton.returnExists() === true) {
-		  if (
-				resultButton.pressCheck(stylus.position, scene, 'white') ===
-					true &&
-				!wasResultButton
-			) {
-				handleShowResultButton();
-
-				// User feedback for button press
-				interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
-				gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-				clickSound.play(); // Sound effect for button press
-			}
-			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
-
-
-	  }
-
-		if (BROWSER_TESTING){
-			// remove this block
-			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
-				handleButton();
-			}
-			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
-				handleShowResultButton();
-			}
-			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
-			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
-		}
-
-		if (!desk_set){
-				prevIsMovingDesk = isMovingDesk;
-			isMovingDesk = gamepad1.buttons[5].value > 0;
-		}
-	  // MARK: Desk Calibration
+	// MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
 		if (!desk_manager.isDeskPositioned()) {
@@ -602,18 +492,15 @@ function onFrame(time, frame) {
 				desk_manager.getDesk(),
 				scene,
 				0.3,
-				0.2
+				0.2,
 			);
-			resultButton.hoverButtonByDesk(
-				camera,
-				desk_manager.getDesk(),
-				scene,
-			);
-			deskCoords = desk_manager.getDeskCoordinates()
-			interface_text.animateTextToCamera(camera)
-			question_panel.refresh()
+			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			deskCoords = desk_manager.getDeskCoordinates();
+			interface_text.animateTextToCamera(camera);
+			question_panel.refresh();
 			// question_panel.spawnBoundingBoxes()
-			question_panel.makeCubesTransparent()
+			question_panel.makeCubesTransparent();
 		}
 	}
 
@@ -631,40 +518,160 @@ function onFrame(time, frame) {
 	if (prevIsMovingDesk && !isMovingDesk) {
 		tableGroup.traverse((child) => {
 			if (child.material) {
-				child.material.transparent = false 
+				child.material.transparent = false;
 				// child.material.opacity = 0.5
 			}
-		})
+		});
 	}
 
-	prevBackPushed = backPushed;
-	backPushed = gamepad1.buttons[1].value > 0
+	question_panel.updateBoxGradientFade();
 
-	if (backPushed && !prevBackPushed) {
-		// MARK: Back Button
-		// Back button on controller
-		// TODO: Add commented framediff for every button on controller
-		clickSound.play();	
-		interface_text.flashText('#ff0000', 100) 
+	desk_locked = desk_manager.getLock(); // Run once and used variable for desklock check, avoids running method multiple times
+	if (!desk_locked) {
+		// Smooth text animation to camera, prompting user to lock desk
+		// interface_text.updateText('Tap desk with stylus to lock')
+		interface_text.animateTextToCamera(camera);
+	} else if (desk_locked && !prev_desk_locked) {
+		// Desk has just been locked, run fly-in animation and text update
+		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
+		interface_text.updateText('');
 
-		// Generate CSV and trigger download
-		// This is currently done on controller button press, but can be triggered prgrammattically
-		// Should be triggered alongside 
-		// downloadCSV(JSON.stringify(logData));
-		event_logger.logEventData('Back button pressed')
-		
-		// MARK: Export
-		// Export all data
-		event_logger.downloadAllData() // Download stylus and task event data as text files
-
-		// Export Paintings
-		// TODO: Error handling for no paint mesh condition
-		paint_exporter_instance.downloadJSON()
-
+		// Locate text permanently above desk for remainder of session
+		interface_text.positionTextRelativeToDesk(desk_manager.getDesk());
 	}
-  }
 
-  question_panel.updateBoxGradientFade()
+	prev_desk_locked = desk_locked; // Framediff for desk lock check
+
+	interface_text.sync();
+
+	// MARK: Gamepad Condition
+	if (gamepad1) {
+		// MARK: Speed function
+		/*
+		 		This returns a number representing the stylus speed
+				This number can be used to represent stylus speed
+				Unsure how best to utilise it. Example below makes a unicode speed bar
+		*/
+
+		// let speed = speed_meter.getSpeed(stylus.position)
+		// interface_text.updateText('▮'.repeat(speed))
+
+		// MARK: Desk Moving button
+		if (!desk_set) {
+			prevIsMovingDesk = isMovingDesk;
+			isMovingDesk = gamepad1.buttons[5].value > 0;
+		}
+
+		question_panel.inputChecker(stylus.position);
+
+
+		// MARK: Red desk lock button
+		if (red_button.returnExists() === true) {
+			if (red_button.pressCheck(stylus.position, scene, 'white') === true) {
+				buttonFeedback();
+				Calibrate();
+			}
+		}
+
+		// MARK: Practice/Task
+		if (nextButton.returnExists() === true) {
+			if (
+				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
+					true &&
+				!wasChangeButton
+			) {
+				buttonFeedback();
+				isPracticeMode ? PracticeMode() : TaskMode();
+			}
+			wasChangeButton = nextButton.pressCheckReusable(
+				stylus.position,
+				scene,
+				'white',
+			);
+		}
+
+		// MARK: Show result button
+		if (resultButton.returnExists() === true) {
+			if (
+				resultButton.pressCheck(stylus.position, scene, 'white') === true &&
+				!wasResultButton
+			) {
+				buttonFeedback();
+				ShowResultsMode();
+			}
+			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
+		}
+
+		// MARK: Next task button (this will need to lead into questionnaire)
+		if (nextTaskButton.returnExists() === true) {
+			if (
+				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
+				!wasNextTaskButton
+			) {
+				buttonFeedback();
+
+				SetupNextTask();
+				TaskMode();
+			}
+			wasNextTaskButton = nextTaskButton.pressCheck(
+				stylus.position,
+				scene,
+				'white',
+			);
+		}
+		// MARK: Browser Testing Button Input
+		if (BROWSER_TESTING) {
+			// remove this block
+			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+				// x
+				if (isPracticeMode) {
+					PracticeMode();
+				}
+				// if not practice mode
+				else {
+					TaskMode();
+				}
+			}
+			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
+				// y
+				SetupNextTask();
+				TaskMode();
+			}
+			if (gamepad1.buttons[3].pressed) {
+				// joystick
+				ShowResultsMode();
+			}
+			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
+			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
+			BROWSER_buttonPressed3 = gamepad1.buttons[3].pressed;
+		}
+
+		if (backPushed && !prevBackPushed) {
+			// MARK: Back Button
+			// Back button on controller
+			// TODO: Add commented framediff for every button on controller
+			clickSound.play();
+			interface_text.flashText('#ff0000', 100);
+
+			// Generate CSV and trigger download
+			// This is currently done on controller button press, but can be triggered prgrammattically
+			// Should be triggered alongside
+			// downloadCSV(JSON.stringify(logData));
+			event_logger.logEventData('Back button pressed');
+
+			// MARK: Export
+			// Export all data
+			event_logger.downloadAllData(); // Download stylus and task event data as text files
+
+			// Export Paintings
+			// TODO: Error handling for no paint mesh condition
+			paint_exporter_instance.downloadJSON();
+		}
+		prevBackPushed = backPushed;
+		backPushed = gamepad1.buttons[1].value > 0;
+	}
+
+
 }
 
 // MARK: Animate Func
@@ -688,13 +695,11 @@ function animate(time, frame) {
 		// (╯°□°）╯︵ ┻━┻
 	}
 
-	// UIText.sync()
-	// if desk is locked, initiate ability to draw
+	// MARK: drawing logic
 	if (desk_set) {
 		if (gamepad1) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
-			// debugGamepad(gamepad1, gamepad1.buttons[5].pressed);
 
 			if (isDrawing && !prevIsDrawing) {
 				const painter = stylus.userData.painter;
@@ -711,161 +716,22 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
+
+	// MARK: take screenshot
   if (takeScreenshot === true) {
-
-	canvas.toBlob((blob) => {
-		saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
-	});
-
-	takeScreenshot = false
+		canvas.toBlob((blob) => {
+			saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
+		});
+		takeScreenshot = false
   }
 }
 
-function handleDrawing(controller) {
-  if (!controller) return;
-
-  const userData = controller.userData;
-  let painter;
-
-  if (isPracticeMode) {
-	  painter = practicePaints[practiceShapeIndex];
-  } else if (shapeIndex === -1) {
-	  painter = svgPaintsArray[0];
-  } else {
-	  painter = svgPaintsArray[shapeIndex];
-  }
-
-  if (gamepad1) {
-	const relativePos = getRelativePosition(stylus, task1Box);
-    if (userData.isSelecting || isDrawing) {
-		cursor.set(relativePos.x, relativePos.y, relativePos.z);
-		painter.lineTo(cursor);
-      	painter.update();
-
-    } else {
-		painter.moveTo(relativePos.x, relativePos.y, relativePos.z); 	// moves current path to pen
-	}
-  }
-}
-
-function handleButton() {
-	// if practice mode, use practice objects
-	if (isPracticeMode) {
-		// iterating
-		if (practiceShapeIndex < practiceSvgArray.length - 1) {
-			practiceShapeIndex += 1;
-			desk_manager.clearSurface();
-			loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
-			nextButton.updateLabel(
-				`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
-			);
-
-			practicePaints.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-			practicePaints[practiceShapeIndex].mesh.visible = true;
-			// stylus.userData.painter = practicePaints[practiceShapeIndex];
-
-		} else {
-			isPracticeMode = false;
-			isDrawingDisabled = true;
-			// stylus.userData.painter = svgPaintsArray[0];
-			pracBox.visible = false;
-
-			desk_manager.clearSurface();
-			practicePaints.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-
-			nextButton.changeColor('#359743');
-			nextButton.updateLabel("Begin");
-			contextText.makeInvisible();
-			task1Text.makeVisible();
-
-		}
-	}
-	// if not practice mode
-	else {
-		// task1
-		if (shapeIndex < svgWithPositionsArray.length - 1) {
-			isDrawingDisabled = false;
-			shapeIndex += 1;
-			desk_manager.clearSurface();
-			loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
-			nextButton.updateLabel(
-				`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
-			);
-
-
-			svgPaintsArray.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-
-			svgPaintsArray[shapeIndex].mesh.visible = true;
-			// stylus.userData.painter = svgPaintsArray[shapeIndex];
-
-
-		}
-		// end of task 1
-		else {
-			isDrawingDisabled = true;
-			nextButton.makeInvisible();
-			resultButton.makeVisible();
-			desk_manager.clearSurface();
-			desk_manager.makeSurfaceInvisible();
-			svgPaintsArray.forEach((paint) => {
-				paint.mesh.visible = false;
-			});
-			task1Text.updateText('Task 1 Complete' +
-				'\nAre you ready to see your drawing?');
-		}
-	}
-}
-
-function handleShowResultButton() {
-	isDrawingDisabled = true;
-
-	desk_manager.clearSurface();
-	task1Text.makeInvisible();
-
-	originalText.makeVisible();
-	originalText.setPosition({
-		x: originalPos.x,
-		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: originalPos.z,
-	});
-
-	yourDrawingText.makeVisible();
-	yourDrawingText.setPosition({
-		x: yourDrawingPos.x,
-		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: yourDrawingPos.z,
-	});
-
-
-	loadSVG("assets/task1.svg", CENTER_POSITION, true);
-	const original = svgManager.getSurface();
-	scene.add(original);
-	original.position.set(
-		originalPos.x,
-		originalPos.y + desk_manager.getDeskCoordinates().y,
-		-originalPos.z,
-	)
-
-	task1ParentManager.makeVertical();
-	svgWithPositionsArray.forEach((obj, i) => {
-		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
-		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.y = obj.position.y;
-		svgPaintsArray[i].mesh.visible = true;
-	});
-}
 
 // MARK: Connect Event
 function onControllerConnected(e) {
 	event_logger.logEventData('Controller Connected')
 	console.log('Controller connected:', e.data);
-  if (e.data.profiles.includes("logitech-mx-ink")) {
+	if (e.data.profiles.includes("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
 		// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
@@ -884,6 +750,7 @@ function onControllerConnected(e) {
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 	}
 
+  	// MARK: Browser Testing setup
 	if (BROWSER_TESTING) {
 		// normal setup
 		stylus = e.target;
@@ -901,15 +768,7 @@ function onControllerConnected(e) {
 			0.3,
 			0.2,
 		);
-		isPracticeMode = true;
-		desk_manager.spawnDrawingSurface();
-		scene.background = green;
-		red_button.makeInvisible();
-		nextButton.makeVisible();
-		desk_set = true;
-		interface_text.updateText('Draw on the outline!');
-		contextText.makeVisible();
-		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+		Calibrate();
 		deskCoords = desk_manager.getDeskCoordinates();
 
 
@@ -951,7 +810,55 @@ function onSelectEnd() {
 	}
 }
 
-// MARK: SVG Function
+// MARK: HandleDrawing
+function handleDrawing(controller) {
+	if (!controller) return;
+
+	const userData = controller.userData;
+	let painter;
+
+	if (isPracticeMode) {
+		painter = practicePaints[practiceShapeIndex];
+	} else if (shapeIndex === -1) {
+		painter = svgPaintsArray[0];
+	} else {
+		painter = svgPaintsArray[shapeIndex];
+	}
+
+	let currentBox;
+	switch (taskNum) {
+		case 1:
+			currentBox = task1Box;
+			break;
+		case 2:
+			currentBox = task2Box;
+			break;
+		case 3:
+			currentBox = task3Box;
+			break;
+	}
+
+	if (gamepad1) {
+		const relativePos = getRelativePosition(stylus, task1Box);
+		if (userData.isSelecting || isDrawing) {
+			cursor.set(relativePos.x, relativePos.y, relativePos.z);
+			painter.lineTo(cursor);
+			painter.update();
+		} else {
+			painter.moveTo(relativePos.x, relativePos.y, relativePos.z); // moves current path to pen
+		}
+	}
+}
+
+
+// MARK: Button Feedback
+function buttonFeedback() {
+	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
+	gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+	clickSound.play(); // Sound effect for button press
+}
+
+// MARK: SVG Load Functions
 function loadSVG(url, position, isResult) {
 	const loader = new SVGLoader();
 
@@ -1032,29 +939,164 @@ function loadSVGs(svgObjs) {
 	});
 }
 
-function getRelativePosition(child, parent) {
-	// Get the world position of the child
-	const worldPosition = new THREE.Vector3();
-	child.getWorldPosition(worldPosition);
-
-	// Convert the world position to the local position relative to the parent
-	const localPosition = worldPosition.clone();
-	parent.worldToLocal(localPosition);
-
-	return localPosition;
+// MARK: MODE: Calibrate
+const Calibrate = () => {
+	desk_manager.lock();
+	isPracticeMode = true;
+	desk_manager.spawnDrawingSurface();
+	scene.background = green;
+	red_button.makeInvisible();
+	nextButton.makeVisible();
+	desk_set = true;
+	interface_text.updateText('Draw on the outline!');
+	contextText.makeVisible();
+	loadSVG(practiceSvgArray[0], CENTER_POSITION);
+	stylus.userData.painter = practicePaints[0];
 }
 
+// MARK: MODE: Practice
+const PracticeMode = () => {
+	// iterating
+	if (practiceShapeIndex < practiceSvgArray.length - 1) {
+		practiceShapeIndex += 1;
+		desk_manager.clearSurface();
+		loadSVG(practiceSvgArray[practiceShapeIndex], CENTER_POSITION);
+		nextButton.updateLabel(
+			`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
+		);
 
+		practicePaints.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		practicePaints[practiceShapeIndex].mesh.visible = true;
 
-function debugGamepad(gamepad) {
-  gamepad.buttons.forEach((btn, index) => {
-    if (btn.pressed) {
-      console.log(`BTN ${index} - Pressed: ${btn.pressed} - Touched: ${btn.touched} - Value: ${btn.value}`);
-    }
+	} else {
+		isPracticeMode = false;
+		isDrawingDisabled = true;
+		pracBox.visible = false;
 
-    if (btn.touched) {
-      console.log(`BTN ${index} - Pressed: ${btn.pressed} - Touched: ${btn.touched} - Value: ${btn.value}`);
-    }
-  });
+		desk_manager.clearSurface();
+		practicePaints.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+
+		nextButton.changeColor('#359743');
+		nextButton.updateLabel("Begin");
+		contextText.makeInvisible();
+		task1Text.makeVisible();
+
+	}
+
 }
 
+// MARK: MODE: Task
+const TaskMode = () => {
+	if (shapeIndex < svgWithPositionsArray.length - 1) {
+		console.log(taskNum, svgPaintsArray, shapeIndex, 'isDrawingDisabled', isDrawingDisabled)
+		isDrawingDisabled = false;
+		shapeIndex += 1;
+		desk_manager.clearSurface();
+		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+		nextButton.updateLabel(
+			`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
+		);
+
+		svgPaintsArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+
+		svgPaintsArray[shapeIndex].mesh.visible = true;
+	}
+	// end of task
+	else {
+		isDrawingDisabled = true;
+		nextButton.makeInvisible();
+		resultButton.makeVisible();
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
+		svgPaintsArray.forEach((paint) => {
+			paint.mesh.visible = false;
+		});
+		task1Text.updateText(
+			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+		);
+	}
+}
+
+// MARK: MODE: Show Results
+const ShowResultsMode = () => {
+	isDrawingDisabled = true;
+
+	desk_manager.clearSurface();
+	desk_manager.makeSurfaceInvisible()
+	task1Text.makeInvisible();
+
+	originalText.makeVisible();
+	originalText.setPosition({
+		x: originalPos.x,
+		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: originalPos.z,
+	});
+
+	yourDrawingText.makeVisible();
+	yourDrawingText.setPosition({
+		x: yourDrawingPos.x,
+		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
+		z: yourDrawingPos.z,
+	});
+
+	loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+	const original = svgManager.getSurface();
+	scene.add(original);
+	original.position.set(
+		originalPos.x,
+		originalPos.y + desk_manager.getDeskCoordinates().y,
+		-originalPos.z,
+	);
+
+	switch (taskNum) {
+		case 1:
+			task1ParentManager.makeVertical();
+			break;
+		case 2:
+			task2ParentManager.makeInvisible();
+			break;
+	}
+	task1ParentManager.makeVertical();
+	svgWithPositionsArray.forEach((obj, i) => {
+		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
+		svgPaintsArray[i].mesh.position.x = obj.position.x;
+		svgPaintsArray[i].mesh.position.y = obj.position.y;
+		svgPaintsArray[i].mesh.visible = true;
+	});
+
+	nextButton.makeInvisible();
+	nextTaskButton.makeVisible();
+
+}
+
+const SetupNextTask = () => {
+	desk_manager.makeSurfaceVisible()
+	nextButton.makeVisible();
+
+	shapeIndex = -1;
+	taskNum += 1;
+
+	svgWithPositionsArray = svgManager.getTaskArray(taskNum);
+	svgPaintsArray = svgManager.getPaintsArray(taskNum);
+
+	desk_manager.makeSurfaceVisible();
+	nextButton.makeVisible();
+	task1Text.makeInvisible();
+	originalText.makeInvisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+	task1Text.updateText('Task 2: Florist');
+
+	switch (taskNum) {
+		case 1: break;
+		case 2:
+			task1ParentManager.makeInvisible();
+			break;
+	}
+}
