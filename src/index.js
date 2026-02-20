@@ -467,10 +467,12 @@ function init() {
 	desk_manager.addMesh(task1Box);
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
+	desk_manager.addMesh(task4Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
+	task4Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
 }
 
@@ -496,7 +498,7 @@ function onFrame(time, frame) {
 			);
 			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
-				0,-0.3);
+				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
 			question_panel.refresh();
@@ -611,8 +613,12 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				SetupNextTask();
-				TaskMode();
+				if (taskNum !== 4) {
+					SetupNextTask();
+					TaskMode();
+				} else {
+					FinishMode();
+				}
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
 				stylus.position,
@@ -635,8 +641,12 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y
-				SetupNextTask();
-				TaskMode();
+				if (taskNum !== 4) {
+					SetupNextTask();
+					TaskMode();
+				} else {
+					FinishMode();
+				}
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
@@ -836,6 +846,9 @@ function handleDrawing(controller) {
 			break;
 		case 3:
 			currentBox = task3Box;
+			break;
+		case 4:
+			currentBox = task4Box;
 			break;
 	}
 
@@ -1071,6 +1084,10 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
 			task3ParentManager.makeVertical();
 			break;
+		case 4:
+			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
+			task4ParentManager.makeVertical();
+			break;
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
@@ -1119,5 +1136,51 @@ const SetupNextTask = () => {
 			taskTextPanel.updateText('Task 3: Studio');
 			task2ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
+			break;
+		case 4:
+			taskTextPanel.updateText('Task 4: Library');
+			task3ParentManager.makeInvisible();
+			svgManager.setupPaints(4, task4Box);
+			break;
 	}
+}
+
+const FinishMode = () => {
+	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.visible = false;
+	});
+	taskTextPanel.makeVisible();
+	taskTextPanel.updateText('All Done! Behold!');
+
+	originalText.makeInvisible();
+	originalSvgManager.makeSurfaceInvisible();
+	svgManager.makeAllPaintsVisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+
+	const parentArray = [
+		task1ParentManager.getParent(),
+		task2ParentManager.getParent(),
+		task3ParentManager.getParent(),
+		task4ParentManager.getParent(),
+	];
+
+	parentArray.forEach((p, i) => {
+		p.material.visible = true;
+		switch (i) {
+			case 0:
+				p.position.z -= 1.5;
+				break;
+
+			case 1:
+				p.position.z -= 1;
+				break;
+
+			case 2:
+				break;
+			case 3:
+				p.position.z += 0.5;
+				break;
+		}
+	})
 }

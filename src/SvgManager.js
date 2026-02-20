@@ -25,7 +25,15 @@ let paint1,
 	t3paint5,
 	t3paint6,
 	t3paint7,
-	t3paint8;
+	t3paint8,
+	t4paint1,
+	t4paint2,
+	t4paint3,
+	t4paint4,
+	t4paint5,
+	t4paint6,
+	t4paint7,
+	t4paint8;
 
 function shuffle(array) {
 	let currentIndex = array.length;
@@ -79,8 +87,21 @@ export default class SvgManager {
 			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.08 } },
 			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0, y: -0.075 } },
 		];
+
+		this.t4Array = [
+			{ url: 'assets/task4/column.svg', position: { x: 0, y: 0 } },
+			{ url: 'assets/task4/column_end.svg', position: { x: -0.05, y: 0.06 } },
+			{ url: 'assets/task4/column_top.svg', position: { x: -0.05, y: -0.015 } },
+			{ url: 'assets/task4/door.svg', position: { x: 0.04, y: -0.02 } },
+			{ url: 'assets/task4/door_panels.svg', position: { x: 0.04, y: 0.03 } },
+			{ url: 'assets/task4/outline.svg', position: { x: 0.04, y: -0.025 } },
+			{ url: 'assets/task4/top.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task4/window.svg', position: { x: 0, y: -0.075 } },
+		];
 		shuffle(this.array);
 		shuffle(this.t2Array);
+		shuffle(this.t3Array);
+		shuffle(this.t4Array);
 
 		this.t1Paints = [
 			paint1,
@@ -112,6 +133,16 @@ export default class SvgManager {
 			t3paint7,
 			t3paint8,
 		];
+		this.t4Paints = [
+			t4paint1,
+			t4paint2,
+			t4paint3,
+			t4paint4,
+			t4paint5,
+			t4paint6,
+			t4paint7,
+			t4paint8
+		];
 
 		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
 		const rectMaterial = new THREE.MeshBasicMaterial({
@@ -135,6 +166,8 @@ export default class SvgManager {
 				return this.t2Array;
 			case 3:
 				return this.t3Array;
+			case 4:
+				return this.t4Array;
 		}
 	}
 	getPaintsArray(taskNum) {
@@ -145,6 +178,8 @@ export default class SvgManager {
 				return this.t2Paints;
 			case 3:
 				return this.t3Paints;
+			case 4:
+				return this.t4Paints;
 		}
 	}
 
@@ -160,6 +195,9 @@ export default class SvgManager {
 				break;
 			case 3:
 				paintArray = this.t3Paints;
+				break;
+			case 4:
+				paintArray = this.t4Paints;
 				break;
 		}
 		paintArray.forEach((paint, i) => {
@@ -209,5 +247,20 @@ export default class SvgManager {
 
 	clearSurface() {
 		this.surface.clear();
+	}
+
+	makeAllPaintsVisible() {
+		this.t1Paints.forEach((paint, i) => {
+			paint.mesh.visible = true;
+		})
+		this.t2Paints.forEach((paint, i) => {
+			paint.mesh.visible = true;
+		})
+		this.t3Paints.forEach((paint, i) => {
+			paint.mesh.visible = true;
+		})
+		this.t4Paints.forEach((paint, i) => {
+			paint.mesh.visible = true;
+		})
 	}
 }
