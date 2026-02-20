@@ -59,6 +59,7 @@ import { update } from "three/examples/jsm/libs/tween.module.js";
 const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
+let BROWSER_buttonPressed3 = false;
 
 // MARK: setup declarations
 let camera, scene, renderer;
@@ -605,14 +606,19 @@ function onFrame(time, frame) {
 		// MARK: Browser Testing Button Input
 		if (BROWSER_TESTING){
 			// remove this block
-			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) { // x
 				handleButton();
 			}
-			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
+			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) { // y
 				handleNextTaskButton();
+			}
+			if (gamepad1.buttons[3].pressed) { // joystick
+				handleShowResultButton();
+
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
+			BROWSER_buttonPressed3 = gamepad1.buttons[3].pressed;
 		}
 
 		if (!desk_set){
@@ -810,16 +816,7 @@ function handleShowResultButton() {
 }
 
 function handleNextTaskButton() {
-	shapeIndex = -1;
-	taskNum += 1;
-
-	svgWithPositionsArray = svgManager.getTaskArray(2);
-	svgPaintsArray = svgManager.getPaintsArray(2);
-
-	desk_manager.makeSurfaceVisible();
-	nextButton.makeVisible();
-	task1Text.makeVisible();
-	task1Text.updateText("Task 2: Florist");
+	SetupNextTask();
 	TaskMode();
 }
 
@@ -1069,6 +1066,7 @@ const ShowResultsMode = () => {
 	isDrawingDisabled = true;
 
 	desk_manager.clearSurface();
+	desk_manager.makeSurfaceInvisible()
 	task1Text.makeInvisible();
 
 	originalText.makeVisible();
@@ -1094,6 +1092,14 @@ const ShowResultsMode = () => {
 		-originalPos.z,
 	);
 
+	switch (taskNum) {
+		case 1:
+			task1ParentManager.makeVertical();
+			break;
+		case 2:
+			task2ParentManager.makeInvisible();
+			break;
+	}
 	task1ParentManager.makeVertical();
 	svgWithPositionsArray.forEach((obj, i) => {
 		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
@@ -1102,6 +1108,37 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
+	nextButton.makeInvisible();
 	nextTaskButton.makeVisible();
+
+}
+
+const SetupNextTask = () => {
+	desk_manager.makeSurfaceVisible()
+	nextButton.makeVisible();
+
+	shapeIndex = -1;
+	taskNum += 1;
+
+	svgWithPositionsArray = svgManager.getTaskArray(taskNum);
+	svgPaintsArray = svgManager.getPaintsArray(taskNum);
+
+	desk_manager.makeSurfaceVisible();
+	nextButton.makeVisible();
+	task1Text.makeInvisible();
+	originalText.makeInvisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+	task1Text.updateText('Task 2: Florist');
+
+	switch (taskNum) {
+		case 1: break;
+		case 2:
+			task1ParentManager.makeInvisible();
+			break;
+	}
+
+
+
 
 }
