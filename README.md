@@ -1,8 +1,8 @@
-# WebXR MX Ink VR Flow Research
+# WebXR MX Ink Virtual Reality Flow State Research
 
+*Investigating flow using a VR stylus, a game and psychometrics!*
 
-<img width="40%" alt="image" src="https://github.com/user-attachments/assets/414a39cf-86d6-4bf1-946c-105aa0333d98" />
-// TODO: Update picture
+<img width=70% alt="image" src="https://github.com/user-attachments/assets/e349dbf4-6aec-4f28-b19d-7725219cea4e" />
 
 
 ## Building and Deploying
