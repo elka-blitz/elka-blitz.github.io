@@ -340,6 +340,7 @@ function init() {
 				const loader = new SVGLoader()
 
 				loader.load( './assets/base.svg', data => {
+					console.log('SVG loaded: ', data)
 					
 					// New instance (going to do it per svg load)
 					accuracy_calculator_instance = new accuracyCalculator(data)
@@ -546,7 +547,7 @@ function init() {
 function onFrame(time, frame) {
 
 	if (accuracy_calculator_instance) {
-		accuracy_calculator_instance.getAccuracy()
+		accuracy_calculator_instance.getAccuracy(targetPoint)
 	}
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
