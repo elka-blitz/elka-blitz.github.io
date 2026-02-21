@@ -101,7 +101,7 @@ let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
-let taskNum = 1;
+let taskNum = 2;
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
@@ -1011,7 +1011,7 @@ const TaskMode = () => {
 		desk_manager.clearSurface();
 		// loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		loadSVGs(svgWithPositionsArray)
-		// loadSVG('assets/task2/task2.svg', CENTER_POSITION);
+		// loadSVG('assets/task3/task3.svg', CENTER_POSITION);
 		nextButton.updateLabel(
 			`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
 		);

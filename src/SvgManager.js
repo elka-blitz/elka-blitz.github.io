@@ -78,14 +78,14 @@ export default class SvgManager {
 		];
 
 		this.t3Array = [
-			{ url: 'assets/task3/big_window.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task3/extension_outline.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task3/main_outline.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task3/roof_slant.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task3/roof_window.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task3/side_window.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task3/extension_outline.svg', position: { x: -0.022, y: 0.04 }, },
+			{ url: 'assets/task3/main_outline.svg', position: { x: 0.02, y: 0.022 } },
+			{ url: 'assets/task3/big_window.svg', position: { x: -0.02, y: 0.04 } },
+			{ url: 'assets/task3/side_window.svg', position: { x: 0.07, y: 0.032 } },
+			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.03 } },
+			{ url: 'assets/task3/roof_slant.svg', position: { x: 0.04, y: -0.071 } },
+			{ url: 'assets/task3/roof_window.svg', position: { x: 0.007, y: -0.07 } },
+			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0.04, y: -0.075 }, },
 		];
 
 		this.t4Array = [
