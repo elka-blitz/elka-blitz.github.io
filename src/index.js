@@ -61,6 +61,7 @@ import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+import accuracyCalculator from "./accuracyCalculator.js";
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
 import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getFilledRect } from './shapeFunctions';
@@ -219,8 +220,8 @@ let environment_switcher;
 // MARK: Accuracy 
 let pathPoints
 let threeDimensionalPoints
-let targetPoint = new THREE.Vector3(6, -4, 2)
-
+let targetPoint = new THREE.Vector3(5, -4, 2)
+let accuracy_calculator_instance;
 
 const speed_meter = new speedMeter()
 
@@ -339,32 +340,36 @@ function init() {
 				const loader = new SVGLoader()
 
 				loader.load( './assets/base.svg', data => {
-					let minDistance = Infinity
-					let closestPoint = new THREE.Vector3()
+					
+					// New instance (going to do it per svg load)
+					accuracy_calculator_instance = new accuracyCalculator(data)
 
-					console.log(data)
+					// let minDistance = Infinity
+					// let closestPoint = new THREE.Vector3()
 
-					data.paths.forEach(path => {
+					// console.log(data)
 
-						if (path.color.r = 1) {
-							path.subPaths.forEach(subPath => { // Each linedash I think
-								// Sample points along the curve
-								const points = subPath.getPoints(10); // Returns Vector2[]
+					// data.paths.forEach(path => {
 
-								points.forEach(p => {
-									const point3D = new THREE.Vector3(p.x, p.y, 0);
-									const distance = point3D.distanceTo(targetPoint);
-									if (distance < minDistance) {
-										minDistance = distance;
-										closestPoint.copy(point3D);
-									}
-								});
+					// 	if (path.color.r = 1) {
+					// 		path.subPaths.forEach(subPath => { // Each linedash I think
+					// 			// Sample points along the curve
+					// 			const points = subPath.getPoints(10); // Returns Vector2[]
 
-							});
-								console.log('Closest point:', closestPoint);
-								console.log('Minimum distance:', minDistance);
-						}
-					});
+					// 			points.forEach(p => {
+					// 				const point3D = new THREE.Vector3(p.x, p.y, 0);
+					// 				const distance = point3D.distanceTo(targetPoint);
+					// 				if (distance < minDistance) {
+					// 					minDistance = distance;
+					// 					closestPoint.copy(point3D);
+					// 				}
+					// 			});
+
+					// 		});
+					// 			console.log('Closest point:', closestPoint);
+					// 			console.log('Minimum distance:', minDistance);
+					// 	}
+					// });
 				})
 
 
@@ -540,6 +545,9 @@ function init() {
 // MARK: OnFrame
 function onFrame(time, frame) {
 
+	if (accuracy_calculator_instance) {
+		accuracy_calculator_instance.getAccuracy()
+	}
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {

@@ -36,6 +36,7 @@ export default class accuracyCalculator {
                 })
                 console.log('Closest:', this.closest_point)
                 console.log('Minimum dist:', this.min_distance)
+                return this.min_distance
             }
         })
     }
