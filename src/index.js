@@ -56,7 +56,7 @@ import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = false // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -101,7 +101,7 @@ let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
-let taskNum = 2;
+let taskNum = 1;
 let practiceShapeIndex = 0;
 const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
@@ -1009,9 +1009,7 @@ const TaskMode = () => {
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
-		// loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
-		loadSVGs(svgWithPositionsArray)
-		// loadSVG('assets/task3/task3.svg', CENTER_POSITION);
+		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		nextButton.updateLabel(
 			`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
 		);
