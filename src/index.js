@@ -56,7 +56,7 @@ import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -1009,7 +1009,9 @@ const TaskMode = () => {
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
-		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+		// loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
+		loadSVGs(svgWithPositionsArray)
+		// loadSVG('assets/task2/task2.svg', CENTER_POSITION);
 		nextButton.updateLabel(
 			`Next ${shapeIndex + 1}/${svgWithPositionsArray.length}`,
 		);

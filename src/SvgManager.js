@@ -67,14 +67,14 @@ export default class SvgManager {
 		];
 
 		this.t2Array = [
-			{ url: 'assets/task2/awning.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task2/bush.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task2/door.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task2/door_window.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task2/flower.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task2/outline.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task2/window.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task2/windowsill.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task2/outline.svg', position: { x: 0, y: 0.025 } },
+			{ url: 'assets/task2/awning.svg', position: { x: 0, y: -0.047 } },
+			{ url: 'assets/task2/bush.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task2/door.svg', position: { x: 0.038, y: 0.04 } },
+			{ url: 'assets/task2/door_window.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/flower.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/window.svg', position: { x: -0.032, y: 0.012 } },
+			{ url: 'assets/task2/windowsill.svg', position: { x: -0.032, y: 0.045 } },
 		];
 
 		this.t3Array = [
