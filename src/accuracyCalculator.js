@@ -71,7 +71,6 @@ export default class accuracyCalculator {
 
     closestPointOnMeshSurface(point) {
         let mesh = this.mesh
-        console.log(mesh)
 
         const geometry = mesh.geometry;
         const position = geometry.attributes.position;
@@ -128,4 +127,15 @@ export default class accuracyCalculator {
         line.material.dispose()
     }
 
+    changeMeshMaterialBasedOnAccuracy(accuracy) {
+        // Example: Change color based on accuracy
+        const material = this.mesh.material;
+        if (accuracy < 0.1) {
+            material.color.set(0x00ff00); // Green for high accuracy
+        } else if (accuracy < 0.5) {
+            material.color.set(0xffff00); // Yellow for medium accuracy
+        } else {
+            material.color.set(0xff0000); // Red for low accuracy
+        }
+    }
 }

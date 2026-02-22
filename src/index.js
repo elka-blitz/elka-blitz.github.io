@@ -218,8 +218,6 @@ const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 let environment_switcher;
 
 // MARK: Accuracy 
-let pathPoints
-let threeDimensionalPoints
 let targetPoint = new THREE.Vector3(5, -4, 2)
 let accuracy_calculator_instance;
 let dist
@@ -553,16 +551,22 @@ function init() {
 // MARK: OnFrame
 function onFrame(time, frame) {
 
+	// MARK: Accuracy call 
 	if (accuracy_calculator_instance && stylus) {
 		// accuracy_calculator_instance.getAccuracy(stylus.position)//stylus.position.x, stylus.position.y, stylus.position.z))
 		
-		if (line) {
-			accuracy_calculator_instance.removeDebugLine(line, scene)
-		}
+		// N.B, Commented code visualises the points used in calculation in realtime
+		// if (line) {
+		// 	accuracy_calculator_instance.removeDebugLine(line, scene)
+		// }
 
 		dist = accuracy_calculator_instance.closestPointOnMeshSurface(stylus.position)
-		console.log(dist)
-		line = accuracy_calculator_instance.drawDebugLine(stylus.position, dist.closest_point, scene)
+		if (Math.round(dist.distance * 100) > 10) {
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+		}  
+
+		// console.log(dist)
+		// line = accuracy_calculator_instance.drawDebugLine(stylus.position, dist.closest_point, scene)
 		interface_text.updateText(Math.round(dist.distance * 100).toString())
 	}
 
