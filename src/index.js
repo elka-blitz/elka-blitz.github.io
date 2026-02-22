@@ -1091,9 +1091,9 @@ const ShowResultsMode = () => {
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
-		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
 		svgPaintsArray[i].mesh.position.y = obj.position.y;
+		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
