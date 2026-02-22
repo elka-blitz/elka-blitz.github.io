@@ -29,7 +29,7 @@ export default class DrawParent {
 	makeVertical() {
 		this.drawingBox.material.visible = true
 		this.drawingBox.rotateX(-Math.PI / 3);
-		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+		// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 		this.drawingBox.position.x += 0.5; // x and z are flipped
 		this.drawingBox.position.z += 0.5;
 		this.drawingBox.position.y += 0.35;
