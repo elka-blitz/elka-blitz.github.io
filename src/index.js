@@ -222,6 +222,8 @@ let pathPoints
 let threeDimensionalPoints
 let targetPoint = new THREE.Vector3(5, -4, 2)
 let accuracy_calculator_instance;
+let dist
+let line
 
 const speed_meter = new speedMeter()
 
@@ -340,7 +342,6 @@ function init() {
 				const loader = new SVGLoader()
 
 				loader.load( './assets/base.svg', data => {
-					console.log('SVG loaded: ', data)
 					
 					// New instance (going to do it per svg load)
 					accuracy_calculator_instance = new accuracyCalculator(data)
@@ -382,26 +383,32 @@ function init() {
 				// The border and the template are different colour
 				// Separate based on colour
 				// That doesn't sound great in hindsight
-				pathPoints.forEach(path => {
-					if (path.color.r == 1) { // Red value
-						console.log(path)
+				// pathPoints.forEach(path => {
+				// 	if (path.color.r == 1) { // Red value
+				// 		console.log(path)
 
-						// Translate to 3d
-						threeDimensionalPoints = path.subPaths.flatMap(subPath => 
-							subPath.getPoints().map(p => new THREE.Vector3(p.x, p.y, p.z))
-						);
-						console.log('pathpoints converted to 3d', threeDimensionalPoints)
+				// 		// Translate to 3d
+				// 		threeDimensionalPoints = path.subPaths.flatMap(subPath => 
+				// 			subPath.getPoints().map(p => new THREE.Vector3(p.x, p.y, p.z))
+				// 		);
+				// 		console.log('pathpoints converted to 3d', threeDimensionalPoints)
 
-						// Sample points
-						path.subPaths.forEach(subPath => { // Goes through each dashpoint
+				// 		// Sample points
+				// 		path.subPaths.forEach(subPath => { // Goes through each dashpoint
 							
-						})
-					}
-				})
+				// 		})
+				// 	}
+				// })
+				console.log('getmin', accuracy_calculator_instance.getMinDistance())
+				// console.log(accuracy_calculator_instance.getMinDistance())
+				targetPoint.x = targetPoint.x - 1
+				break
 
 				case 85: // S
 				// Taking threeDimensionalPoints, sample points along path
-					console.log('Sampling points along subpath')
+					// console.log('Sampling points along subpath')
+					targetPoint.x = targetPoint.x - 1
+					console.log(dist)
 
 				break;
 		}
@@ -546,8 +553,17 @@ function init() {
 // MARK: OnFrame
 function onFrame(time, frame) {
 
-	if (accuracy_calculator_instance) {
-		accuracy_calculator_instance.getAccuracy(targetPoint)
+	if (accuracy_calculator_instance && stylus) {
+		// accuracy_calculator_instance.getAccuracy(stylus.position)//stylus.position.x, stylus.position.y, stylus.position.z))
+		
+		if (line) {
+			accuracy_calculator_instance.removeDebugLine(line, scene)
+		}
+
+		dist = accuracy_calculator_instance.closestPointOnMeshSurface(stylus.position)
+		console.log(dist)
+		line = accuracy_calculator_instance.drawDebugLine(stylus.position, dist.closest_point, scene)
+		interface_text.updateText(Math.round(dist.distance * 100).toString())
 	}
 
 	desk_locked = desk_manager.getLock() // Run once and used variable for desklock check, avoids running method multiple times
@@ -1056,6 +1072,7 @@ function loadSVG(url, position, isResult) {
 					mesh.renderOrder = renderOrder++;
 
 					group.add(mesh);
+					accuracy_calculator_instance = new accuracyCalculator(mesh)	
 				}
 			}
 		}
