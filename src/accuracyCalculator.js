@@ -5,7 +5,8 @@ export default class accuracyCalculator {
     // Takes loaded svg data
     constructor(mesh) {
         this.mesh = mesh
-
+        this.prevFeedback = false
+        this.feedback = false
         // this.calc_base_svg = calc_base_svg
 
         // this.path_points
@@ -46,6 +47,12 @@ export default class accuracyCalculator {
 
         console.log('Getting min distance to target point - ', this.target_point)
         return this.min_distance
+    }
+    
+    userHapticFeedback(gamepadInterface, dist) {
+        if (Math.round(dist.distance * 100) > 10 && this.feedback && !this.prevFeedback) {
+			gamepadInterface.getHapticActuator(0).pulse(1.0, 100); // Haptic line - intensity and duration
+		}  
     }
 
     getClosestPointOnMesh(stylus_position) {

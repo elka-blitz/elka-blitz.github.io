@@ -561,9 +561,7 @@ function onFrame(time, frame) {
 		// }
 
 		dist = accuracy_calculator_instance.closestPointOnMeshSurface(stylus.position)
-		if (Math.round(dist.distance * 100) > 10) {
-			gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
-		}  
+		accuracy_calculator_instance.userHapticFeedback(gamepadInterface, dist)
 
 		// console.log(dist)
 		// line = accuracy_calculator_instance.drawDebugLine(stylus.position, dist.closest_point, scene)
