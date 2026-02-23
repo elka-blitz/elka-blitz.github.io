@@ -34,6 +34,7 @@ export default class EnvironmentSwitcher {
         this.current_loaded_environment_index = 0 // Reset in case of indexError
         this.current_loaded_environment = this.taskArrayShuffled[this.current_loaded_environment_index]
         this.scene.add(this.current_loaded_environment)
+        console.log(this.current_loaded_environment.name)
         return this.current_loaded_environment.name
     }
 
