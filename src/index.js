@@ -60,7 +60,7 @@ import EnvironmentSwitcher from "./environmentSwitcher.js";
 import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { gsap } from "gsap";
-import { createSurveyPanelUI, loadInterFont } from "./questionnaireManager.js";
+import { createSurveyPanelUI } from "./questionnaireManager.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
 import paintExporter from "./paintExporter.js";
@@ -264,16 +264,10 @@ let environment_switcher;
 
 const speed_meter = new SpeedMeter()
 
-function loadGLTF(gltfLoader, url) {
-	return new Promise((resolve, reject) => {
-		gltfLoader.load(url, (gltf) => resolve(gltf), undefined, reject);
-	});
-}
+init();
 
-init().catch(console.error);
+function init() {
 
-async function init() {
-	await loadInterFont();
 
 	// MARK: Scene Setup
 	scene = new THREE.Scene();
@@ -300,14 +294,20 @@ async function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+		tableGroup.add(gltf.scene);
+	});
 
-	const [deskGltf, officeGltf] = await Promise.all([
-		loadGLTF(gltfLoader, './assets/Desk.glb'),
-		loadGLTF(gltfLoader, './assets/office_environment.glb'),
-	]);
-
-	tableGroup.add(deskGltf.scene);
-	office_group.add(officeGltf.scene);
+	gltfLoader.load(
+		'./assets/office_environment.glb',
+		function (gltf) {
+			office_group.add(gltf.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error);
+		},
+	);
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, office_group)

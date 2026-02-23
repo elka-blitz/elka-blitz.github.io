@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import ThreeMeshUI from "three-mesh-ui";
 import { Text as TroikaText } from "troika-three-text";
+import { Color } from 'three';
 
-// CONSTANTS & HELPERS //
+// MARK: declarations
 // pixels to metres
 const PX_TO_M = 0.001;
 const px = (v) => v * PX_TO_M;
@@ -104,18 +105,18 @@ const Z_HITPLANE = 0.01;
 const Z_UI = 0.001;
 
 // bring forward UI to avoid clipping with panel
-function disableDepth(obj) {
-    obj.traverse((o) => {
-        if (!o.material) return;
-        const mats = Array.isArray(o.material) ? o.material : [o.material];
-        for (const m of mats) {
-            m.transparent = true;
-            m.depthTest = false;
-            m.depthWrite = false;
-        }
-    });
-    obj.renderOrder = 999;
-}
+// function disableDepth(obj) {
+//     obj.traverse((o) => {
+//         if (!o.material) return;
+//         const mats = Array.isArray(o.material) ? o.material : [o.material];
+//         for (const m of mats) {
+//             m.transparent = true;
+//             m.depthTest = false;
+//             m.depthWrite = false;
+//         }
+//     });
+//     obj.renderOrder = 999;
+// }
 
 // block builder
 function makeBlock({
@@ -141,28 +142,29 @@ function makeBlock({
         borderWidth: borderW,
         borderRadius: radius,
     });
-    disableDepth(b);
+    // disableDepth(b);
     return b;
 }
 
 // update styling safely
 function blockSet(block, props) {
     block.set(props); // update block properties (no recreation)
-    disableDepth(block);
+    // disableDepth(block);
     block.traverse((o) => {
         if (o.isMesh) o.renderOrder = 9999;
     });
 }
 
-// layout-only blocks (invisible containers)
+// layout-only blocks (NOT invisible containers)
 function uiLayoutBlock(props) {
     const b = new ThreeMeshUI.Block({
         padding: 0,
         margin: 0,
-        backgroundOpacity: 0,
+        backgroundOpacity: 1,
+				backgroundColor: new Color("#ffffff"),
         ...props,
     });
-    disableDepth(b);
+    // disableDepth(b);
     return b;
 }
 
@@ -203,6 +205,8 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
 
     // answers object only emitted via onComplete(answers) on the final page
     const answers = Object.create(null); // keep user's selection
+		console.log(answers)
+
 
     let pageGroup = null; // current page's contents
 
@@ -692,8 +696,4 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         update,
         handlePointer,
     };
-}
-
-export async function loadInterFont() {
-    return Promise.resolve();
 }
