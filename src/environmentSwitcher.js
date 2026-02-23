@@ -11,7 +11,7 @@ export default class EnvironmentSwitcher {
         this.current_loaded_environment_index = 0
         
         // Load an initial environment model, separate from array (without affecting the shuffled array iteration)
-        this.loadEnvironmentModel(this.environments[this.environments.length - 1])
+        // this.loadEnvironmentModel(this.environments[0])
     }
 
     getEnvironmentShuffle() {
@@ -34,21 +34,22 @@ export default class EnvironmentSwitcher {
         this.current_loaded_environment_index = 0 // Reset in case of indexError
         this.current_loaded_environment = this.taskArrayShuffled[this.current_loaded_environment_index]
         this.scene.add(this.current_loaded_environment)
+        return this.current_loaded_environment.name
     }
 
     loadNextEnvironmentCondition() {
-        try {
             this.scene.remove(this.current_loaded_environment)
-            this.current_loaded_environment_index += 1
             this.scene.add(this.taskArrayShuffled[this.current_loaded_environment_index])
-        } catch {
-            console.log('Loading first environment condition')
-            this.loadFirstEnvironmentalCondition()
-        }
+            this.current_loaded_environment = this.taskArrayShuffled[this.current_loaded_environment_index]
+            this.current_loaded_environment_index += 1
+            if (this.current_loaded_environment_index > this.taskArrayShuffled.length - 1) {
+                this.current_loaded_environment_index = 0
+            }
+            console.log(this.current_loaded_environment.name)
+            return this.current_loaded_environment.name
     }
 
     loadEnvironmentModel(environment_model_to_load) {
         this.scene.add(environment_model_to_load)
     }
-
 }

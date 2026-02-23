@@ -147,6 +147,7 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 
 // MARK: Environment
 let office_group = new THREE.Group()
+office_group.name = 'OfficeEnv'
 
 
 // MARK: Hands
@@ -271,10 +272,12 @@ function init() {
 	 
 	const minimalEnvironment = new THREE.GridHelper(50, 30, 0x0000ff, 0x888888);
 	minimalEnvironment.add(floor)
+	minimalEnvironment.name = 'MinimalEnv'
 	floor.position.y = -0.5; // Position below the camera
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, [office_group, minimalEnvironment], 4);
+	event_logger.logEventData('Environment changed' + environment_switcher.loadFirstEnvironmentalCondition())
 	// environment_switcher.loadFirstEnvironmentalCondition()
 	scene.add(tableGroup);
 
@@ -334,7 +337,9 @@ function init() {
 			case 87: // W
 				// question_panel.moveInputCubesDown();
 				// paint_exporter_instance.screenShotCanvas(canvas)
-				takeScreenshot = true;
+				// takeScreenshot = true;
+				// environment_switcher.loadNextEnvironmentCondition()
+				event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 				break;
 			case 65: // A
 				// question_panel.resetInputCubes();
@@ -1130,6 +1135,13 @@ const ShowResultsMode = () => {
 }
 
 const SetupNextTask = () => {
+	
+	// In some cases the initially loaded env is the same as the next env
+	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
+
+	// Oneline - Logs environment change and cycles to next environment in shuffled list
+	event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
+
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
