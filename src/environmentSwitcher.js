@@ -1,53 +1,47 @@
 import * as THREE from 'three'
 
 export default class EnvironmentSwitcher {
-    constructor(scene, initialEnvironment) {
+    constructor(scene, environmentArray, taskNo) { // environment array is an array of environment models to load
         this.scene = scene
-        this.currentEnvironment = null
-        if (initialEnvironment) {
-            this.scene.add(initialEnvironment)
-            this.currentEnvironment = initialEnvironment
-        }
-
-
-        const floorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
-        const floorMaterial = new THREE.MeshBasicMaterial({ color: '#4a4a4a', side: THREE.DoubleSide });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.rotation.x = -Math.PI / 2; // Rotate to lie flat on the XZ plane
-        floor.position.y = -0.5; // Position below the camera
-
-        this.secondary_environment = floor
-
+        this.taskNo = taskNo
+        this.environments = environmentArray
+        this.taskArrayShuffled = []
+        this.getEnvironmentShuffle()
+        this.current_loaded_environment = null
+        this.current_loaded_environment_index = 0
     }
 
-    switchEnvironmentFromModel(newEnvironment) {
-        if (this.currentEnvironment) {
-            this.scene.remove(this.currentEnvironment)
+    getEnvironmentShuffle() {
+        // Populate an array of length taskNo with an amount of environments proportionally split by how many environments there are
+
+        for (let i = 0; i < Math.ceil(this.taskNo / this.environments.length) ; i++) {
+            for (let env_index = 0; env_index < this.environments.length; env_index++) {
+                this.taskArrayShuffled.push(this.environments[env_index])
+                console.log(env_index)
+            }
         }
-        this.scene.add(newEnvironment)
-        this.currentEnvironment = newEnvironment
+        console.log(this.taskArrayShuffled)
+        this.taskArrayShuffled = [...this.taskArrayShuffled].sort(() => Math.random() - 0.5);
+        console.log(this.taskArrayShuffled)
+
+        return true
     }
 
-    setSecondaryEnvironment(secondary_environment_model) {
-        this.secondary_environment = secondary_environment_model
-
-
+    loadFirstEnvironmentalCondition() {
+        this.current_loaded_environment_index = 0 // Reset in case of indexError
+        this.current_loaded_environment = this.taskArrayShuffled[this.current_loaded_environment_index]
+        this.scene.add(this.current_loaded_environment)
     }
 
-    switchEnvironmentToSecondary() {
-        if (this.secondary_environment) {
-            this.scene.remove(this.secondary_environment)
-            this.switchEnvironmentFromModel(this.secondary_environment)
-
-            console.log('gridhelp')
-            // Floor for void environment
-            const gridHelper = new THREE.GridHelper(50, 30, 0x0000ff, 0x888888);
-            this.scene.add(gridHelper);
-
-
-        }
-        else {
-            console.warn("Secondary environment not set. Set with setSecondaryEnvironment() before switching")
+    loadNextEnvironmentCondition() {
+        try {
+            this.scene.remove(this.current_loaded_environment)
+            this.current_loaded_environment_index += 1
+            this.scene.add(this.taskArrayShuffled[this.current_loaded_environment_index])
+        } catch {
+            console.log('Loading first environment condition')
+            this.loadFirstEnvironmentalCondition()
         }
     }
+
 }

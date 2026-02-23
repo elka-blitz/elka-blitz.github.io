@@ -260,9 +260,22 @@ function init() {
 		},
 	);
 
+	// Minimal environment (Just floor for pilot)
+	// Can be made more plain, adding lines for some differentiation
+	// Floor for void environment
+
+	const minimalEnvironmentFloorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
+	const floorMaterial = new THREE.MeshBasicMaterial({ color: '#4a4a4a', side: THREE.DoubleSide });
+	const floor = new THREE.Mesh(minimalEnvironmentFloorGeometry, floorMaterial);
+	floor.rotation.x = -Math.PI / 2; // Rotate to lie flat on the XZ plane
+	 
+	const minimalEnvironment = new THREE.GridHelper(50, 30, 0x0000ff, 0x888888);
+	minimalEnvironment.add(floor)
+	floor.position.y = -0.5; // Position below the camera
+
 	// MARK: Model setup
-	environment_switcher = new EnvironmentSwitcher(scene, office_group);
-	// environment_switcher.switchEnvironmentToSecondary()
+	environment_switcher = new EnvironmentSwitcher(scene, [office_group, minimalEnvironment], 4);
+	environment_switcher.loadFirstEnvironmentalCondition()
 	scene.add(tableGroup);
 
 	// MARK: Desk
