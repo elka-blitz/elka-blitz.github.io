@@ -45,6 +45,7 @@ import { Text } from 'troika-three-text';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import VRControl from './VRControl';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
@@ -73,7 +74,7 @@ const raycaster = new THREE.Raycaster();
 const objsToTest = [];
 
 // MARK: setup declarations
-let camera, scene, renderer;
+let camera, scene, renderer, vrControl;
 let stylus = null;
 let gamepad1;
 let gamepadInterface;
@@ -530,6 +531,21 @@ function init() {
 			onSelectEnd,
 		),
 	);
+
+	vrControl = VRControl( renderer, camera, scene );
+
+	scene.add( vrControl.controllerGrips[ 0 ], vrControl.controllers[ 0 ] );
+
+	vrControl.controllers[ 0 ].addEventListener( 'selectstart', () => {
+
+		selectState = true;
+
+	} );
+	vrControl.controllers[ 0 ].addEventListener( 'selectend', () => {
+
+		selectState = false;
+
+	} );
 
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
