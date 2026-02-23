@@ -9,6 +9,9 @@ export default class EnvironmentSwitcher {
         this.getEnvironmentShuffle()
         this.current_loaded_environment = null
         this.current_loaded_environment_index = 0
+        
+        // Load an initial environment model, separate from array (without affecting the shuffled array iteration)
+        this.loadEnvironmentModel(this.environments[this.environments.length - 1])
     }
 
     getEnvironmentShuffle() {
@@ -42,6 +45,10 @@ export default class EnvironmentSwitcher {
             console.log('Loading first environment condition')
             this.loadFirstEnvironmentalCondition()
         }
+    }
+
+    loadEnvironmentModel(environment_model_to_load) {
+        this.scene.add(environment_model_to_load)
     }
 
 }

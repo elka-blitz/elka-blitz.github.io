@@ -275,7 +275,7 @@ function init() {
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, [office_group, minimalEnvironment], 4);
-	environment_switcher.loadFirstEnvironmentalCondition()
+	// environment_switcher.loadFirstEnvironmentalCondition()
 	scene.add(tableGroup);
 
 	// MARK: Desk
