@@ -262,6 +262,7 @@ function init() {
 
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, office_group);
+	// environment_switcher.switchEnvironmentToSecondary()
 	scene.add(tableGroup);
 
 	// MARK: Desk
