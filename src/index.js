@@ -1190,6 +1190,8 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+	event_logger.downloadAllData(); // Download stylus and task event data as text files
+	paint_exporter_instance.downloadJSON()
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
