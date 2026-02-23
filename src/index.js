@@ -38,6 +38,7 @@ import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import { Text } from 'troika-three-text';
@@ -292,6 +293,18 @@ function init() {
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
 	renderer.xr.enabled = true;
+
+	const pmrem = new THREE.PMREMGenerator(renderer);
+
+	new RGBELoader().load("./assets/flow_bg.hdr", (hdrTex) => {
+
+		const envMap = pmrem.fromEquirectangular(hdrTex).texture;
+		scene.background = envMap;
+
+		hdrTex.dispose();
+		pmrem.dispose();
+	});
+
 
 	// MARK: Session Init
 	const sessionInit = {
