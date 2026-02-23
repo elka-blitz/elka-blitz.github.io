@@ -15,19 +15,11 @@ File structure:
 */
 
 // event listeners
-window.addEventListener("unload", () => {
-	try {
-		if (survey?.root && scene) scene.remove(survey.root);
-	} catch (e) {
-		// ignore unload cleanup errors
-	}
-	document.documentElement.innerHTML = "";
+window.addEventListener('unload', function () {
+  document.documentElement.innerHTML = '';
 });
 
 window.addEventListener('resize', () => {
-
-	if (!renderer || !camera) return;
-
 	// Update sizes
 	sizes.width = window.innerWidth;
 	sizes.height = window.innerHeight;
@@ -117,7 +109,7 @@ const pages = [
 	{
 		id: "panel2",
 		questions: [
-			"I feel just the right amount of challenge.",
+			"I felt just the right amount of challenge.",
 			"My thoughts and actions flowed smoothly while drawing.",
 			"I was completely absorbed in what I was doing.",
 			"I knew exactly what to do at each step of the task.",
@@ -130,6 +122,15 @@ const pages = [
 			"How hard did you have to work to accomplish your level of performance?",
 			"How rushed or pressured did you feel?",
 			"How successful were you in accomplishing the task?",
+		],
+	},
+	{
+		id: "panel4",
+		questions: [
+			"How much do you hate this?",
+			"How brilliant is this code?",
+			"Is this your favourite questionnaire ever?",
+			"Pick your favourite number."
 		],
 	},
 ];

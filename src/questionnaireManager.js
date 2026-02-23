@@ -30,30 +30,16 @@ export const LIKERT_7 = [
 
 // styles
 const TILE_STYLES = {
-    default: { bg: 0xffffff, border: 0xffffff, text: 0x004142, bgOpacity: 0.4 },
-    hover: { bg: 0xffffff, border: 0x02c6c9, text: 0x004142, bgOpacity: 0.4 },
+    default: { bg: 0xffffff, border: 0xffffff, text: 0x004142, bgOpacity: 1 },
+    hover: { bg: 0xffffff, border: 0x02c6c9, text: 0x004142, bgOpacity: 1 },
     selected: { bg: 0xffffff, border: 0x135de5, text: 0x135de5, bgOpacity: 1.0 },
 };
 
 const UI_COLORS = {
-    // panel
-    panelBg: 0xffffff,
-    panelOpacity: 0.95,
-
-    // progress bar
-    progressTrack: 0xe8ebf1,
-    progressFill: 0x02c6c9,
-
-    // next / done button
-    nextDisabledBg: 0xffffff,
-    nextDisabledBorder: 0xc6cdcc,
-    nextDisabledText: 0xc6cdcc,
-    nextDisabledOpacity: 0.4,
-
-    nextEnabledBg: 0xffffff,
-    nextEnabledBorder: 0x02c6c9,
-    nextEnabledText: 0x02c6c9,
-    nextEnabledOpacity: 0.4,
+	white: 0xffffff,
+	cyan: 0x02c6c9,
+	grey: 0xc6cdcc,
+	lightGrey: 0xe8ebf1,
 };
 
 // layout spec
@@ -86,7 +72,7 @@ const SPEC = {
         size: 100,
         gap: 8,
         borderW: 2,
-        radius: 16,
+        // radius: 16,
         numberFontPx: 32,
         labelFontPx: 12,
     },
@@ -100,7 +86,7 @@ const TILE_ROW_W_PX = TILE.count * TILE.size + (TILE.count - 1) * TILE.gap;
 const TILE_ROW_W = px(TILE_ROW_W_PX);
 
 // offsets (z)
-const Z_PANEL_CONTENT = 0.002;
+const Z_PANEL_CONTENT = 0.005;
 const Z_HITPLANE = 0.01;
 const Z_UI = 0.001;
 
@@ -126,7 +112,7 @@ function makeBlock({
                        bgOpacity = 1.0,
                        borderColor = 0xffffff,
                        borderW = px(0),
-                       radius = px(0),
+                       // radius = px(0),
                    } = {}) {
     const b = new ThreeMeshUI.Block({
         width: w,
@@ -140,7 +126,7 @@ function makeBlock({
         backgroundOpacity: bgOpacity,
         borderColor: C(borderColor),
         borderWidth: borderW,
-        borderRadius: radius,
+        // borderRadius: radius,
     });
     // disableDepth(b);
     return b;
@@ -205,7 +191,6 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
 
     // answers object only emitted via onComplete(answers) on the final page
     const answers = Object.create(null); // keep user's selection
-		console.log(answers)
 
 
     let pageGroup = null; // current page's contents
@@ -279,19 +264,17 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
 
         nextBtn.userData.disabled = !enabled;
 
-        const bg = enabled ? UI_COLORS.nextEnabledBg : UI_COLORS.nextDisabledBg;
-        const border = enabled ? UI_COLORS.nextEnabledBorder : UI_COLORS.nextDisabledBorder;
-        const txt = enabled ? UI_COLORS.nextEnabledText : UI_COLORS.nextDisabledText;
-        const op = enabled ? UI_COLORS.nextEnabledOpacity : UI_COLORS.nextDisabledOpacity;
+        const border = enabled ? UI_COLORS.cyan : UI_COLORS.white;
+        const txt = enabled ? UI_COLORS.cyan : UI_COLORS.grey;
 
         // update button rect
         blockSet(nextBtn.userData.block, {
-            backgroundColor: C(bg),
-            backgroundOpacity: op,
-            borderColor: C(border),
-            borderWidth: px(2),
-            borderRadius: px(8),
-        });
+					backgroundColor: C(UI_COLORS.white),
+					backgroundOpacity: 1,
+					borderColor: C(border),
+					borderWidth: px(2),
+					// borderRadius: px(8),
+				});
 
         nextBtn.userData.text.color = txt;
         nextBtn.userData.text.sync();
@@ -300,7 +283,7 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
     function createProgressBar({ trackW, h, trackColor, fillColor, radius = px(4) }) {
         const bar = new THREE.Group();
 
-        const track = makeBlock({ w: trackW, h, bg: trackColor, bgOpacity: 1, borderW: 0, radius });
+        const track = makeBlock({ w: trackW, h, bg: trackColor, bgOpacity: 1, borderW: 0, });
 
         const minFillW = Math.max(px(1), h);
         const fill = makeBlock({ w: minFillW, h, bg: fillColor, bgOpacity: 1, borderW: 0, radius: 0 });
@@ -315,6 +298,8 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
 
     // update progress bar & whether button is enabled
     function updateProgress() {
+				console.log(answers)
+
         if (!progressFillBlock || !TOTAL_Q) return;
 
         const bar = progressFillBlock.parent;
@@ -352,9 +337,9 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         const progressBar = createProgressBar({
             trackW,
             h: progressH,
-            trackColor: UI_COLORS.progressTrack,
-            fillColor: UI_COLORS.progressFill,
-            radius: px(4),
+            trackColor: UI_COLORS.lightGrey,
+            fillColor: UI_COLORS.cyan,
+            // radius: px(4),
         });
 
         progressBar.position.z = Z_UI;
@@ -367,16 +352,16 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         const btnBlock = makeBlock({
             w: nextW,
             h: btnH,
-            bg: UI_COLORS.nextDisabledBg,
-            bgOpacity: UI_COLORS.nextDisabledOpacity,
-            borderColor: UI_COLORS.nextDisabledBorder,
+            bg: UI_COLORS.white,
+            bgOpacity: 1,
+            borderColor: UI_COLORS.grey,
             borderW: px(2),
-            radius: px(8),
+            // radius: px(8),
         });
         const label = makeTroikaText({
             content: "Next",
             fontSize: px(SPEC.nextFontPx),
-            color: UI_COLORS.nextDisabledText,
+            color: UI_COLORS.grey,
             maxWidth: nextW * 0.9,
             lineHeight: 1.0,
         });
@@ -421,7 +406,7 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         root.add(hitPlane);
 
         // tile square bg
-        const block = makeBlock({ w: size, h: size, bg: styles.default.bg, bgOpacity: styles.default.bgOpacity, borderColor: styles.default.border, borderW, radius, });
+        const block = makeBlock({ w: size, h: size, bg: styles.default.bg, bgOpacity: 1, borderColor: styles.default.border, borderW,  });
         block.userData.owner = root;
 
         // text (number & label)
@@ -450,7 +435,7 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
             const s = styles[state];
             blockSet(block, {
                 backgroundColor: C(s.bg),
-                backgroundOpacity: s.bgOpacity,
+                backgroundOpacity: 1,
                 borderColor: C(s.border),
                 borderWidth: borderW,
                 borderRadius: radius,
@@ -506,7 +491,7 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         LIKERT_7.forEach((opt, i) => {
             const { root: tileNode, setState } = createLikertTile({
                 size: tileSize,
-                radius: px(TILE.radius),
+                // radius: px(TILE.radius),
                 borderW: px(TILE.borderW),
                 value: opt.value,
                 label: opt.label,
@@ -581,16 +566,17 @@ export function createSurveyPanelUI(pages, onComplete = () => {}) {
         const panel = makeBlock({
             w: panelW,
             h: panelH,
-            bg: UI_COLORS.panelBg,
-            bgOpacity: UI_COLORS.panelOpacity,
+            bg: UI_COLORS.white,
+            bgOpacity: 1,
             borderColor: 0xffffff,
             borderW: px(0),
-            radius: px(12),
+            // radius: px(12),
         });
 
         pageGroup.add(panel);
 
         // content slightly in front of panel (no z-fights!)
+
         const content = new THREE.Group();
         content.position.z = Z_PANEL_CONTENT;
         pageGroup.add(content);
