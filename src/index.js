@@ -1191,7 +1191,8 @@ const FinishMode = () => {
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
 	event_logger.downloadAllData(); // Download stylus and task event data as text files
-	paint_exporter_instance.downloadJSON()
+	paint_exporter_instance.downloadJSON() // Download exported meshes
+	// TODO: This crashes browser, compress paint mesh text before downloading
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
