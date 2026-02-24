@@ -1278,6 +1278,7 @@ const SetupNextTask = () => {
 
 	// todo export, task check
 	console.log(questionnaire1.getAnswers())
+	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
 	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
