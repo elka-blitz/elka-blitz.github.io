@@ -352,8 +352,8 @@ function init() {
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, [lsw_group, msw_group], 4);
 
-	lsw_group.position.set(0,1, 0)
-	msw_group.position.set(0,0.6,0)
+	lsw_group.position.set(0,0.8, 0)
+	msw_group.position.set(0,0.8,0)
 
 	event_logger.logEventData('Environment changed' + environment_switcher.loadFirstEnvironmentalCondition())
 	// environment_switcher.loadFirstEnvironmentalCondition()
