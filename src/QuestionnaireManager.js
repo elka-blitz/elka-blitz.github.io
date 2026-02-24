@@ -12,17 +12,32 @@ mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
 
 const questionsArray = [
+    // SAMS
     "How pleasant or enjoyable did you find this task?",
     "How mentally activated or stimulated did you feel during this task?",
+    "How in control did you feel during the task?",
+
+    // NASA TLX
     "How frustrated did you feel during this task?",
+    "How mentally demanding was the drawing task?",
+    "How physically demanding was the drawing task?",
+    "How hard did you have to work to accomplish your level of performance?",
+    "How rushed or pressured did you feel?",
+    "How successful were you in accomplishing the task?",
+    "How insecure, discourages, irritated, stressed and annoyed were you?",
+
+
+    // Flow
     "I felt just the right amount of challenge.",
     "My thoughts and actions flowed smoothly while drawing.",
     "I was completely absorbed in what I was doing.",
     "I knew exactly what to do at each step of the task.",
-    "How mentally demanding was the drawing task?",
-    "How hard did you have to work to accomplish your level of performance?",
-    "How rushed or pressured did you feel?",
-    "How successful were you in accomplishing the task?",
+    "I didn't notice time passing.",
+    "I had no difficulty concentrating.",
+    "My mind was completely clear.",
+    "The right thought/movements occurred of their own accord.",
+    "I felt that I had everything under control.",
+    "I was completely lost in thought",
 ]
 
 export default class QuestionnaireManager {

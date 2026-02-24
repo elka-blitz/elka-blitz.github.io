@@ -59,7 +59,7 @@ import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = true // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -71,7 +71,10 @@ let selectState = false;
 const mouse = new THREE.Vector2();
 mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
-const objsToTest = [];
+const objsToTest1 = [];
+const objsToTest2 = [];
+const objsToTest3 = [];
+const objsToTest4 = [];
 
 // MARK: setup declarations
 let camera, scene, renderer, vrControl;
@@ -577,10 +580,10 @@ function init() {
 	pracBox.position.y = 0.82;
 
 	// MARK: Questionnaire
-	questionnaire1 = new QuestionnaireManager(scene, objsToTest);
-	questionnaire2 = new QuestionnaireManager(scene, objsToTest);
-	questionnaire3 = new QuestionnaireManager(scene, objsToTest);
-	questionnaire4 = new QuestionnaireManager(scene, objsToTest);
+	questionnaire1 = new QuestionnaireManager(scene, objsToTest1);
+	questionnaire2 = new QuestionnaireManager(scene, objsToTest2);
+	questionnaire3 = new QuestionnaireManager(scene, objsToTest3);
+	questionnaire4 = new QuestionnaireManager(scene, objsToTest4);
 
 }
 
@@ -986,7 +989,16 @@ function handleDrawing(controller) {
 
 // MARK: Raycast function
 function raycast() {
-	return objsToTest.reduce( ( closestIntersection, obj ) => {
+	let currentObj = objsToTest1;
+	switch (taskNum) {
+		case 2:
+			currentObj = objsToTest2;
+		case 3:
+			currentObj = objsToTest3;
+		case 4:
+			currentObj = objsToTest4;
+	}
+	return currentObj.reduce( ( closestIntersection, obj ) => {
 		const intersection = raycaster.intersectObject( obj, true );
 
 		if ( !intersection[ 0 ] ) return closestIntersection;
@@ -1257,21 +1269,24 @@ const QuestionnaireMode = () => {
 		case 1:
 			questionnaire1.setPosition(deskCoords);
 			questionnaire1.makeQuestionnaireVisible(nextTaskButton);
+			task1ParentManager.makeInvisible();
+
 			break;
 		case 2:
 			questionnaire2.setPosition(deskCoords);
 			questionnaire2.makeQuestionnaireVisible(nextTaskButton);
-			task1ParentManager.makeInvisible();
+			task2ParentManager.makeInvisible();
+
 			break;
 		case 3:
 			questionnaire3.setPosition(deskCoords);
 			questionnaire3.makeQuestionnaireVisible(nextTaskButton);
-			task2ParentManager.makeInvisible();
+			task3ParentManager.makeInvisible();
 			break;
 		case 4:
 			questionnaire4.setPosition(deskCoords);
 			questionnaire4.makeQuestionnaireVisible(nextTaskButton);
-			task3ParentManager.makeInvisible();
+			task4ParentManager.makeInvisible();
 
 			break;
 	}
