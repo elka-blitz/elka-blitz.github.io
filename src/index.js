@@ -38,12 +38,15 @@ import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import QuestionnaireManager from "./QuestionnaireManager";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import { Text } from 'troika-three-text';
+import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import VRControl from './VRControl';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { buffer } from "three/examples/jsm/nodes/Nodes.js";
@@ -54,16 +57,27 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
-import psychometricQuestionnaire from "./questionnaireManager.js"
 
 
-const BROWSER_TESTING = false // todo remove before deployment
+const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
 
+let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
+let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
+let textNum = 0;
+let selectState = false;
+const mouse = new THREE.Vector2();
+mouse.x = mouse.y = null;
+const raycaster = new THREE.Raycaster();
+const objsToTest1 = [];
+const objsToTest2 = [];
+const objsToTest3 = [];
+const objsToTest4 = [];
+
 // MARK: setup declarations
-let camera, scene, renderer;
+let camera, scene, renderer, vrControl;
 let stylus = null;
 let gamepad1;
 let gamepadInterface;
@@ -86,7 +100,11 @@ let pracBox,
 	task1Box, task1ParentManager,
 	task2Box, task2ParentManager,
 	task3Box, task3ParentManager,
-	task4Box, task4ParentManager;
+	task4Box, task4ParentManager,
+	questionnaire1,
+	questionnaire2,
+	questionnaire3,
+	questionnaire4;
 
 // todo organise this into a class or something
 
@@ -101,6 +119,7 @@ let svgWithPositionsArray = [];
 let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
+let wasSurveyButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let taskNum = 1;
 let practiceShapeIndex = 0;
@@ -126,7 +145,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton;
+let red_button, nextButton, resultButton, nextTaskButton, surveyButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -204,6 +223,7 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+
 init();
 
 // Screenshot save function. Unfortunately only works in browser window
@@ -220,6 +240,32 @@ const saveBlob = (function() {
      a.click();
   };
 }());
+
+// todo test with mouse events removed
+window.addEventListener( 'pointermove', ( event ) => {
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+} );
+
+window.addEventListener( 'pointerdown', () => {
+	selectState = true;
+} );
+
+window.addEventListener( 'pointerup', () => {
+	selectState = false;
+} );
+
+window.addEventListener( 'touchstart', ( event ) => {
+	selectState = true;
+	mouse.x = ( event.touches[ 0 ].clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = -( event.touches[ 0 ].clientY / window.innerHeight ) * 2 + 1;
+} );
+
+window.addEventListener( 'touchend', () => {
+	selectState = false;
+	mouse.x = null;
+	mouse.y = null;
+} );
 
 // MARK: INIT FUNC
 function init() {
@@ -417,6 +463,21 @@ function init() {
 		),
 	);
 
+	vrControl = VRControl( renderer, camera, scene );
+
+	scene.add( vrControl.controllerGrips[ 0 ], vrControl.controllers[ 0 ] );
+
+	vrControl.controllers[ 0 ].addEventListener( 'selectstart', () => {
+
+		selectState = true;
+
+	} );
+	vrControl.controllers[ 0 ].addEventListener( 'selectend', () => {
+
+		selectState = false;
+
+	} );
+
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
 
@@ -497,6 +558,15 @@ function init() {
 	);
 	nextTaskButton.makeInvisible();
 
+	surveyButton = new DeskButton(scene);
+	surveyButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#900fe6',
+		'Survey',
+		0.09,
+	);
+	surveyButton.makeInvisible();
+
 	// MARK: Drawing and paints setup
 	const pracParent = new DrawParent('blue', BROWSER_TESTING);
 	pracBox = pracParent.getParent();
@@ -542,6 +612,13 @@ function init() {
 	task3Box.position.y = 0.82;
 	task4Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
+
+	// MARK: Questionnaire
+	questionnaire1 = new QuestionnaireManager(scene, objsToTest1);
+	questionnaire2 = new QuestionnaireManager(scene, objsToTest2);
+	questionnaire3 = new QuestionnaireManager(scene, objsToTest3);
+	questionnaire4 = new QuestionnaireManager(scene, objsToTest4);
+
 }
 
 
@@ -557,6 +634,8 @@ function onFrame(time, frame) {
 			// Hover button in front of user instead of doing offset
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3,
+				0.2,);
 			nextButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
@@ -666,7 +745,25 @@ function onFrame(time, frame) {
 			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 		}
 
-		// MARK: Next task button (this will need to lead into questionnaire)
+		// MARK: Start survey button
+		if (surveyButton.returnExists() === true) {
+			if (
+				surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
+				!wasSurveyButton
+			) {
+				buttonFeedback();
+
+				QuestionnaireMode();
+			}
+			wasSurveyButton = surveyButton.pressCheck(
+				stylus.position,
+				scene,
+				'white',
+			);
+		}
+
+
+		// MARK: Next task button
 		if (nextTaskButton.returnExists() === true) {
 			if (
 				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
@@ -680,6 +777,8 @@ function onFrame(time, frame) {
 				} else {
 					FinishMode();
 				}
+
+
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
 				stylus.position,
@@ -711,7 +810,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				ShowResultsMode();
+				QuestionnaireMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -788,6 +887,8 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
+	ThreeMeshUI.update();
+	updateButtons();
 
 }
 
@@ -857,6 +958,7 @@ function onControllerConnected(e) {
 // MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
+	selectState = true;
 
 	const painter = stylus.userData.painter;
 	painter.moveTo(stylus.position);
@@ -866,6 +968,8 @@ function onSelectStart(e) {
 // MARK: Front Button Release
 function onSelectEnd() {
   this.userData.isSelecting = false;
+	selectState = false;
+
 	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
 	try {
 	paint_exporter_instance.saveMesh(this.userData.painter.mesh) // Save painting with uuid, can be used to reference painting later for export or other functions
@@ -916,6 +1020,43 @@ function handleDrawing(controller) {
 			painter.moveTo(relativePos.x, relativePos.y, relativePos.z); // moves current path to pen
 		}
 	}
+}
+
+function getCurrentObjs() {
+	let currentObj = objsToTest1;
+	switch (taskNum) {
+		case 2:
+			currentObj = objsToTest2;
+			break;
+		case 3:
+			currentObj = objsToTest3;
+			break;
+
+		case 4:
+			currentObj = objsToTest4;
+			break;
+	}
+	return currentObj
+}
+
+
+// MARK: Raycast function
+function raycast() {
+	const objsToTest = getCurrentObjs()
+	return objsToTest.reduce( ( closestIntersection, obj ) => {
+		const intersection = raycaster.intersectObject( obj, true );
+
+		if ( !intersection[ 0 ] ) return closestIntersection;
+
+		if ( !closestIntersection || intersection[ 0 ].distance < closestIntersection.distance ) {
+			intersection[ 0 ].object = obj;
+			return intersection[ 0 ];
+		}
+
+		return closestIntersection;
+
+	}, null );
+
 }
 
 
@@ -1102,7 +1243,7 @@ const ShowResultsMode = () => {
 	isDrawingDisabled = true;
 
 	desk_manager.clearSurface();
-	desk_manager.makeSurfaceInvisible()
+	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
 	// text
@@ -1159,12 +1300,51 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
+	surveyButton.makeVisible();
 	nextButton.makeInvisible();
-	nextTaskButton.makeVisible();
+}
 
+const QuestionnaireMode = () => {
+	originalText.makeInvisible();
+	originalSvgManager.makeSurfaceInvisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+
+	switch (taskNum) {
+		case 1:
+			questionnaire1.setPosition(deskCoords);
+			questionnaire1.makeQuestionnaireVisible(nextTaskButton);
+			task1ParentManager.makeInvisible();
+
+			break;
+		case 2:
+			questionnaire2.setPosition(deskCoords);
+			questionnaire2.makeQuestionnaireVisible(nextTaskButton);
+			task2ParentManager.makeInvisible();
+
+			break;
+		case 3:
+			questionnaire3.setPosition(deskCoords);
+			questionnaire3.makeQuestionnaireVisible(nextTaskButton);
+			task3ParentManager.makeInvisible();
+			break;
+		case 4:
+			questionnaire4.setPosition(deskCoords);
+			questionnaire4.makeQuestionnaireVisible(nextTaskButton);
+			task4ParentManager.makeInvisible();
+
+			break;
+	}
+
+	questionnaire1.setPosition(deskCoords);
+	questionnaire1.makeQuestionnaireVisible(nextTaskButton);
 }
 
 const SetupNextTask = () => {
+
+	// todo export, task check
+	console.log(questionnaire1.getAnswers())
+	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
 	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
@@ -1189,32 +1369,32 @@ const SetupNextTask = () => {
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
 	taskTextPanel.makeVisible();
-	originalText.makeInvisible();
-	originalSvgManager.makeSurfaceInvisible();
-	yourDrawingText.makeInvisible();
-	scene.remove(svgManager.getSurface());
 
 	switch (taskNum) {
-		case 1: break;
+		case 1:
+			break;
 		case 2:
+			// todo change these console logs to exports thanks Lukas
+			console.log(questionnaire1.getAnswers())
 			taskTextPanel.updateText('Task 2: Florist');
-			task1ParentManager.makeInvisible();
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
+			console.log(questionnaire2.getAnswers())
 			taskTextPanel.updateText('Task 3: Studio');
-			task2ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
 			break;
 		case 4:
+			console.log(questionnaire3.getAnswers())
 			taskTextPanel.updateText('Task 4: Library');
-			task3ParentManager.makeInvisible();
 			svgManager.setupPaints(4, task4Box);
 			break;
 	}
 }
 
 const FinishMode = () => {
+	// todo other one to export thank you Lukas
+	console.log(questionnaire4.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
@@ -1252,4 +1432,60 @@ const FinishMode = () => {
 				break;
 		}
 	})
+}
+function updateButtons() {
+
+	// Find closest intersecting object
+
+	let intersect;
+	const objsToTest = getCurrentObjs();
+
+	if ( renderer.xr.isPresenting ) {
+
+		vrControl.setFromController( 0, raycaster.ray );
+
+		intersect = raycast();
+
+		// Position the little white dot at the end of the controller pointing ray
+		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
+
+	} else if ( mouse.x !== null && mouse.y !== null ) {
+
+		raycaster.setFromCamera( mouse, camera );
+
+		intersect = raycast();
+
+	}
+
+	// Update targeted button state (if any)
+
+	if ( intersect && intersect.object.isUI ) {
+
+		if ( selectState ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+
+		} else {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'hovered' );
+
+		}
+
+	}
+
+	// Update non-targeted buttons state
+
+	objsToTest.forEach( ( obj ) => {
+
+		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+
+		}
+
+	} );
+
 }
