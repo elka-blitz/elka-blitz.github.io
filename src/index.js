@@ -597,7 +597,8 @@ function onFrame(time, frame) {
 			// Hover button in front of user instead of doing offset
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3,
+				0.2,);
 			nextButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
@@ -1242,8 +1243,8 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
-	nextButton.makeInvisible();
 	surveyButton.makeVisible();
+	nextButton.makeInvisible();
 }
 
 const QuestionnaireMode = () => {
@@ -1260,14 +1261,18 @@ const QuestionnaireMode = () => {
 		case 2:
 			questionnaire2.setPosition(deskCoords);
 			questionnaire2.makeQuestionnaireVisible(nextTaskButton);
+			task1ParentManager.makeInvisible();
 			break;
 		case 3:
 			questionnaire3.setPosition(deskCoords);
 			questionnaire3.makeQuestionnaireVisible(nextTaskButton);
+			task2ParentManager.makeInvisible();
 			break;
 		case 4:
 			questionnaire4.setPosition(deskCoords);
 			questionnaire4.makeQuestionnaireVisible(nextTaskButton);
+			task3ParentManager.makeInvisible();
+
 			break;
 	}
 
@@ -1312,19 +1317,16 @@ const SetupNextTask = () => {
 			// todo change these console logs to exports thanks Lukas
 			console.log(questionnaire1.getAnswers())
 			taskTextPanel.updateText('Task 2: Florist');
-			task1ParentManager.makeInvisible();
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			console.log(questionnaire2.getAnswers())
 			taskTextPanel.updateText('Task 3: Studio');
-			task2ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
 			break;
 		case 4:
 			console.log(questionnaire3.getAnswers())
 			taskTextPanel.updateText('Task 4: Library');
-			task3ParentManager.makeInvisible();
 			svgManager.setupPaints(4, task4Box);
 			break;
 	}
