@@ -146,8 +146,8 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 
 
 // MARK: Environment
-let office_group = new THREE.Group()
-office_group.name = 'OfficeEnv'
+// let office_group = new THREE.Group()
+// office_group.name = 'OfficeEnv'
 
 // Moderate stimulation environment global
 let msw_group = new THREE.Group()
@@ -256,16 +256,16 @@ function init() {
 		tableGroup.add(gltf.scene);
 	});
 
-	gltfLoader.load(
-		'./assets/office_environment.glb',
-		function (gltf) {
-			office_group.add(gltf.scene);
-		},
-		undefined,
-		function (error) {
-			console.error(error);
-		},
-	);
+	// gltfLoader.load(
+	// 	'./assets/office_environment.glb',
+	// 	function (gltf) {
+	// 		office_group.add(gltf.scene);
+	// 	},
+	// 	undefined,
+	// 	function (error) {
+	// 		console.error(error);
+	// 	},
+	// );
 
 	gltfLoader.load(
 		'./assets/lsw_env.glb',
@@ -304,7 +304,7 @@ function init() {
 	floor.position.y = -0.5; // Position below the camera
 
 	// MARK: Model setup
-	environment_switcher = new EnvironmentSwitcher(scene, [office_group, minimalEnvironment], 4);
+	environment_switcher = new EnvironmentSwitcher(scene, [lsw_group, msw_group], 4);
 	event_logger.logEventData('Environment changed' + environment_switcher.loadFirstEnvironmentalCondition())
 	// environment_switcher.loadFirstEnvironmentalCondition()
 	scene.add(tableGroup);
@@ -313,8 +313,8 @@ function init() {
 	desk_manager = new DeskManager(scene, tableGroup);
 
 	// office_group.scale.set(0.5, 0.5, 0.5)
-	office_group.position.set(0, -0.3, 0);
-	office_group.rotateY(Math.PI / 5);
+	// office_group.position.set(0, -0.3, 0);
+	// office_group.rotateY(Math.PI / 5);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -325,8 +325,8 @@ function init() {
 	desk_manager = new DeskManager(scene, tableGroup);
 
 	tableGroup.position.set(0, -3, 0);
-	office_group.position.set(0, -0.3, 0);
-	office_group.rotateY(Math.PI / 5);
+	// office_group.position.set(0, -0.3, 0);
+	// office_group.rotateY(Math.PI / 5);
 
 	// rendering setup
 	renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
