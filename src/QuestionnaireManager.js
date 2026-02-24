@@ -70,62 +70,56 @@ export default class QuestionnaireManager {
             },
         };
 
-        // Buttons creation
-
-        const buttonNext = new ThreeMeshUI.Block( buttonOptions );
-        const buttonPrevious = new ThreeMeshUI.Block( buttonOptions );
-
-        // text
-
-        buttonNext.add(
-            new ThreeMeshUI.Text( { content: 'next' } )
-        );
-
-        buttonPrevious.add(
-            new ThreeMeshUI.Text( { content: 'previous' } )
-        );
-
-        // Create states for the buttons.
-        // In the loop, we will call component.setState( 'state-name' ) when mouse hover or click
-
         const selectedAttributes = {
             offset: 0.02,
             backgroundColor: new THREE.Color( 0x777777 ),
             fontColor: new THREE.Color( 0x222222 )
         };
 
-        // MARK: Button press
-        buttonNext.setupState( {
-            state: 'selected',
-            attributes: selectedAttributes,
-            onSet: () => {
+        // Buttons creation
 
-                console.log(`Next ${textNum}`)
-                textNum +=1;
-
-            }
-        } );
-        buttonNext.setupState( hoveredStateAttributes );
-        buttonNext.setupState( idleStateAttributes );
-
-        //
-
-        buttonPrevious.setupState( {
-            state: 'selected',
-            attributes: selectedAttributes,
-            onSet: () => {
-                console.log(`Prev ${textNum}`)
-                textNum -=1;
-
-            }
-        } );
-        buttonPrevious.setupState( hoveredStateAttributes );
-        buttonPrevious.setupState( idleStateAttributes );
+        const button1 = new ThreeMeshUI.Block( buttonOptions );
+        const button2 = new ThreeMeshUI.Block( buttonOptions );
+        const button3 = new ThreeMeshUI.Block( buttonOptions );
+        const button4 = new ThreeMeshUI.Block( buttonOptions );
+        const button5 = new ThreeMeshUI.Block( buttonOptions );
+        const button6 = new ThreeMeshUI.Block( buttonOptions );
+        const button7 = new ThreeMeshUI.Block( buttonOptions );
+        const buttonArray = [
+            button7,
+            button6,
+            button5,
+            button4,
+            button3,
+            button2,
+            button1,
+        ]
 
 
-        this.container.add( buttonNext, buttonPrevious );
-        this.objsToTest.push( buttonNext, buttonPrevious );
+        buttonArray.forEach((button, i) => {
+            // text
+            button.add(
+                new ThreeMeshUI.Text( { content: `${7 - i}` } )
+            );
 
+            // button press
+            button.setupState( {
+                state: 'selected',
+                attributes: selectedAttributes,
+                onSet: () => {
+
+                    console.log(`Next ${7 - i}`)
+
+                }
+            } );
+            button.setupState( hoveredStateAttributes );
+            button.setupState( idleStateAttributes );
+
+            // add button to groups
+            this.container.add(button);
+            this.objsToTest.push(button);
+
+        })
 
         // make invisible
         // this.container.visible = false
