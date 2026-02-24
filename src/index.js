@@ -59,7 +59,7 @@ import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
-const BROWSER_TESTING = true // todo remove before deployment
+const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -987,18 +987,28 @@ function handleDrawing(controller) {
 	}
 }
 
-// MARK: Raycast function
-function raycast() {
+function getCurrentObjs() {
 	let currentObj = objsToTest1;
 	switch (taskNum) {
 		case 2:
 			currentObj = objsToTest2;
+			break;
 		case 3:
 			currentObj = objsToTest3;
+			break;
+
 		case 4:
 			currentObj = objsToTest4;
+			break;
 	}
-	return currentObj.reduce( ( closestIntersection, obj ) => {
+	return currentObj
+}
+
+
+// MARK: Raycast function
+function raycast() {
+	const objsToTest = getCurrentObjs()
+	return objsToTest.reduce( ( closestIntersection, obj ) => {
 		const intersection = raycaster.intersectObject( obj, true );
 
 		if ( !intersection[ 0 ] ) return closestIntersection;
@@ -1393,6 +1403,7 @@ function updateButtons() {
 	// Find closest intersecting object
 
 	let intersect;
+	const objsToTest = getCurrentObjs();
 
 	if ( renderer.xr.isPresenting ) {
 
