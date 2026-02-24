@@ -535,16 +535,16 @@ function init() {
 	pracBox = pracParent.getParent();
 
 	// todo make list?
-	task1ParentManager = new DrawParent('red', BROWSER_TESTING);
+	task1ParentManager = new DrawParent();
 	task1Box = task1ParentManager.getParent();
 
-	task2ParentManager = new DrawParent('yellow', BROWSER_TESTING);
+	task2ParentManager = new DrawParent();
 	task2Box = task2ParentManager.getParent();
 
-	task3ParentManager = new DrawParent('blue', BROWSER_TESTING);
+	task3ParentManager = new DrawParent();
 	task3Box = task3ParentManager.getParent();
 
-	task4ParentManager = new DrawParent('green', BROWSER_TESTING);
+	task4ParentManager = new DrawParent();
 	task4Box = task4ParentManager.getParent();
 
 	svgManager = new SvgManager();
@@ -1235,9 +1235,10 @@ const ShowResultsMode = () => {
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
-		// svgPaintsArray[i].mesh.rotateX(-Math.PI / 3);
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
 		svgPaintsArray[i].mesh.position.y = obj.position.y;
+		svgPaintsArray[i].mesh.position.z -= 0.05;
+		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
