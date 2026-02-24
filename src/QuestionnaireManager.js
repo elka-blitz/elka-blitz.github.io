@@ -200,7 +200,7 @@ export default class QuestionnaireManager {
         this.questionContainer.position.set(
             position.x,
             position.y + 0.8,
-            -1.6
+            -1.4
         )
         this.container.position.set(
             position.x,
