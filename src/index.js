@@ -578,6 +578,9 @@ function init() {
 
 	// MARK: Questionnaire
 	questionnaire1 = new QuestionnaireManager(scene, objsToTest);
+	questionnaire2 = new QuestionnaireManager(scene, objsToTest);
+	questionnaire3 = new QuestionnaireManager(scene, objsToTest);
+	questionnaire4 = new QuestionnaireManager(scene, objsToTest);
 
 }
 
@@ -1248,6 +1251,26 @@ const QuestionnaireMode = () => {
 	yourDrawingText.makeInvisible();
 	scene.remove(svgManager.getSurface());
 
+	switch (taskNum) {
+		case 1:
+			questionnaire1.setPosition(deskCoords);
+			questionnaire1.makeQuestionnaireVisible(nextTaskButton);
+			break;
+		case 2:
+			questionnaire2.setPosition(deskCoords);
+			questionnaire2.makeQuestionnaireVisible(nextTaskButton);
+			break;
+		case 3:
+			questionnaire3.setPosition(deskCoords);
+			questionnaire3.makeQuestionnaireVisible(nextTaskButton);
+			break;
+		case 4:
+			questionnaire4.setPosition(deskCoords);
+			questionnaire4.makeQuestionnaireVisible(nextTaskButton);
+			break;
+	}
+
+	questionnaire1.setPosition(deskCoords);
 	questionnaire1.makeQuestionnaireVisible(nextTaskButton);
 }
 
@@ -1281,18 +1304,23 @@ const SetupNextTask = () => {
 	taskTextPanel.makeVisible();
 
 	switch (taskNum) {
-		case 1: break;
+		case 1:
+			break;
 		case 2:
+			// todo change these console logs to exports thanks Lukas
+			console.log(questionnaire1.getAnswers())
 			taskTextPanel.updateText('Task 2: Florist');
 			task1ParentManager.makeInvisible();
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
+			console.log(questionnaire2.getAnswers())
 			taskTextPanel.updateText('Task 3: Studio');
 			task2ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
 			break;
 		case 4:
+			console.log(questionnaire3.getAnswers())
 			taskTextPanel.updateText('Task 4: Library');
 			task3ParentManager.makeInvisible();
 			svgManager.setupPaints(4, task4Box);
@@ -1301,6 +1329,8 @@ const SetupNextTask = () => {
 }
 
 const FinishMode = () => {
+	// todo other one to export thank you Lukas
+	console.log(questionnaire4.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});

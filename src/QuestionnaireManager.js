@@ -179,6 +179,18 @@ export default class QuestionnaireManager {
         this.questionContainer.visible = true;
         this.container.visible = true;
         this.nextTaskButton = nextTaskButton;
+    }
 
+    setPosition(position) {
+        this.questionContainer.position.set(
+            position.x,
+            position.y + 0.8,
+            -1.6
+        )
+        this.container.position.set(
+            position.x,
+            position.y + 0.6,
+            -1.2
+        )
     }
 }
