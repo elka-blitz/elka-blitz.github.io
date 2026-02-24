@@ -5,6 +5,7 @@ This script integrates the decoder in `decode_brainlink.py` and can run
 against a hexdump text file or live serial device.
 """
 import sys
+from datetime import datetime
 import time
 import argparse
 
@@ -14,6 +15,7 @@ except Exception:
     decoder = None
 
 def main():
+    file_out = open('eeg_stream_' + str(datetime.now()).replace(' ', '_') + '.csv', 'w')
     parser = argparse.ArgumentParser(description='Main live decoder for Brainlink/MindWave')
     parser.add_argument('input', nargs='?', help='Path to hexdump text file to decode')
     parser.add_argument('--serial', '-s', help='Serial device (e.g. /dev/rfcomm0) to read live')
@@ -39,6 +41,7 @@ def main():
                     att = decoded['attention'][0] if decoded['attention'] else ''
                     med = decoded['meditation'][0] if decoded['meditation'] else ''
                     print('{:.6f},{},{},{}'.format(ts, raw, att, med))
+                    file_out.write('{:.6f},{},{},{}\n'.format(ts, raw, att, med))
                 else:
                     print('Live Packet {}: payload_len={} ts={} decoded={}'.format(idx, len(payload), ts, decoded))
                 idx += 1
@@ -53,6 +56,7 @@ def main():
                 decoded = decoder.decode_payload(p)
                 print('Packet {}: payload_len={} decoded={}'.format(idx, len(p), decoded))
     except KeyboardInterrupt:
+        file_out.close()
         print('\nInterrupted, exiting')
 
 
