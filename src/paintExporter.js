@@ -110,6 +110,26 @@ export default class paintExporter {
 
             this.deconstructed_meshes.push(meshData)
         })
-        textDownload(JSON.stringify(this.deconstructed_meshes), 'deconstructed_meshes')
+        textDownload(JSON.stringify(this.deconstructed_meshes), 'deconstructed_meshes.txt');
+    }
+
+    async compressAndDownload(jsonString, filename = 'deconstructed_meshes') {
+        // Convert string to Uint8Array
+        const encoder = new TextEncoder();
+        const data = encoder.encode(jsonString);
+
+        // Create a readable stream and compress it
+        const stream = new Blob([data]).stream();
+        const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
+
+        // Convert back to blob and trigger download
+        const compressedBlob = await new Response(compressedStream).blob();
+        const url = URL.createObjectURL(compressedBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        current_ts = new Date()
+        a.download = filename + current_ts.toISOString() + '.gz'; // or .deflate
+        a.click();
+        URL.revokeObjectURL(url);
     }
 }
