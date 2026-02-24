@@ -13,9 +13,9 @@ const raycaster = new THREE.Raycaster();
 
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
-    constructor(scene) {
+    constructor(scene, objsToTest) {
         // declarations
-        this.objsToTest = [];
+        this.objsToTest = objsToTest;
 
 
         // makePanel

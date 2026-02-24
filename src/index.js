@@ -557,7 +557,8 @@ function init() {
 	pracBox.position.y = 0.82;
 
 	// MARK: Questionnaire
-	questionnaire1 = new QuestionnaireManager(scene);
+	questionnaire1 = new QuestionnaireManager(scene, objsToTest);
+
 }
 
 
@@ -805,7 +806,7 @@ function animate(time, frame) {
 
   renderer.render(scene, camera);
 	ThreeMeshUI.update();
-	questionnaire1.updateButtons(renderer, camera, raycast(), vrControl);
+	updateButtons();
 
 }
 
@@ -1284,4 +1285,58 @@ const FinishMode = () => {
 		}
 	})
 }
+function updateButtons() {
 
+	// Find closest intersecting object
+
+	let intersect;
+
+	if ( renderer.xr.isPresenting ) {
+
+		vrControl.setFromController( 0, raycaster.ray );
+
+		intersect = raycast();
+
+		// Position the little white dot at the end of the controller pointing ray
+		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
+
+	} else if ( mouse.x !== null && mouse.y !== null ) {
+
+		raycaster.setFromCamera( mouse, camera );
+
+		intersect = raycast();
+
+	}
+
+	// Update targeted button state (if any)
+
+	if ( intersect && intersect.object.isUI ) {
+
+		if ( selectState ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+
+		} else {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'hovered' );
+
+		}
+
+	}
+
+	// Update non-targeted buttons state
+
+	objsToTest.forEach( ( obj ) => {
+
+		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
+
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+
+		}
+
+	} );
+
+}
