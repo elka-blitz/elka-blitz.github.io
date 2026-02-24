@@ -719,11 +719,7 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				if (taskNum !== 4) {
-					QuestionnaireMode();
-				} else {
-					FinishMode();
-				}
+				QuestionnaireMode();
 			}
 			wasSurveyButton = surveyButton.pressCheck(
 				stylus.position,
@@ -741,8 +737,13 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				SetupNextTask();
-				TaskMode();
+				if (taskNum !== 4) {
+					SetupNextTask();
+					TaskMode();
+				} else {
+					FinishMode();
+				}
+
 
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
