@@ -699,11 +699,12 @@ function onFrame(time, frame) {
 
 			// MARK: Export
 			// Export all data
-			event_logger.downloadAllData(); // Download stylus and task event data as text files
+			// event_logger.downloadAllData(); // Download stylus and task event data as text files
 
 			// Export Paintings
 			// TODO: Error handling for no paint mesh condition
-			paint_exporter_instance.downloadJSON();
+			// paint_exporter_instance.downloadJSON();
+			// paint_exporter_instance.compressAndDownload()
 		}
 		prevBackPushed = backPushed;
 		backPushed = gamepad1.buttons[1].value > 0;
@@ -1186,6 +1187,18 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+
+	// MARK: Export
+	// Export all data
+	event_logger.downloadAllData(); // Download stylus and task event data as text files
+
+	// Export Paintings
+	// TODO: Error handling for no paint mesh condition
+	// paint_exporter_instance.downloadJSON();
+	
+	// Compressand download all files at once will crash the browser
+
+	// paint_exporter_instance.compressAndDownload()
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
