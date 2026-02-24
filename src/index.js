@@ -477,7 +477,6 @@ function init() {
 		selectState = false;
 
 	} );
-
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = false;
 		controller.point.visible = false;
