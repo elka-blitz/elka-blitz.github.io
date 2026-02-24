@@ -192,6 +192,7 @@ const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
 
 // Environment switcher instance
 let environment_switcher;
+let envMap
 
 const speed_meter = new speedMeter()
 
@@ -308,7 +309,7 @@ function init() {
 
 	new RGBELoader().load("./assets/flow_bg.hdr", (hdrTex) => {
 
-		const envMap = pmrem.fromEquirectangular(hdrTex).texture;
+		envMap = pmrem.fromEquirectangular(hdrTex).texture;
 		scene.background = envMap;
 
 		hdrTex.dispose();
@@ -332,7 +333,16 @@ function init() {
 				// paint_exporter_instance.screenShotCanvas(canvas)
 				// takeScreenshot = true;
 				// environment_switcher.loadNextEnvironmentCondition()
-				event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
+				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
+
+				scene.background = green;
+				
+				// Flash the sky by changing its color to the specified color and then back to white after the duration
+
+				setTimeout(() => {
+					scene.background = envMap
+				}, 500); 
+
 				break;
 			case 65: // A
 				// question_panel.resetInputCubes();
@@ -969,6 +979,13 @@ const Calibrate = () => {
 	isPracticeMode = true;
 	desk_manager.spawnDrawingSurface();
 	scene.background = green;
+	
+	// Flash the sky by changing its color to the specified color and then back to white after the duration
+
+	setTimeout(() => {
+		scene.background = envMap
+	}, 500); 
+
 	red_button.makeInvisible();
 	nextButton.makeVisible();
 	desk_set = true;
