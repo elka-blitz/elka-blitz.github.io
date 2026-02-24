@@ -67,36 +67,40 @@ export default class SvgManager {
 		];
 
 		this.t2Array = [
-			{ url: 'assets/task2/awning.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task2/bush.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task2/door.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task2/door_window.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task2/flower.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task2/outline.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task2/window.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task2/windowsill.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task2/outline.svg', position: { x: 0, y: 0.025 } },
+			{ url: 'assets/task2/awning.svg', position: { x: 0, y: -0.047 } },
+			{ url: 'assets/task2/bush.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task2/door.svg', position: { x: 0.038, y: 0.04 } },
+			{ url: 'assets/task2/door_window.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/flower.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/window.svg', position: { x: -0.032, y: 0.012 } },
+			{ url: 'assets/task2/windowsill.svg', position: { x: -0.032, y: 0.045 } },
 		];
 
 		this.t3Array = [
-			{ url: 'assets/task3/big_window.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task3/extension_outline.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task3/main_outline.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task3/roof_slant.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task3/roof_window.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task3/side_window.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task3/extension_outline.svg', position: { x: -0.022, y: 0.04 }, },
+			{ url: 'assets/task3/main_outline.svg', position: { x: 0.02, y: 0.022 } },
+			{ url: 'assets/task3/big_window.svg', position: { x: -0.02, y: 0.04 } },
+			{ url: 'assets/task3/side_window.svg', position: { x: 0.07, y: 0.032 } },
+			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.03 } },
+			{ url: 'assets/task3/roof_slant.svg', position: { x: 0.04, y: -0.071 } },
+			{ url: 'assets/task3/roof_window.svg', position: { x: 0.007, y: -0.07 } },
+			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0.04, y: -0.075 }, },
 		];
 
 		this.t4Array = [
-			{ url: 'assets/task4/column.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task4/column_end.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task4/column_top.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task4/door.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task4/door_panels.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task4/outline.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task4/top.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task4/window.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task4/outline.svg', position: { x: 0.002, y: 0.01 } },
+			{ url: 'assets/task4/column.svg', position: { x: 0.068, y: 0.02 } },
+			{ url: 'assets/task4/column_end.svg', position: { x: 0.068, y: 0.09 } },
+			{ url: 'assets/task4/column_top.svg', position: { x: 0.068, y: -0.053 } },
+			{ url: 'assets/task4/door.svg', position: { x: 0.004, y: 0.047 } },
+			{ url: 'assets/task4/door_panels.svg', position: { x: 0.004, y: 0.048 } },
+			{ url: 'assets/task4/top.svg', position: { x: 0.002, y: -0.085 } },
+			{ url: 'assets/task4/window.svg', position: { x: 0.002, y: -0.023 } },
+
+			// { url: 'assets/task4/column.svg', position: 	{ x: -0.0619, y: 0.02 } },
+			// { url: 'assets/task4/column_end.svg', position: { x: -0.0619, y: 0.09 } },
+			// { url: 'assets/task4/column_top.svg', position: { x: -0.0619, y: -0.053 } },
 		];
 		shuffle(this.array);
 		shuffle(this.t2Array);
