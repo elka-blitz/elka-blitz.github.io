@@ -149,6 +149,14 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 let office_group = new THREE.Group()
 office_group.name = 'OfficeEnv'
 
+// Moderate stimulation environment global
+let msw_group = new THREE.Group()
+msw_group.name = 'msw_env'
+
+// Low stimulation enviornment global
+let lsw_group = new THREE.Group()
+lsw_group.name = 'lsw_env'
+
 
 // MARK: Hands
 let hand1, hand2;
@@ -252,6 +260,28 @@ function init() {
 		'./assets/office_environment.glb',
 		function (gltf) {
 			office_group.add(gltf.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error);
+		},
+	);
+
+	gltfLoader.load(
+		'./assets/lsw_env.glb',
+		function (gltf) {
+			lsw_group.add(gltf.scene);
+		},
+		undefined,
+		function (error) {
+			console.error(error);
+		},
+	);
+
+	gltfLoader.load(
+		'./assets/msw_env.glb',
+		function (gltf) {
+			msw_group.add(gltf.scene);
 		},
 		undefined,
 		function (error) {
