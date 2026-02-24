@@ -352,8 +352,8 @@ function init() {
 	// MARK: Model setup
 	environment_switcher = new EnvironmentSwitcher(scene, [lsw_group, msw_group], 4);
 
-	lsw_group.position.set(0,0.8, 0)
-	msw_group.position.set(0,0.8,0)
+	lsw_group.position.set(0, 1.2, 0)
+	msw_group.position.set(0,0.5,0)
 
 	event_logger.logEventData('Environment changed' + environment_switcher.loadFirstEnvironmentalCondition())
 	// environment_switcher.loadFirstEnvironmentalCondition()
@@ -1181,6 +1181,7 @@ const PracticeMode = () => {
 		nextButton.updateLabel(
 			`Practice ${practiceShapeIndex +1}/${practiceSvgArray.length}`,
 		);
+		event_logger.logEventData('practicebegin')
 
 		practicePaints.forEach((paint) => {
 			paint.mesh.visible = false;
@@ -1235,6 +1236,8 @@ const TaskMode = () => {
 		});
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+
+		event_logger.logEventData('task1_complete')
 		);
 	}
 }
@@ -1276,19 +1279,23 @@ const ShowResultsMode = () => {
 	switch (taskNum) {
 		case 1:
 			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+			event_logger.logEventData('task1_loaded')
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
+			event_logger.logEventData('task2_loaded')
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+			event_logger.logEventData('task3_loaded')
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
+			event_logger.logEventData('task4_loaded')
 			task4ParentManager.makeVertical();
 			break;
 	}
@@ -1376,17 +1383,19 @@ const SetupNextTask = () => {
 			break;
 		case 2:
 			// todo change these console logs to exports thanks Lukas
-			console.log(questionnaire1.getAnswers())
+
+			// Ok!
+			event_logger.logEventData(questionnaire1.getAnswers())
 			taskTextPanel.updateText('Task 2: Florist');
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
-			console.log(questionnaire2.getAnswers())
+			event_logger.logEventData(questionnaire2.getAnswers())
 			taskTextPanel.updateText('Task 3: Studio');
 			svgManager.setupPaints(3, task3Box);
 			break;
 		case 4:
-			console.log(questionnaire3.getAnswers())
+			event_logger.logEventData(questionnaire3.getAnswers())
 			taskTextPanel.updateText('Task 4: Library');
 			svgManager.setupPaints(4, task4Box);
 			break;
@@ -1395,7 +1404,7 @@ const SetupNextTask = () => {
 
 const FinishMode = () => {
 	// todo other one to export thank you Lukas
-	console.log(questionnaire4.getAnswers())
+	event_logger.logEventData(questionnaire4.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
