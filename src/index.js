@@ -116,6 +116,7 @@ let svgWithPositionsArray = [];
 let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
+let wasSurveyButton = false;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let taskNum = 1;
 let practiceShapeIndex = 0;
@@ -141,7 +142,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton;
+let red_button, nextButton, resultButton, nextTaskButton, surveyButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -510,6 +511,15 @@ function init() {
 	);
 	nextTaskButton.makeInvisible();
 
+	surveyButton = new DeskButton(scene);
+	surveyButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#900fe6',
+		'Survey',
+		0.09,
+	);
+	surveyButton.makeInvisible();
+
 	// MARK: Drawing and paints setup
 	const pracParent = new DrawParent('blue', BROWSER_TESTING);
 	pracBox = pracParent.getParent();
@@ -574,6 +584,7 @@ function onFrame(time, frame) {
 			// Hover button in front of user instead of doing offset
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
+			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
@@ -683,7 +694,29 @@ function onFrame(time, frame) {
 			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 		}
 
-		// MARK: Next task button (this will need to lead into questionnaire)
+		// MARK: Start survey button
+		if (surveyButton.returnExists() === true) {
+			if (
+				surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
+				!wasSurveyButton
+			) {
+				buttonFeedback();
+
+				if (taskNum !== 4) {
+					QuestionnaireMode();
+				} else {
+					FinishMode();
+				}
+			}
+			wasSurveyButton = surveyButton.pressCheck(
+				stylus.position,
+				scene,
+				'white',
+			);
+		}
+
+
+		// MARK: Next task button
 		if (nextTaskButton.returnExists() === true) {
 			if (
 				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
@@ -691,12 +724,9 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				if (taskNum !== 4) {
-					SetupNextTask();
-					TaskMode();
-				} else {
-					FinishMode();
-				}
+				SetupNextTask();
+				TaskMode();
+
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
 				stylus.position,
@@ -728,7 +758,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				ShowResultsMode();
+				QuestionnaireMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -1135,7 +1165,7 @@ const ShowResultsMode = () => {
 	isDrawingDisabled = true;
 
 	desk_manager.clearSurface();
-	desk_manager.makeSurfaceInvisible()
+	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
 	// text
@@ -1192,11 +1222,22 @@ const ShowResultsMode = () => {
 	});
 
 	nextButton.makeInvisible();
-	nextTaskButton.makeVisible();
+	surveyButton.makeVisible();
+}
 
+const QuestionnaireMode = () => {
+	originalText.makeInvisible();
+	originalSvgManager.makeSurfaceInvisible();
+	yourDrawingText.makeInvisible();
+	scene.remove(svgManager.getSurface());
+
+	questionnaire1.makeQuestionnaireVisible(nextTaskButton);
 }
 
 const SetupNextTask = () => {
+
+	// todo export, task check
+	console.log(questionnaire1.getAnswers())
 	
 	// In some cases the initially loaded env is the same as the next env
 	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
@@ -1221,10 +1262,6 @@ const SetupNextTask = () => {
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
 	taskTextPanel.makeVisible();
-	originalText.makeInvisible();
-	originalSvgManager.makeSurfaceInvisible();
-	yourDrawingText.makeInvisible();
-	scene.remove(svgManager.getSurface());
 
 	switch (taskNum) {
 		case 1: break;

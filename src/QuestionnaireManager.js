@@ -31,6 +31,7 @@ export default class QuestionnaireManager {
         // MARK: Question Block
         let qNum = 0;
         this.answers = []
+        this.nextTaskButton = undefined;
 
         const questionContainer  = new ThreeMeshUI.Block( {
             width: 1.3,
@@ -43,7 +44,7 @@ export default class QuestionnaireManager {
             // interLine: 0,
         } );
 
-        questionContainer.position.set( 0, 1, -1.8 );
+        questionContainer.position.set( 0, 1.8, -1.8 );
         // questionContainer.rotation.x = -0.55;
         scene.add( questionContainer );
 
@@ -69,7 +70,7 @@ export default class QuestionnaireManager {
             borderRadius: 0.11
         } );
 
-        this.container.position.set( 0, 0.6, -1.2 );
+        this.container.position.set( 0, 1.5, -1.2 );
         this.container.rotation.x = -0.55;
         scene.add( this.container );
 
@@ -137,21 +138,20 @@ export default class QuestionnaireManager {
                 new ThreeMeshUI.Text( { content: `${7 - i}` } )
             );
 
-            // button press
+            // MARK: Button press
             button.setupState( {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-
-                    console.log(`Next ${7 - i}`)
                     this.answers.push(7 - i)
                     qNum += 1;
                     questionText.set({content: questionsArray[qNum]});
 
-                    // finished
+                    // MARK: End of survey
                     if (qNum === questionsArray.length) {
-                        console.log(this.answers)
+                        console.log("Survey complete")
                         scene.remove(questionContainer, this.container)
+                        this.nextTaskButton && this.nextTaskButton.makeVisible();
                     }
 
                 }
@@ -166,48 +166,19 @@ export default class QuestionnaireManager {
         })
 
         // make invisible
-        // this.container.visible = false
+        this.questionContainer = questionContainer;
+        this.questionContainer.visible = false;
+        this.container.visible = false
     }
 
-    updateButtons(renderer, camera, raycastResult, vrControl) {
-        // Find closest intersecting object
-        let intersect;
-
-        if ( renderer.xr.isPresenting ) {
-
-            vrControl.setFromController( 0, raycaster.ray );
-            intersect = raycastResult;
-
-            // Position the little white dot at the end of the controller pointing ray
-            if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
-            // todo remove when mouse removed
-        } else if ( mouse.x !== null && mouse.y !== null ) {
-            raycaster.setFromCamera( mouse, camera );
-            intersect = raycastResult;
-        }
-
-        // Update targeted button state (if any)
-
-        if ( intersect && intersect.object.isUI ) {
-            if ( selectState ) {
-                // Component.setState internally call component.set with the options you defined in component.setupState
-                intersect.object.setState( 'selected' );
-
-            } else {
-                // Component.setState internally call component.set with the options you defined in component.setupState
-                intersect.object.setState( 'hovered' );
-            }
-
-        }
-
-        // Update non-targeted buttons state
-        this.objsToTest.forEach( ( obj ) => {
-            if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
-
-                // Component.setState internally call component.set with the options you defined in component.setupState
-                obj.setState( 'idle' );
-            }
-        } );
+    getAnswers() {
+        return this.answers;
     }
 
+    makeQuestionnaireVisible(nextTaskButton) {
+        this.questionContainer.visible = true;
+        this.container.visible = true;
+        this.nextTaskButton = nextTaskButton;
+
+    }
 }
