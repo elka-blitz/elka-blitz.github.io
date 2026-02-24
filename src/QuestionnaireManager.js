@@ -11,18 +11,53 @@ const mouse = new THREE.Vector2();
 mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
 
+const questionsArray = [
+    "How pleasant or enjoyable did you find this task?",
+    "How mentally activated or stimulated did you feel during this task?",
+    "How frustrated did you feel during this task?",
+    "I felt just the right amount of challenge.",
+    "My thoughts and actions flowed smoothly while drawing.",
+    "I was completely absorbed in what I was doing.",
+    "I knew exactly what to do at each step of the task.",
+    "How mentally demanding was the drawing task?",
+    "How hard did you have to work to accomplish your level of performance?",
+    "How rushed or pressured did you feel?",
+    "How successful were you in accomplishing the task?",
+]
+
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
     constructor(scene, objsToTest) {
-        // declarations
+        // MARK: Question Block
+        let qNum = 0;
+        this.answers = []
+
+        const questionContainer  = new ThreeMeshUI.Block( {
+            width: 1.3,
+            height: 0.5,
+            padding: 0.05,
+            justifyContent: 'center',
+            textAlign: 'left',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            // interLine: 0,
+        } );
+
+        questionContainer.position.set( 0, 1, -1.8 );
+        // questionContainer.rotation.x = -0.55;
+        scene.add( questionContainer );
+
+        const questionText = new ThreeMeshUI.Text( {
+            // content: 'This library supports line-break-friendly-characters,',
+            content: questionsArray[qNum],
+            fontSize: 0.055
+        } )
+
+        questionContainer.add(questionText);
+
+
+        // MARK: Answers
         this.objsToTest = objsToTest;
-
-
-        // makePanel
-        
-        // this.container block, in which we put the two buttons.
-        // We don't define width and height, it will be set automatically from the children's dimensions
-        // Note that we set contentDirection: "row-reverse", in order to orient the buttons horizontally
 
         this.container = new ThreeMeshUI.Block( {
             justifyContent: 'center',
@@ -109,6 +144,15 @@ export default class QuestionnaireManager {
                 onSet: () => {
 
                     console.log(`Next ${7 - i}`)
+                    this.answers.push(7 - i)
+                    qNum += 1;
+                    questionText.set({content: questionsArray[qNum]});
+
+                    // finished
+                    if (qNum === questionsArray.length) {
+                        console.log(this.answers)
+                        scene.remove(questionContainer, this.container)
+                    }
 
                 }
             } );
