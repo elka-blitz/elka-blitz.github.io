@@ -968,7 +968,7 @@ const Calibrate = () => {
 	desk_manager.lock();
 	isPracticeMode = true;
 	desk_manager.spawnDrawingSurface();
-	scene.background = green;
+	// scene.background = green;
 	red_button.makeInvisible();
 	nextButton.makeVisible();
 	desk_set = true;
