@@ -127,7 +127,6 @@ const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
-let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
@@ -893,10 +892,9 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
-	ThreeMeshUI.update(); // todo try putting this in conditional
-	if (isQuestionnaireMode) {
-		updateButtons();
-	}
+	ThreeMeshUI.update();
+	updateButtons();
+
 
 }
 
