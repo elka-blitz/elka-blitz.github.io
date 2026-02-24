@@ -113,7 +113,10 @@ export default class paintExporter {
         textDownload(JSON.stringify(this.deconstructed_meshes), 'deconstructed_meshes.txt');
     }
 
-    async compressAndDownload(jsonString, filename = 'deconstructed_meshes') {
+    async compressAndDownload(filename = 'deconstructed_meshes') {
+        
+        jsonString = JSON.stringify(this.deconstructed_meshes)
+
         // Convert string to Uint8Array
         const encoder = new TextEncoder();
         const data = encoder.encode(jsonString);
@@ -131,5 +134,6 @@ export default class paintExporter {
         a.download = filename + current_ts.toISOString() + '.gz'; // or .deflate
         a.click();
         URL.revokeObjectURL(url);
+        this.deconstructed_meshes = []
     }
 }
