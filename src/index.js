@@ -51,10 +51,10 @@ import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
-import questionnaireManager from './questionnaireManager.js'
 import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
+import psychometricQuestionnaire from "./questionnaireManager.js"
 
 
 const BROWSER_TESTING = false // todo remove before deployment
@@ -162,9 +162,6 @@ const persistentHandModels = {
   left: null,
   right: null
 };
-
-// MARK: Questionnaire
-let question_panel;
 
 let debugging_text;
 
@@ -288,10 +285,6 @@ function init() {
 	office_group.position.set(0, -0.3, 0);
 	office_group.rotateY(Math.PI / 5);
 
-	// MARK: Panel
-	question_panel = new questionnaireManager(scene, camera, tableGroup); // Load assetes on class initialisation
-	question_panel.setQuestionnaireVisibility(false); // Initially set the questionnaire to be invisible until desk is locked in place
-
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
@@ -343,7 +336,6 @@ function init() {
 				break;
 			case 65: // A
 				// question_panel.resetInputCubes();
-				question_panel.refresh();
 				break;
 		}
 	});
@@ -533,9 +525,7 @@ function onFrame(time, frame) {
 				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
-			question_panel.refresh();
 			// question_panel.spawnBoundingBoxes()
-			question_panel.makeCubesTransparent();
 		}
 	}
 
@@ -546,7 +536,6 @@ function onFrame(time, frame) {
 				child.material.opacity = 0.5;
 			}
 
-			question_panel.makeCubesTransparent();
 		});
 	}
 
@@ -558,8 +547,6 @@ function onFrame(time, frame) {
 			}
 		});
 	}
-
-	question_panel.updateBoxGradientFade();
 
 	desk_locked = desk_manager.getLock(); // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
@@ -596,8 +583,6 @@ function onFrame(time, frame) {
 			prevIsMovingDesk = isMovingDesk;
 			isMovingDesk = gamepad1.buttons[5].value > 0;
 		}
-
-		question_panel.inputChecker(stylus.position);
 
 
 		// MARK: Red desk lock button
@@ -760,13 +745,6 @@ function animate(time, frame) {
 
   renderer.render(scene, camera);
 
-	// MARK: take screenshot
-  if (takeScreenshot === true) {
-		canvas.toBlob((blob) => {
-			saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
-		});
-		takeScreenshot = false
-  }
 }
 
 

@@ -18,7 +18,6 @@ export default class paintExporter {
     }
 
     saveMesh(mesh) {
-        console.log('Meshin', mesh)
         this.saved_meshes.push(mesh)
     }
 
