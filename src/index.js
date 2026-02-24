@@ -127,6 +127,7 @@ const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
+let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
@@ -443,6 +444,11 @@ function init() {
 		selectState = false;
 
 	} );
+
+	vrControl.controllers.forEach(controller => {
+		controller.ray.visible = false;
+		controller.point.visible = false;
+	})
 
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
@@ -853,8 +859,10 @@ function animate(time, frame) {
   onFrame();
 
   renderer.render(scene, camera);
-	ThreeMeshUI.update();
-	updateButtons();
+	ThreeMeshUI.update(); // todo try putting this in conditional
+	if (isQuestionnaireMode) {
+		updateButtons();
+	}
 
 }
 
@@ -1270,7 +1278,14 @@ const ShowResultsMode = () => {
 	nextButton.makeInvisible();
 }
 
+// MARK: Questionnaire Mode
 const QuestionnaireMode = () => {
+
+	vrControl.controllers.forEach(controller => {
+		controller.ray.visible = true;
+		controller.point.visible = true;
+	})
+
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
 	yourDrawingText.makeInvisible();
@@ -1307,6 +1322,10 @@ const QuestionnaireMode = () => {
 }
 
 const SetupNextTask = () => {
+	vrControl.controllers.forEach(controller => {
+		controller.ray.visible = false;
+		controller.point.visible = false;
+	})
 
 	// todo export, task check
 	console.log(questionnaire1.getAnswers())
