@@ -57,7 +57,6 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 import { textDownload } from './csvFunctions';
 import { update } from "three/examples/jsm/libs/tween.module.js";
-import psychometricQuestionnaire from "./questionnaireManager.js"
 
 
 const BROWSER_TESTING = false // todo remove before deployment
