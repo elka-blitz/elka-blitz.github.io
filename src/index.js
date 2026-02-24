@@ -503,9 +503,9 @@ function init() {
 	interface_text = new UIText(scene);
 
 	const contextTextStr =
-		'You are an architect designing buildings for the city.' +
+		'You are an illustrator designing buildings for the city.' +
 		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
-		'\nThe three clients want to build a bakery, a studio and a library.' +
+		'\nThe three clients want to build a bakery, a florist, a studio and a library.' +
 		'\n\nPlease go ahead and draw some practice shapes. After that the tasks will begin. Good luck!';
 
 	const taskTextPanelStr = 'Task 1: The Bakery';
@@ -1323,6 +1323,11 @@ const QuestionnaireMode = () => {
 	yourDrawingText.makeInvisible();
 	scene.remove(svgManager.getSurface());
 
+	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.visible = false;
+	});
+
+
 	switch (taskNum) {
 		case 1:
 			questionnaire1.setPosition(deskCoords);
@@ -1368,11 +1373,6 @@ const SetupNextTask = () => {
 
 	// Oneline - Logs environment change and cycles to next environment in shuffled list
 	event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
-
-	svgWithPositionsArray.forEach((obj, i) => {
-		svgPaintsArray[i].mesh.visible = false;
-	});
-
 
 	desk_manager.makeSurfaceVisible()
 	nextButton.makeVisible();

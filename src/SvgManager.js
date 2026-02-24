@@ -207,7 +207,7 @@ export default class SvgManager {
 		paintArray.forEach((paint, i) => {
 			paintArray[i] = new TubePainter();
 			paintArray[i].mesh.material = new THREE.LineBasicMaterial({
-				color: colorArray[taskNum - 1],
+				color: "black",
 				linewidth: 4,
 			});
 			paintArray[i].setSize(0.2);
