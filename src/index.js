@@ -412,7 +412,7 @@ function init() {
 				// question_panel.moveInputCubesDown();
 				// paint_exporter_instance.screenShotCanvas(canvas)
 				// takeScreenshot = true;
-				// environment_switcher.loadNextEnvironmentCondition()
+				environment_switcher.loadNextEnvironmentCondition()
 				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
 				scene.background = green;
@@ -1285,22 +1285,26 @@ const ShowResultsMode = () => {
 		case 1:
 			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task1_loaded')
+			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task2_loaded')
+			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task3_loaded')
+			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task4_loaded')
+			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task4ParentManager.makeVertical();
 			break;
 	}
@@ -1379,7 +1383,7 @@ const SetupNextTask = () => {
 	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
 
 	// Oneline - Logs environment change and cycles to next environment in shuffled list
-	event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
+	// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
 	desk_manager.makeSurfaceVisible()
 	nextButton.makeVisible();

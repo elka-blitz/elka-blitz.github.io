@@ -21,4 +21,8 @@ To see raw bytestream: `sudo cat /dev/rfcomm0 | hexdump -C`
 ## Step 4
 - Change to data_processors directory
 
+### For real-time visualisation:
 - Run `python3 realtime_plot.py --serial /dev/rfcomm0 --baud 115200`
+
+### To store data to `.csv`
+- Run `python3 main.py --serial /dev/rfcomm0 --baud 115200 --csv`
