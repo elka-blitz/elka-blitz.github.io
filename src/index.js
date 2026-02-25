@@ -920,6 +920,30 @@ function onControllerConnected(e) {
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
+
+	} else if (e.data.profiles.includes("oculus-hand")) { // If hand, add hand model and store reference in persistentHandModels
+
+		console.log(e.data.handedness)
+		debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
+
+	} else { // if controller
+
+		// Depending on the controller's reported handedness, set the hand booleans accordingly.
+		if (e.data.handedness === 'left') {
+			// Stylus is in left hand, override left hand model logic
+			left_hand_override = true;
+			right_hand_override = false;
+		} else if (e.data.handedness === 'right') {
+			right_hand_override = true;
+			left_hand_override = false; // Reset right hand variable
+		}
+
+		// todo change variables?
+		stylus = e.target;
+		stylus.userData.painter = practicePaints[0];
+		gamepad1 = e.data.gamepad;
+		gamepadInterface = new GamepadWrapper(e.data.gamepad);
+
 	}
 
   	// MARK: Browser Testing setup
@@ -946,25 +970,13 @@ function onControllerConnected(e) {
 
 	}
 
-  // If hand, add hand model and store reference in persistentHandModels
-  if (e.data.profiles.includes("oculus-hand")) {
-	console.log(e.data.handedness)
-	// const hand = e.target;
-	// const handedness = e.data.handedness; // 'left' or 'right'
-	// const handModelFactory = new XRHandModelFactory();
-	// const handModel = handModelFactory.createHandModel(hand, 'boxes');
-	// hand.add(handModel);
-	// persistentHandModels[handedness] = handModel; // Store reference to the hand model
-	debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
-  }
-
-  // todo else do raycasting
 }
 
 // MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 	selectState = true;
+	console.log("select start")
 
 	const painter = stylus.userData.painter;
 	painter.moveTo(stylus.position);
@@ -975,6 +987,7 @@ function onSelectStart(e) {
 function onSelectEnd() {
   this.userData.isSelecting = false;
 	selectState = false;
+	console.log("select end")
 
 	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
 	try {
