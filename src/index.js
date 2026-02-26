@@ -68,8 +68,8 @@ let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-m
 let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
 let textNum = 0;
 let selectState = false;
-const mouse = new THREE.Vector2();
-mouse.x = mouse.y = null;
+// const mouse = new THREE.Vector2();
+// mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
 const objsToTest1 = [];
 const objsToTest2 = [];
@@ -127,6 +127,7 @@ const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
+let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
@@ -241,11 +242,11 @@ const saveBlob = (function() {
   };
 }());
 
-// todo test with mouse events removed
-window.addEventListener( 'pointermove', ( event ) => {
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-} );
+// // todo test with mouse events removed
+// window.addEventListener( 'pointermove', ( event ) => {
+// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+// 	mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+// } );
 
 window.addEventListener( 'pointerdown', () => {
 	selectState = true;
@@ -255,17 +256,17 @@ window.addEventListener( 'pointerup', () => {
 	selectState = false;
 } );
 
-window.addEventListener( 'touchstart', ( event ) => {
-	selectState = true;
-	mouse.x = ( event.touches[ 0 ].clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = -( event.touches[ 0 ].clientY / window.innerHeight ) * 2 + 1;
-} );
+// window.addEventListener( 'touchstart', ( event ) => {
+// 	selectState = true;
+// 	mouse.x = ( event.touches[ 0 ].clientX / window.innerWidth ) * 2 - 1;
+// 	mouse.y = -( event.touches[ 0 ].clientY / window.innerHeight ) * 2 + 1;
+// } );
 
-window.addEventListener( 'touchend', () => {
-	selectState = false;
-	mouse.x = null;
-	mouse.y = null;
-} );
+// window.addEventListener( 'touchend', () => {
+// 	selectState = false;
+// 	mouse.x = null;
+// 	mouse.y = null;
+// } );
 
 // MARK: INIT FUNC
 function init() {
@@ -1331,7 +1332,7 @@ const ShowResultsMode = () => {
 
 // MARK: Questionnaire Mode
 const QuestionnaireMode = () => {
-
+	isQuestionnaireMode = true;
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = true;
 		controller.point.visible = true;
@@ -1378,6 +1379,7 @@ const QuestionnaireMode = () => {
 }
 
 const SetupNextTask = () => {
+	isQuestionnaireMode = false;
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = false;
 		controller.point.visible = false;
@@ -1483,29 +1485,32 @@ const FinishMode = () => {
 		}
 	})
 }
+// MARK: Survey buttons intersection
 function updateButtons() {
+	const controllerId = left_hand_override ? 0 : 1;
 
 	// Find closest intersecting object
 
 	let intersect;
 	const objsToTest = getCurrentObjs();
 
-	if ( renderer.xr.isPresenting ) {
+	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
 
-		vrControl.setFromController( 0, raycaster.ray );
+		vrControl.setFromController( controllerId, raycaster.ray );
 
 		intersect = raycast();
 
 		// Position the little white dot at the end of the controller pointing ray
 		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
 
-	} else if ( mouse.x !== null && mouse.y !== null ) {
-
-		raycaster.setFromCamera( mouse, camera );
-
-		intersect = raycast();
-
 	}
+	// else if ( mouse.x !== null && mouse.y !== null ) {
+	//
+	// 	raycaster.setFromCamera( mouse, camera );
+	//
+	// 	intersect = raycast();
+	//
+	// }
 
 	// Update targeted button state (if any)
 
