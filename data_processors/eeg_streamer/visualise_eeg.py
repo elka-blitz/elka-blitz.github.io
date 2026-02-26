@@ -28,10 +28,10 @@ df['meditation_norm'] = (df['meditation'] - df['meditation'].min()) / (df['medit
 #sns.set_style("dark")
 sns.set(rc={'axes.facecolor': 'darkgrey', 'figure.facecolor': 'darkgrey'})
 
-sns.lineplot(data=df, x='timestamp_column', y='microvoltage_norm', label='micorvolts')
+sns.lineplot(data=df, x='timestamp_column', y='microvoltage_norm', label='microvolts')
 sns.lineplot(data=df, x='timestamp_column', y='focus_norm', label='attention')
 sns.lineplot(data=df, x='timestamp_column', y='meditation_norm', label='meditation')
-plt.title("Time Series Data Visualization")
+plt.title("Microvoltage over Time Normalised")
 plt.xticks(rotation=45)
 plt.legend()
 plt.show()
