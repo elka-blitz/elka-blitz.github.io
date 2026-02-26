@@ -42,21 +42,16 @@ import QuestionnaireManager from "./QuestionnaireManager";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
-import { Text } from 'troika-three-text';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import VRControl from './VRControl';
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
-import { buffer } from "three/examples/jsm/nodes/Nodes.js";
-import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
-import { textDownload } from './csvFunctions';
-import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -64,12 +59,8 @@ let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
 
-let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
-let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
-let textNum = 0;
 let selectState = false;
-// const mouse = new THREE.Vector2();
-// mouse.x = mouse.y = null;
+
 const raycaster = new THREE.Raycaster();
 const objsToTest1 = [];
 const objsToTest2 = [];
@@ -164,11 +155,6 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 	scoreSound.setBuffer(buffer);
 });
 
-
-// MARK: Environment
-// let office_group = new THREE.Group()
-// office_group.name = 'OfficeEnv'
-
 // Moderate stimulation environment global
 let msw_group = new THREE.Group()
 msw_group.name = 'msw_env'
@@ -207,7 +193,6 @@ let event_logger = new EventLogger() // Global event logger instance, can be use
 let paint_exporter_instance;
 
 let canvas
-let takeScreenshot = false
 
 // MARK: DeltaTime
 let accumulatedTime = 0;
@@ -242,31 +227,6 @@ const saveBlob = (function() {
   };
 }());
 
-// // todo test with mouse events removed
-// window.addEventListener( 'pointermove', ( event ) => {
-// 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-// 	mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-// } );
-
-window.addEventListener( 'pointerdown', () => {
-	selectState = true;
-} );
-
-window.addEventListener( 'pointerup', () => {
-	selectState = false;
-} );
-
-// window.addEventListener( 'touchstart', ( event ) => {
-// 	selectState = true;
-// 	mouse.x = ( event.touches[ 0 ].clientX / window.innerWidth ) * 2 - 1;
-// 	mouse.y = -( event.touches[ 0 ].clientY / window.innerHeight ) * 2 + 1;
-// } );
-
-// window.addEventListener( 'touchend', () => {
-// 	selectState = false;
-// 	mouse.x = null;
-// 	mouse.y = null;
-// } );
 
 // MARK: INIT FUNC
 function init() {
@@ -302,17 +262,6 @@ function init() {
 	gltfLoader.load('./assets/Desk.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
-
-	// gltfLoader.load(
-	// 	'./assets/office_environment.glb',
-	// 	function (gltf) {
-	// 		office_group.add(gltf.scene);
-	// 	},
-	// 	undefined,
-	// 	function (error) {
-	// 		console.error(error);
-	// 	},
-	// );
 
 	gltfLoader.load(
 		'./assets/lsw_env.glb',
@@ -363,9 +312,6 @@ function init() {
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup);
 
-	// office_group.scale.set(0.5, 0.5, 0.5)
-	// office_group.position.set(0, -0.3, 0);
-	// office_group.rotateY(Math.PI / 5);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -1494,57 +1440,35 @@ function updateButtons() {
 	const controllerId = left_hand_override ? 0 : 1;
 
 	// Find closest intersecting object
-
 	let intersect;
 	const objsToTest = getCurrentObjs();
 
 	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
 
 		vrControl.setFromController( controllerId, raycaster.ray );
-
 		intersect = raycast();
 
 		// Position the little white dot at the end of the controller pointing ray
-		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
+		if ( intersect ) vrControl.setPointerAt( controllerId, intersect.point );
 
 	}
-	// else if ( mouse.x !== null && mouse.y !== null ) {
-	//
-	// 	raycaster.setFromCamera( mouse, camera );
-	//
-	// 	intersect = raycast();
-	//
-	// }
 
 	// Update targeted button state (if any)
-
 	if ( intersect && intersect.object.isUI ) {
-
 		if ( selectState ) {
-
 			// Component.setState internally call component.set with the options you defined in component.setupState
 			intersect.object.setState( 'selected' );
-
 		} else {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
 			intersect.object.setState( 'hovered' );
-
 		}
-
 	}
 
 	// Update non-targeted buttons state
-
 	objsToTest.forEach( ( obj ) => {
-
 		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
-
 			// Component.setState internally call component.set with the options you defined in component.setupState
 			obj.setState( 'idle' );
-
 		}
-
 	} );
 
 }
