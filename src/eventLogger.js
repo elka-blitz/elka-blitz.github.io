@@ -47,4 +47,16 @@ export default class EventLogger {
         textDownload(stylus_data_string, "stylus_data")
         textDownload(task_event_data_string, "task_event_data")
     }
+
+	// Downloading the two files at once to prevent crashing and avoid having to request more pemissions from browser
+    downloadUnityData() {
+        let stylus_data_string = JSON.stringify(this.stylus_data_log)
+        let task_event_data_string = JSON.stringify(this.task_event_data_log)
+
+	let unity_data = {stylus_data_string: stylus_data_string, task_event_data_string : task_event_data_string}
+	let unity_data_string = JSON.stringify(unity_data)
+        // textDownload(stylus_data_string, "stylus_data")
+        // textDownload(task_event_data_string, "task_event_data")	
+	textDownload(unity_data_string, 'task_and_stylus_data')
+    }
 }
