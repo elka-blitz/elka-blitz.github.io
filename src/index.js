@@ -413,15 +413,6 @@ function init() {
 
 	vrControl = VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory );
 
-	vrControl.controllers[ 0 ].addEventListener( 'selectstart', () => {
-		selectState = true;
-
-	} );
-	vrControl.controllers[ 0 ].addEventListener( 'selectend', () => {
-
-		selectState = false;
-
-	} );
 	console.log("vrControl", vrControl)
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = false;
