@@ -192,7 +192,7 @@ const persistentHandModels = {
 
 let debugging_text;
 
-let controllerGrip1, controllerGrip2;
+let controller1, controllerGrip1, controller2, controllerGrip2;
 
 let mx_ink_connected = false; 
 let left_hand_override = false; 
@@ -440,35 +440,33 @@ function init() {
 	const handModelFactory = new XRHandModelFactory();
 
 	controllerGrip1 = getControllerGrip(0, renderer, controllerModelFactory);
+	controller1 = getController(
+		0,
+		renderer,
+		onControllerConnected,
+		onSelectStart,
+		onSelectEnd,
+	)
 	scene.add(controllerGrip1);
-	scene.add(
-		getController(
-			0,
-			renderer,
-			onControllerConnected,
-			onSelectStart,
-			onSelectEnd,
-		),
-	);
+	scene.add(controller1);
 
 	controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
+	controller2 = getController(
+		1,
+		renderer,
+		onControllerConnected,
+		onSelectStart,
+		onSelectEnd,
+	)
 	scene.add(controllerGrip2);
-	scene.add(
-		getController(
-			1,
-			renderer,
-			onControllerConnected,
-			onSelectStart,
-			onSelectEnd,
-		),
-	);
+	scene.add(controller2);
 
-	vrControl = VRControl( renderer, camera, scene );
+	controller1.name = 'controller-right';
+	controller2.name = 'controller-left';
 
-	scene.add( vrControl.controllerGrips[ 0 ], vrControl.controllers[ 0 ] );
+	vrControl = VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory );
 
 	vrControl.controllers[ 0 ].addEventListener( 'selectstart', () => {
-
 		selectState = true;
 
 	} );
@@ -477,6 +475,7 @@ function init() {
 		selectState = false;
 
 	} );
+	console.log("vrControl", vrControl)
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = false;
 		controller.point.visible = false;

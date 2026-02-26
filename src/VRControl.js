@@ -5,12 +5,10 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
-export default function VRControl( renderer ) {
+export default function VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory) {
 
     const controllers = [];
     const controllerGrips = [];
-
-    const controllerModelFactory = new XRControllerModelFactory();
 
     //////////////////
     // Lines helpers
@@ -102,14 +100,6 @@ export default function VRControl( renderer ) {
     // Controllers
     ////////////////
 
-    const controller1 = renderer.xr.getController( 0 );
-    const controller2 = renderer.xr.getController( 1 );
-
-    controller1.name = 'controller-right';
-    controller2.name = 'controller-left';
-
-    const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-    const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
 
     if ( controller1 ) controllers.push( controller1 );
     if ( controller2 ) controllers.push( controller2 );
@@ -128,11 +118,11 @@ export default function VRControl( renderer ) {
 
     } );
 
-    controllerGrips.forEach( ( controllerGrip ) => {
-
-        controllerGrip.add( controllerModelFactory.createControllerModel( controllerGrip ) );
-
-    } );
+    // controllerGrips.forEach( ( controllerGrip ) => {
+    //
+    //     controllerGrip.add( controllerModelFactory.createControllerModel( controllerGrip ) );
+    //
+    // } );
 
     //////////////
     // Functions
