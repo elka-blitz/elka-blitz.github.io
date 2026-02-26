@@ -833,7 +833,7 @@ function onFrame(time, frame) {
 			// Should be triggered alongside
 			// downloadCSV(JSON.stringify(logData));
 			event_logger.logEventData('Back button pressed');
-
+			event_logger.downloadUnityData()
 			// MARK: Export
 			// Export all data
 			// event_logger.downloadAllData(); // Download stylus and task event data as text files
