@@ -12,7 +12,7 @@ export class UIText {
     this.UIText.color = 0xffffff;
     this.UIText.anchorX = 'center';
     this.UIText.anchorY = 'middle';
-    this.UIText.text = 'Welcome!'
+    this.UIText.text = ''
     scene.add(this.UIText)
     this.UIText.position.set(0, 0, -2) // Initial position in front of the camera, will be updated to follow the camera in the animation loop
     }   

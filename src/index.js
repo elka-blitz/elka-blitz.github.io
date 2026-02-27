@@ -770,7 +770,8 @@ function onFrame(time, frame) {
 			// Should be triggered alongside
 			// downloadCSV(JSON.stringify(logData));
 			event_logger.logEventData('Back button pressed');
-
+			//event_logger.downloadUnityData()
+			//
 			// MARK: Export
 			// Export all data
 			// event_logger.downloadAllData(); // Download stylus and task event data as text files
@@ -838,8 +839,9 @@ function animate(time, frame) {
 
 // MARK: Connect Event
 function onControllerConnected(e) {
-	event_logger.logEventData('Controller Connected')
-	console.log('Controller connected:', e.data);
+	event_logger.logEventData(e.data.profiles[0] + ' ControllerConnected-handedness=' + e.data.handedness)
+	console.log('Controller connected:' + e.data.profiles[0]);
+
 	if (e.data.profiles.includes("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
