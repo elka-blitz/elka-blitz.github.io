@@ -181,9 +181,7 @@ let debugging_text;
 
 let controller1, controllerGrip1, controller2, controllerGrip2;
 
-let mx_ink_connected = false; 
-let left_hand_override = false; 
-let right_hand_override = false; 
+let mx_ink_connected = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
@@ -846,14 +844,6 @@ function onControllerConnected(e) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
 		// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
-		if (e.data.handedness === 'left') {
-			// Stylus is in left hand, override left hand model logic
-			left_hand_override = true;
-			right_hand_override = false;
-		} else if (e.data.handedness === 'right') {
-			right_hand_override = true;
-			left_hand_override = false; // Reset right hand variable
-		}
 
 		stylus = e.target;
 		stylus.userData.painter = practicePaints[0];
@@ -867,15 +857,6 @@ function onControllerConnected(e) {
 
 	} else { // if controller
 
-		// Depending on the controller's reported handedness, set the hand booleans accordingly.
-		if (e.data.handedness === 'left') {
-			// Stylus is in left hand, override left hand model logic
-			left_hand_override = true;
-			right_hand_override = false;
-		} else if (e.data.handedness === 'right') {
-			right_hand_override = true;
-			left_hand_override = false; // Reset right hand variable
-		}
 
 		// todo change variables?
 		stylus = e.target;
@@ -1019,7 +1000,7 @@ function raycast() {
 }
 // MARK: Survey buttons intersection
 function updateButtons() {
-	const controllerId = left_hand_override ? 1 : 0;
+
 
 	// Find closest intersecting object
 	let intersect;
@@ -1027,11 +1008,11 @@ function updateButtons() {
 
 	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
 
-		vrControl.setFromController( controllerId, raycaster.ray );
+		vrControl.setFromController( 0, raycaster.ray );
 		intersect = raycast();
 
 		// Position the little white dot at the end of the controller pointing ray
-		if ( intersect ) vrControl.setPointerAt( controllerId, intersect.point );
+		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
 
 	}
 
@@ -1317,9 +1298,9 @@ const QuestionnaireMode = () => {
 	isQuestionnaireMode = true;
 
 	// make ray and point visible for active controller
-	const controllerIndex = left_hand_override ? 1 : 0
-	vrControl.controllers[controllerIndex].ray.visible = true;
-	vrControl.controllers[controllerIndex].point.visible = true;
+	// todo make it not an array
+	vrControl.controllers[0].ray.visible = true;
+	vrControl.controllers[0].point.visible = true;
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
