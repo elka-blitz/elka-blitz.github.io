@@ -381,7 +381,7 @@ function init() {
 
 	renderer.setAnimationLoop(animate);
 
-	// controller setup
+	// MARK: controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 
 	const handModelFactory = new XRHandModelFactory();
@@ -998,7 +998,8 @@ function getCurrentObjs() {
 
 // MARK: Raycast function
 function raycast() {
-	const objsToTest = getCurrentObjs()
+	const objsToTest = getCurrentObjs();
+
 	return objsToTest.reduce( ( closestIntersection, obj ) => {
 		const intersection = raycaster.intersectObject( obj, true );
 
@@ -1012,6 +1013,43 @@ function raycast() {
 		return closestIntersection;
 
 	}, null );
+
+}
+// MARK: Survey buttons intersection
+function updateButtons() {
+	const controllerId = left_hand_override ? 1 : 0;
+
+	// Find closest intersecting object
+	let intersect;
+	const objsToTest = getCurrentObjs();
+
+	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
+
+		vrControl.setFromController( controllerId, raycaster.ray );
+		intersect = raycast();
+
+		// Position the little white dot at the end of the controller pointing ray
+		if ( intersect ) vrControl.setPointerAt( controllerId, intersect.point );
+
+	}
+
+	// Update targeted button state (if any)
+	if ( intersect && intersect.object.isUI ) {
+		if ( selectState ) {
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+		} else {
+			intersect.object.setState( 'hovered' );
+		}
+	}
+
+	// Update non-targeted buttons state
+	objsToTest.forEach( ( obj ) => {
+		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+		}
+	} );
 
 }
 
@@ -1273,11 +1311,13 @@ const ShowResultsMode = () => {
 
 // MARK: Questionnaire Mode
 const QuestionnaireMode = () => {
+
 	isQuestionnaireMode = true;
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = true;
-		controller.point.visible = true;
-	})
+
+	// make ray and point visible for active controller
+	const controllerIndex = left_hand_override ? 1 : 0
+	vrControl.controllers[controllerIndex].ray.visible = true;
+	vrControl.controllers[controllerIndex].point.visible = true;
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
@@ -1425,41 +1465,4 @@ const FinishMode = () => {
 				break;
 		}
 	})
-}
-// MARK: Survey buttons intersection
-function updateButtons() {
-	const controllerId = left_hand_override ? 0 : 1;
-
-	// Find closest intersecting object
-	let intersect;
-	const objsToTest = getCurrentObjs();
-
-	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
-
-		vrControl.setFromController( controllerId, raycaster.ray );
-		intersect = raycast();
-
-		// Position the little white dot at the end of the controller pointing ray
-		if ( intersect ) vrControl.setPointerAt( controllerId, intersect.point );
-
-	}
-
-	// Update targeted button state (if any)
-	if ( intersect && intersect.object.isUI ) {
-		if ( selectState ) {
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			intersect.object.setState( 'selected' );
-		} else {
-			intersect.object.setState( 'hovered' );
-		}
-	}
-
-	// Update non-targeted buttons state
-	objsToTest.forEach( ( obj ) => {
-		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			obj.setState( 'idle' );
-		}
-	} );
-
 }
