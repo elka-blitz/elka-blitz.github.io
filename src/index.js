@@ -397,19 +397,19 @@ function init() {
 	scene.add(controllerGrip1);
 	scene.add(controller1);
 
-	controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
-	controller2 = getController(
-		1,
-		renderer,
-		onControllerConnected,
-		onSelectStart,
-		onSelectEnd,
-	)
-	scene.add(controllerGrip2);
-	scene.add(controller2);
+	// controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
+	// controller2 = getController(
+	// 	1,
+	// 	renderer,
+	// 	onControllerConnected,
+	// 	onSelectStart,
+	// 	onSelectEnd,
+	// )
+	// scene.add(controllerGrip2);
+	// scene.add(controller2);
 
 	controller1.name = 'controller-right';
-	controller2.name = 'controller-left';
+	// controller2.name = 'controller-left';
 
 	vrControl = VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory );
 

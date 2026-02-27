@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
-export default function VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory) {
+export default function VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2) {
 
     const controllers = [];
     const controllerGrips = [];
@@ -102,10 +102,10 @@ export default function VRControl( renderer, controller1, controller2, controlle
 
 
     if ( controller1 ) controllers.push( controller1 );
-    if ( controller2 ) controllers.push( controller2 );
+    // if ( controller2 ) controllers.push( controller2 );
 
     if ( controllerGrip1 ) controllerGrips.push( controllerGrip1 );
-    if ( controllerGrip2 ) controllerGrips.push( controllerGrip2 );
+    // if ( controllerGrip2 ) controllerGrips.push( controllerGrip2 );
 
     controllers.forEach( ( controller ) => {
 
