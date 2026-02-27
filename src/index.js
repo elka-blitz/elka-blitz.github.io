@@ -177,8 +177,6 @@ const persistentHandModels = {
   right: null
 };
 
-let debugging_text;
-
 let controller1, controllerGrip1, controller2, controllerGrip2;
 
 let mx_ink_connected = false;
@@ -850,12 +848,14 @@ function onControllerConnected(e) {
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
-	} else if (e.data.profiles.includes("oculus-hand")) { // If hand, add hand model and store reference in persistentHandModels
-
-		console.log(e.data.handedness)
-		debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
-
-	} else { // if controller
+	}
+	// else if (e.data.profiles.includes("oculus-hand")) { // If hand, add hand model and store reference in persistentHandModels
+	//
+	// 	console.log(e.data.handedness)
+	// 	interface_text.updateText("Hand connected:"  + e.data.handedness)
+	//
+	// }
+	else if (e.data.profiles.includes("meta-quest-touch-plus")){ // if controller
 
 
 		// todo change variables?
