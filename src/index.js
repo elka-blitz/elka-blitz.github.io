@@ -166,16 +166,6 @@ lsw_group.name = 'lsw_env'
 
 // MARK: Hands
 let hand1, hand2;
-const handModels = {
-	left: null,
-	right: null
-};
-
-// Keep references to hand models that persist
-const persistentHandModels = {
-  left: null,
-  right: null
-};
 
 let controller1, controllerGrip1, controller2, controllerGrip2;
 
@@ -382,6 +372,7 @@ function init() {
 
 	const handModelFactory = new XRHandModelFactory();
 
+	// should only ever be one controller able to give input
 	controllerGrip1 = getControllerGrip(0, renderer, controllerModelFactory);
 	controller1 = getController(
 		0,
@@ -393,23 +384,10 @@ function init() {
 	scene.add(controllerGrip1);
 	scene.add(controller1);
 
-	// controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
-	// controller2 = getController(
-	// 	1,
-	// 	renderer,
-	// 	onControllerConnected,
-	// 	onSelectStart,
-	// 	onSelectEnd,
-	// )
-	// scene.add(controllerGrip2);
-	// scene.add(controller2);
-
 	controller1.name = 'controller-right';
-	// controller2.name = 'controller-left';
 
-	vrControl = VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2, controllerModelFactory );
+	vrControl = VRControl( renderer, controller1, controllerGrip1 );
 
-	console.log("vrControl", vrControl)
 	vrControl.controllers.forEach(controller => {
 		controller.ray.visible = false;
 		controller.point.visible = false;
@@ -841,7 +819,6 @@ function onControllerConnected(e) {
 	if (e.data.profiles.includes("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
-		// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
 
 		stylus = e.target;
 		stylus.userData.painter = practicePaints[0];
@@ -849,16 +826,9 @@ function onControllerConnected(e) {
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
 	}
-	// else if (e.data.profiles.includes("oculus-hand")) { // If hand, add hand model and store reference in persistentHandModels
-	//
-	// 	console.log(e.data.handedness)
-	// 	interface_text.updateText("Hand connected:"  + e.data.handedness)
-	//
-	// }
+
 	else if (e.data.profiles.includes("meta-quest-touch-plus")){ // if controller
 
-
-		// todo change variables?
 		stylus = e.target;
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
@@ -1040,7 +1010,7 @@ function updateButtons() {
 // MARK: Button Feedback
 function buttonFeedback() {
 	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
-	gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+	gamepadInterface && gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 	clickSound.play(); // Sound effect for button press
 }
 

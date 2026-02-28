@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
-export default function VRControl( renderer, controller1, controller2, controllerGrip1, controllerGrip2) {
+export default function VRControl( renderer, controller1, controllerGrip1) {
 
     const controllers = [];
     const controllerGrips = [];
