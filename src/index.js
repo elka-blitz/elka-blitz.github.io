@@ -622,7 +622,7 @@ function onFrame(time, frame) {
 
 		// MARK: Red desk lock button
 		if (red_button.returnExists() === true) {
-			if (red_button.pressCheck(stylusPos, scene, 'white') === true) {
+			if (red_button.pressCheck(stylus.position, scene, 'white') === true) {
 				buttonFeedback();
 				Calibrate();
 			}
@@ -631,7 +631,7 @@ function onFrame(time, frame) {
 		// MARK: Practice/Task
 		if (nextButton.returnExists() === true) {
 			if (
-				nextButton.pressCheckReusable(stylusPos, scene, 'white') ===
+				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
 					true &&
 				!wasChangeButton
 			) {
@@ -639,7 +639,7 @@ function onFrame(time, frame) {
 				isPracticeMode ? PracticeMode() : TaskMode();
 			}
 			wasChangeButton = nextButton.pressCheckReusable(
-				stylusPos,
+				stylus.position,
 				scene,
 				'white',
 			);
@@ -648,19 +648,19 @@ function onFrame(time, frame) {
 		// MARK: Show result button
 		if (resultButton.returnExists() === true) {
 			if (
-				resultButton.pressCheck(stylusPos, scene, 'white') === true &&
+				resultButton.pressCheck(stylus.position, scene, 'white') === true &&
 				!wasResultButton
 			) {
 				buttonFeedback();
 				ShowResultsMode();
 			}
-			wasResultButton = nextButton.pressCheck(stylusPos, scene, 'white');
+			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
 		}
 
 		// MARK: Start survey button
 		if (surveyButton.returnExists() === true) {
 			if (
-				surveyButton.pressCheck(stylusPos, scene, 'white') === true &&
+				surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
 				!wasSurveyButton
 			) {
 				buttonFeedback();
@@ -668,7 +668,7 @@ function onFrame(time, frame) {
 				QuestionnaireMode();
 			}
 			wasSurveyButton = surveyButton.pressCheck(
-				stylusPos,
+				stylus.position,
 				scene,
 				'white',
 			);
@@ -678,7 +678,7 @@ function onFrame(time, frame) {
 		// MARK: Next task button
 		if (nextTaskButton.returnExists() === true) {
 			if (
-				nextTaskButton.pressCheck(stylusPos, scene, 'white') === true &&
+				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
 				!wasNextTaskButton
 			) {
 				buttonFeedback();
@@ -693,7 +693,7 @@ function onFrame(time, frame) {
 
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
-				stylusPos,
+				stylus.position,
 				scene,
 				'white',
 			);
@@ -830,7 +830,7 @@ function onControllerConnected(e) {
 		stylusPos = {
 			x: e.target.position.x,
 			y: e.target.position.y,
-			z: e.target.position.z - 0.03,
+			z: e.target.position.z - 0.05,
 		}
 		vrControl.drawBrush(stylusPos)
 		stylus.userData.painter = practicePaints[0];
