@@ -814,9 +814,9 @@ function animate(time, frame) {
 // MARK: Connect Event
 function onControllerConnected(e) {
 	event_logger.logEventData(e.data.profiles[0] + ' ControllerConnected-handedness=' + e.data.handedness)
-	console.log('Controller connected:' + e.data.profiles[0]);
+	console.log('Controller connected:' + e.data.profiles);
 
-	if (e.data.profiles.includes("logitech-mx-ink")) {
+	if (e.data.profiles[0] === ("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
 
@@ -827,7 +827,7 @@ function onControllerConnected(e) {
 
 	}
 
-	else if (e.data.profiles.includes("meta-quest-touch-plus")){ // if controller
+	else if (e.data.profiles[0] ===("meta-quest-touch-plus")){ // if controller
 
 		stylus = e.target;
 		stylus.userData.painter = practicePaints[0];
@@ -1010,8 +1010,10 @@ function updateButtons() {
 // MARK: Button Feedback
 function buttonFeedback() {
 	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
-	gamepadInterface && gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 	clickSound.play(); // Sound effect for button press
+
+	// checks if gamepad has haptics (breaks on hand)
+	gamepadInterface.getHapticActuator(0) && gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 }
 
 // MARK: SVG Load Functions
