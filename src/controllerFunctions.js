@@ -3,7 +3,6 @@ export const getController = (index, renderer, onControllerConnected, onSelectSt
 	controller.addEventListener('connected', onControllerConnected);
 	controller.addEventListener('selectstart', onSelectStart);
 	controller.addEventListener('selectend', onSelectEnd);
-	controller.addEventListener('inputsourcechange', onSwitchController);
 	return controller
 }
 

@@ -45,7 +45,7 @@ import SvgManager from './SvgManager';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
-import VRControl from './VRControl';
+import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { getRelativePosition } from './shapeFunctions';
@@ -122,7 +122,6 @@ let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
-let interface_text2;
 
 // Desk declarations
 let isMovingDesk = false;
@@ -381,7 +380,6 @@ function init() {
 		onControllerConnected,
 		onSelectStart,
 		onSelectEnd,
-		onSwitchController,
 	)
 	scene.add(controllerGrip1);
 	scene.add(controller1);
@@ -389,12 +387,7 @@ function init() {
 
 	controller1.name = 'controller-right';
 
-	vrControl = VRControl( renderer, controller1, controllerGrip1 );
-
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = false;
-		controller.point.visible = false;
-	})
+	vrControl = new VRControllerManager( renderer, controller1, controllerGrip1 );
 
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
@@ -414,7 +407,6 @@ function init() {
 
 	// MARK: UI Elements
 	interface_text = new UIText(scene);
-	interface_text2 = new UIText(scene);
 
 	const contextTextStr =
 		'You are an illustrator designing buildings for the city.' +
@@ -567,7 +559,6 @@ function onFrame(time, frame) {
 				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
-			interface_text2.animateTextToCamera(camera);
 			// question_panel.spawnBoundingBoxes()
 		}
 	}
@@ -831,7 +822,6 @@ function onControllerConnected(e) {
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
 	}
-
 	else if (e.data.profiles[0] === ("meta-quest-touch-plus")){ // if controller
 
 		stylus = e.target;
@@ -890,31 +880,6 @@ function onSelectEnd() {
 	}
 	catch (error) {
 		console.error("Error saving painting array:", error);
-	}
-}
-
-// MARK: Controller type change
-function onSwitchController(e) {
-	for (const added of e.added) {
-		// added.hand is true for hand-tracking; added.gamepad exists for controllers
-		console.log('added', added);
-		if (added.hand) {
-			interface_text.updateText("Hand!")
-		} else if (added.gamepad) {
-			interface_text.updateText("Gamepad!")
-
-		}
-	}
-
-	// ev.removed: inputSources that went away
-	for (const removed of e.removed) {
-		console.log('removed', removed);
-		if (removed.hand) {
-			interface_text2.updateText("Hand removed");
-		} else if (removed.gamepad) {
-			interface_text2.updateText("gamepad removed");
-
-		}
 	}
 }
 
@@ -1008,11 +973,11 @@ function updateButtons() {
 
 	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
 
-		vrControl.setFromController( 0, raycaster.ray );
+		vrControl.setFromController(raycaster.ray);
 		intersect = raycast();
 
 		// Position the little white dot at the end of the controller pointing ray
-		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
+		if ( intersect ) vrControl.setPointerAt(intersect.point);
 
 	}
 
@@ -1303,9 +1268,7 @@ const QuestionnaireMode = () => {
 	isQuestionnaireMode = true;
 
 	// make ray and point visible for active controller
-	// todo make it not an array
-	vrControl.controllers[0].ray.visible = true;
-	vrControl.controllers[0].point.visible = true;
+	vrControl.makeRayVisible();
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
@@ -1349,10 +1312,7 @@ const QuestionnaireMode = () => {
 
 const SetupNextTask = () => {
 	isQuestionnaireMode = false;
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = false;
-		controller.point.visible = false;
-	})
+	vrControl.makeRayInvisible()
 
 	// todo export, task check
 	console.log(questionnaire1.getAnswers())
