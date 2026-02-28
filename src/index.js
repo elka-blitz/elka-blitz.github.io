@@ -795,7 +795,6 @@ function animate(time, frame) {
 			}
 		}
 		if (!isDrawingDisabled) {
-			interface_text.updateText(gamepad1)
 			handleDrawing(stylus);
 		}
 
