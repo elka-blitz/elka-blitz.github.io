@@ -827,7 +827,7 @@ function onControllerConnected(e) {
 
 	}
 
-	else if (e.data.profiles[0] ===("meta-quest-touch-plus")){ // if controller
+	else if (e.data.profiles[0] === ("meta-quest-touch-plus")){ // if controller
 
 		stylus = e.target;
 		stylus.userData.painter = practicePaints[0];
@@ -1013,7 +1013,10 @@ function buttonFeedback() {
 	clickSound.play(); // Sound effect for button press
 
 	// checks if gamepad has haptics (breaks on hand)
-	gamepadInterface.getHapticActuator(0) && gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
+	const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
+	if (actuator && typeof actuator.pulse === 'function') {
+		actuator.pulse(1.0, 200);
+	}
 }
 
 // MARK: SVG Load Functions
