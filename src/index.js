@@ -795,6 +795,7 @@ function animate(time, frame) {
 			}
 		}
 		if (!isDrawingDisabled) {
+			interface_text.updateText(gamepad1)
 			handleDrawing(stylus);
 		}
 
@@ -1267,7 +1268,7 @@ const ShowResultsMode = () => {
 	nextButton.makeInvisible();
 }
 
-// MARK: Questionnaire Mode
+// MARK: MODE: Questionnaire
 const QuestionnaireMode = () => {
 
 	isQuestionnaireMode = true;
@@ -1370,9 +1371,8 @@ const SetupNextTask = () => {
 			break;
 	}
 }
-
+// MARK: MODE:  Finish
 const FinishMode = () => {
-	// todo other one to export thank you Lukas
 	event_logger.logEventData(questionnaire4.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
