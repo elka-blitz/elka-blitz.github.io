@@ -122,6 +122,7 @@ let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
+let interface_text2;
 
 // Desk declarations
 let isMovingDesk = false;
@@ -380,9 +381,11 @@ function init() {
 		onControllerConnected,
 		onSelectStart,
 		onSelectEnd,
+		onSwitchController,
 	)
 	scene.add(controllerGrip1);
 	scene.add(controller1);
+	console.log(controller1, controllerGrip1)
 
 	controller1.name = 'controller-right';
 
@@ -411,6 +414,7 @@ function init() {
 
 	// MARK: UI Elements
 	interface_text = new UIText(scene);
+	interface_text2 = new UIText(scene);
 
 	const contextTextStr =
 		'You are an illustrator designing buildings for the city.' +
@@ -563,6 +567,7 @@ function onFrame(time, frame) {
 				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
 			interface_text.animateTextToCamera(camera);
+			interface_text2.animateTextToCamera(camera);
 			// question_panel.spawnBoundingBoxes()
 		}
 	}
@@ -885,6 +890,31 @@ function onSelectEnd() {
 	}
 	catch (error) {
 		console.error("Error saving painting array:", error);
+	}
+}
+
+// MARK: Controller type change
+function onSwitchController(e) {
+	for (const added of e.added) {
+		// added.hand is true for hand-tracking; added.gamepad exists for controllers
+		console.log('added', added);
+		if (added.hand) {
+			interface_text.updateText("Hand!")
+		} else if (added.gamepad) {
+			interface_text.updateText("Gamepad!")
+
+		}
+	}
+
+	// ev.removed: inputSources that went away
+	for (const removed of e.removed) {
+		console.log('removed', removed);
+		if (removed.hand) {
+			interface_text2.updateText("Hand removed");
+		} else if (removed.gamepad) {
+			interface_text2.updateText("gamepad removed");
+
+		}
 	}
 }
 
