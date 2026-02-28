@@ -35,7 +35,7 @@ function generatePointerTexture() {
     ctx.arc( 32, 32, 29, 0, 2 * Math.PI );
     ctx.lineWidth = 5;
     ctx.stroke();
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = 'magenta';
     ctx.fill();
 
     return canvas;
@@ -164,6 +164,32 @@ export default class VRControllerManager {
     makeRayInvisible() {
         this.ray.visible = false;
         this.point.visible = false;
+    }
+
+    drawBrush(position) {
+        const spriteMaterial = new THREE.SpriteMaterial( {
+            map: new THREE.CanvasTexture( generatePointerTexture() ),
+            sizeAttenuation: false,
+            depthTest: false
+        } );
+
+        const pointer = new THREE.Sprite( spriteMaterial );
+
+        pointer.scale.set( 0.015, 0.015, 1 );
+        pointer.renderOrder = Infinity;
+
+        const brush = pointer.clone();
+
+        this.controller.add( brush );
+        this.controller.brush = brush;
+
+        // const localPos = this.controller.worldToLocal( position );
+        this.controller.brush.position.copy( position );
+    }
+
+
+    getBrush() {
+        return this.controller.brush;
     }
 
 

@@ -70,6 +70,7 @@ const objsToTest4 = [];
 // MARK: setup declarations
 let camera, scene, renderer, vrControl;
 let stylus = null;
+let stylusPos;
 let gamepad1;
 let gamepadInterface;
 let contextText, taskTextPanel, originalText, yourDrawingText;
@@ -609,7 +610,7 @@ function onFrame(time, frame) {
 				Unsure how best to utilise it. Example below makes a unicode speed bar
 		*/
 
-		// let speed = speed_meter.getSpeed(stylus.position)
+		// let speed = speed_meter.getSpeed(stylusPos)
 		// interface_text.updateText('▮'.repeat(speed))
 
 		// MARK: Desk Moving button
@@ -621,7 +622,7 @@ function onFrame(time, frame) {
 
 		// MARK: Red desk lock button
 		if (red_button.returnExists() === true) {
-			if (red_button.pressCheck(stylus.position, scene, 'white') === true) {
+			if (red_button.pressCheck(stylusPos, scene, 'white') === true) {
 				buttonFeedback();
 				Calibrate();
 			}
@@ -630,7 +631,7 @@ function onFrame(time, frame) {
 		// MARK: Practice/Task
 		if (nextButton.returnExists() === true) {
 			if (
-				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
+				nextButton.pressCheckReusable(stylusPos, scene, 'white') ===
 					true &&
 				!wasChangeButton
 			) {
@@ -638,7 +639,7 @@ function onFrame(time, frame) {
 				isPracticeMode ? PracticeMode() : TaskMode();
 			}
 			wasChangeButton = nextButton.pressCheckReusable(
-				stylus.position,
+				stylusPos,
 				scene,
 				'white',
 			);
@@ -647,19 +648,19 @@ function onFrame(time, frame) {
 		// MARK: Show result button
 		if (resultButton.returnExists() === true) {
 			if (
-				resultButton.pressCheck(stylus.position, scene, 'white') === true &&
+				resultButton.pressCheck(stylusPos, scene, 'white') === true &&
 				!wasResultButton
 			) {
 				buttonFeedback();
 				ShowResultsMode();
 			}
-			wasResultButton = nextButton.pressCheck(stylus.position, scene, 'white');
+			wasResultButton = nextButton.pressCheck(stylusPos, scene, 'white');
 		}
 
 		// MARK: Start survey button
 		if (surveyButton.returnExists() === true) {
 			if (
-				surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
+				surveyButton.pressCheck(stylusPos, scene, 'white') === true &&
 				!wasSurveyButton
 			) {
 				buttonFeedback();
@@ -667,7 +668,7 @@ function onFrame(time, frame) {
 				QuestionnaireMode();
 			}
 			wasSurveyButton = surveyButton.pressCheck(
-				stylus.position,
+				stylusPos,
 				scene,
 				'white',
 			);
@@ -677,7 +678,7 @@ function onFrame(time, frame) {
 		// MARK: Next task button
 		if (nextTaskButton.returnExists() === true) {
 			if (
-				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
+				nextTaskButton.pressCheck(stylusPos, scene, 'white') === true &&
 				!wasNextTaskButton
 			) {
 				buttonFeedback();
@@ -692,7 +693,7 @@ function onFrame(time, frame) {
 
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
-				stylus.position,
+				stylusPos,
 				scene,
 				'white',
 			);
@@ -786,8 +787,8 @@ function animate(time, frame) {
 			isDrawing = gamepad1.buttons[5].value > 0;
 
 			if (isDrawing && !prevIsDrawing) {
-				const painter = stylus.userData.painter;
-				painter.moveTo(stylus.position);
+				const painter = stylus?.userData.painter;
+				painter.moveTo(stylusPos);
 			}
 		}
 		if (!isDrawingDisabled) {
@@ -817,6 +818,7 @@ function onControllerConnected(e) {
 		mx_ink_connected = true;
 
 		stylus = e.target;
+		stylusPos = e.target.position
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
@@ -825,6 +827,12 @@ function onControllerConnected(e) {
 	else if (e.data.profiles[0] === ("meta-quest-touch-plus")){ // if controller
 
 		stylus = e.target;
+		stylusPos = {
+			x: e.target.position.x,
+			y: e.target.position.y,
+			z: e.target.position.z - 0.03,
+		}
+		vrControl.drawBrush(stylusPos)
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
@@ -833,11 +841,6 @@ function onControllerConnected(e) {
 
   	// MARK: Browser Testing setup
 	if (BROWSER_TESTING) {
-		// normal setup
-		stylus = e.target;
-		stylus.userData.painter = practicePaints[0];
-		gamepad1 = e.data.gamepad;
-		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
 		// desk lock event simulation
 		desk_manager.slideToFront(camera, stylus, tableGroup);
@@ -864,7 +867,7 @@ function onSelectStart(e) {
 	console.log("select start")
 
 	const painter = stylus.userData.painter;
-	painter.moveTo(stylus.position);
+	painter.moveTo(stylusPos);
 	this.userData.isSelecting = true;
 }
 
@@ -915,7 +918,8 @@ function handleDrawing(controller) {
 	}
 
 	if (gamepad1) {
-		const relativePos = getRelativePosition(stylus, currentBox);
+		const brush = vrControl.getBrush();
+		const relativePos = brush ? getRelativePosition(brush, currentBox) : getRelativePosition(stylus, currentBox);
 		if (userData.isSelecting || isDrawing) {
 			cursor.set(relativePos.x, relativePos.y, relativePos.z);
 			painter.lineTo(cursor);
