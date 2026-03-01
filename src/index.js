@@ -1118,14 +1118,14 @@ const Calibrate = () => {
 	contextText.makeVisible();
 	loadSVG(practiceSvgArray[0], CENTER_POSITION);
 	stylus.userData.painter = practicePaints[0];
-}
-
-// MARK: MODE: Practice
-const PracticeMode = () => {
 	// only draw brush once and only draw it on controller
 	if (!mx_ink_connected) {
 		vrControl.drawBrush(stylusPos)
 	}
+}
+
+// MARK: MODE: Practice
+const PracticeMode = () => {
 	// iterating
 	if (practiceShapeIndex < practiceSvgArray.length - 1) {
 		practiceShapeIndex += 1;
