@@ -830,9 +830,8 @@ function onControllerConnected(e) {
 		stylusPos = {
 			x: e.target.position.x,
 			y: e.target.position.y,
-			z: e.target.position.z - 0.055,
+			z: e.target.position.z - 0.06,
 		}
-		vrControl.drawBrush(stylusPos)
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
@@ -1123,6 +1122,10 @@ const Calibrate = () => {
 
 // MARK: MODE: Practice
 const PracticeMode = () => {
+	// only draw brush once and only draw it on controller
+	if (!mx_ink_connected) {
+		vrControl.drawBrush(stylusPos)
+	}
 	// iterating
 	if (practiceShapeIndex < practiceSvgArray.length - 1) {
 		practiceShapeIndex += 1;
