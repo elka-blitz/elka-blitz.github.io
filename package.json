@@ -22,5 +22,9 @@
 		"three": "0.165.0",
 		"three-mesh-ui": "^6.5.4",
 		"troika-three-text": "0.49.1"
+	},
+	"overrides": {
+		"serialize-javascript": "^7.0.2",
+		"ssri": "6.0.2"
 	}
 }
