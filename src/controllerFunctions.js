@@ -1,4 +1,4 @@
-export const getController = (index, renderer, onControllerConnected, onSelectStart, onSelectEnd) => {
+export const getController = (index, renderer, onControllerConnected, onSelectStart, onSelectEnd, onSwitchController) => {
 	let controller = renderer.xr.getController(index);
 	controller.addEventListener('connected', onControllerConnected);
 	controller.addEventListener('selectstart', onSelectStart);

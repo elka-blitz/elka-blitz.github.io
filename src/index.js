@@ -42,21 +42,16 @@ import QuestionnaireManager from "./QuestionnaireManager";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
-import { Text } from 'troika-three-text';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
-import VRControl from './VRControl';
+import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
-import { buffer } from "three/examples/jsm/nodes/Nodes.js";
-import { createText } from 'three/examples/jsm/webxr/Text2D';
 import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
-import { textDownload } from './csvFunctions';
-import { update } from "three/examples/jsm/libs/tween.module.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -64,12 +59,8 @@ let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
 
-let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
-let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
-let textNum = 0;
 let selectState = false;
-const mouse = new THREE.Vector2();
-mouse.x = mouse.y = null;
+
 const raycaster = new THREE.Raycaster();
 const objsToTest1 = [];
 const objsToTest2 = [];
@@ -79,6 +70,7 @@ const objsToTest4 = [];
 // MARK: setup declarations
 let camera, scene, renderer, vrControl;
 let stylus = null;
+let stylusPos;
 let gamepad1;
 let gamepadInterface;
 let contextText, taskTextPanel, originalText, yourDrawingText;
@@ -127,6 +119,7 @@ const CENTER_POSITION = {x: 0, y : 0};
 let deskCoords = CENTER_POSITION;
 
 let isPracticeMode = false;
+let isQuestionnaireMode = false;
 
 // Debugging stuff
 let interface_text;
@@ -163,11 +156,6 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 	scoreSound.setBuffer(buffer);
 });
 
-
-// MARK: Environment
-// let office_group = new THREE.Group()
-// office_group.name = 'OfficeEnv'
-
 // Moderate stimulation environment global
 let msw_group = new THREE.Group()
 msw_group.name = 'msw_env'
@@ -179,24 +167,10 @@ lsw_group.name = 'lsw_env'
 
 // MARK: Hands
 let hand1, hand2;
-const handModels = {
-	left: null,
-	right: null
-};
 
-// Keep references to hand models that persist
-const persistentHandModels = {
-  left: null,
-  right: null
-};
+let controller1, controllerGrip1, controller2, controllerGrip2;
 
-let debugging_text;
-
-let controllerGrip1, controllerGrip2;
-
-let mx_ink_connected = false; 
-let left_hand_override = false; 
-let right_hand_override = false; 
+let mx_ink_connected = false;
 const left_hand_container = new THREE.Group();
 const right_hand_container = new THREE.Group();
 
@@ -206,7 +180,6 @@ let event_logger = new EventLogger() // Global event logger instance, can be use
 let paint_exporter_instance;
 
 let canvas
-let takeScreenshot = false
 
 // MARK: DeltaTime
 let accumulatedTime = 0;
@@ -241,31 +214,6 @@ const saveBlob = (function() {
   };
 }());
 
-// todo test with mouse events removed
-window.addEventListener( 'pointermove', ( event ) => {
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-} );
-
-window.addEventListener( 'pointerdown', () => {
-	selectState = true;
-} );
-
-window.addEventListener( 'pointerup', () => {
-	selectState = false;
-} );
-
-window.addEventListener( 'touchstart', ( event ) => {
-	selectState = true;
-	mouse.x = ( event.touches[ 0 ].clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = -( event.touches[ 0 ].clientY / window.innerHeight ) * 2 + 1;
-} );
-
-window.addEventListener( 'touchend', () => {
-	selectState = false;
-	mouse.x = null;
-	mouse.y = null;
-} );
 
 // MARK: INIT FUNC
 function init() {
@@ -301,17 +249,6 @@ function init() {
 	gltfLoader.load('./assets/Desk.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
-
-	// gltfLoader.load(
-	// 	'./assets/office_environment.glb',
-	// 	function (gltf) {
-	// 		office_group.add(gltf.scene);
-	// 	},
-	// 	undefined,
-	// 	function (error) {
-	// 		console.error(error);
-	// 	},
-	// );
 
 	gltfLoader.load(
 		'./assets/lsw_env.glb',
@@ -362,9 +299,6 @@ function init() {
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup);
 
-	// office_group.scale.set(0.5, 0.5, 0.5)
-	// office_group.position.set(0, -0.3, 0);
-	// office_group.rotateY(Math.PI / 5);
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -434,53 +368,27 @@ function init() {
 
 	renderer.setAnimationLoop(animate);
 
-	// controller setup
+	// MARK: controller setup
 	const controllerModelFactory = new XRControllerModelFactory();
 
 	const handModelFactory = new XRHandModelFactory();
 
+	// should only ever be one controller able to give input
 	controllerGrip1 = getControllerGrip(0, renderer, controllerModelFactory);
+	controller1 = getController(
+		0,
+		renderer,
+		onControllerConnected,
+		onSelectStart,
+		onSelectEnd,
+	)
 	scene.add(controllerGrip1);
-	scene.add(
-		getController(
-			0,
-			renderer,
-			onControllerConnected,
-			onSelectStart,
-			onSelectEnd,
-		),
-	);
+	scene.add(controller1);
+	console.log(controller1, controllerGrip1)
 
-	controllerGrip2 = getControllerGrip(1, renderer, controllerModelFactory);
-	scene.add(controllerGrip2);
-	scene.add(
-		getController(
-			1,
-			renderer,
-			onControllerConnected,
-			onSelectStart,
-			onSelectEnd,
-		),
-	);
+	controller1.name = 'controller-right';
 
-	vrControl = VRControl( renderer, camera, scene );
-
-	scene.add( vrControl.controllerGrips[ 0 ], vrControl.controllers[ 0 ] );
-
-	vrControl.controllers[ 0 ].addEventListener( 'selectstart', () => {
-
-		selectState = true;
-
-	} );
-	vrControl.controllers[ 0 ].addEventListener( 'selectend', () => {
-
-		selectState = false;
-
-	} );
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = false;
-		controller.point.visible = false;
-	})
+	vrControl = new VRControllerManager( renderer, controller1, controllerGrip1 );
 
 	// MARK: Hand Setup
 	hand1 = renderer.xr.getHand(0);
@@ -702,7 +610,7 @@ function onFrame(time, frame) {
 				Unsure how best to utilise it. Example below makes a unicode speed bar
 		*/
 
-		// let speed = speed_meter.getSpeed(stylus.position)
+		// let speed = speed_meter.getSpeed(stylusPos)
 		// interface_text.updateText('▮'.repeat(speed))
 
 		// MARK: Desk Moving button
@@ -879,8 +787,8 @@ function animate(time, frame) {
 			isDrawing = gamepad1.buttons[5].value > 0;
 
 			if (isDrawing && !prevIsDrawing) {
-				const painter = stylus.userData.painter;
-				painter.moveTo(stylus.position);
+				const painter = stylus?.userData.painter;
+				painter.moveTo(stylusPos);
 			}
 		}
 		if (!isDrawingDisabled) {
@@ -903,34 +811,35 @@ function animate(time, frame) {
 // MARK: Connect Event
 function onControllerConnected(e) {
 	event_logger.logEventData(e.data.profiles[0] + ' ControllerConnected-handedness=' + e.data.handedness)
-	console.log('Controller connected:' + e.data.profiles[0]);
+	console.log('Controller connected:' + e.data.profiles);
 
-	if (e.data.profiles.includes("logitech-mx-ink")) {
+	if (e.data.profiles[0] === ("logitech-mx-ink")) {
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
-		// Depending on the MX Ink's reported handedness, set the hand booleans accordingly.
-		if (e.data.handedness === 'left') {
-			// Stylus is in left hand, override left hand model logic
-			left_hand_override = true;
-			right_hand_override = false;
-		} else if (e.data.handedness === 'right') {
-			right_hand_override = true;
-			left_hand_override = false; // Reset right hand variable
-		}
 
 		stylus = e.target;
+		stylusPos = e.target.position
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
 		gamepadInterface = new GamepadWrapper(e.data.gamepad);
+
+	}
+	else if (e.data.profiles[0] === ("meta-quest-touch-plus")){ // if controller
+
+		stylus = e.target;
+		stylusPos = {
+			x: e.target.position.x,
+			y: e.target.position.y,
+			z: e.target.position.z - 0.06,
+		}
+		stylus.userData.painter = practicePaints[0];
+		gamepad1 = e.data.gamepad;
+		gamepadInterface = new GamepadWrapper(e.data.gamepad);
+
 	}
 
   	// MARK: Browser Testing setup
 	if (BROWSER_TESTING) {
-		// normal setup
-		stylus = e.target;
-		stylus.userData.painter = practicePaints[0];
-		gamepad1 = e.data.gamepad;
-		gamepadInterface = new GamepadWrapper(e.data.gamepad);
 
 		// desk lock event simulation
 		desk_manager.slideToFront(camera, stylus, tableGroup);
@@ -948,29 +857,16 @@ function onControllerConnected(e) {
 
 	}
 
-  // If hand, add hand model and store reference in persistentHandModels
-  if (e.data.profiles.includes("oculus-hand")) {
-	console.log(e.data.handedness)
-
-	// const hand = e.target;
-	// const handedness = e.data.handedness; // 'left' or 'right'
-	// const handModelFactory = new XRHandModelFactory();
-	// const handModel = handModelFactory.createHandModel(hand, 'boxes');
-	// hand.add(handModel);
-	// persistentHandModels[handedness] = handModel; // Store reference to the hand model
-	debugging_text = "\nHand connected:" + e.data.handedness + debugging_text
-  }
-
-  // todo else do raycasting
 }
 
 // MARK: Front Button Push
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 	selectState = true;
+	console.log("select start")
 
 	const painter = stylus.userData.painter;
-	painter.moveTo(stylus.position);
+	painter.moveTo(stylusPos);
 	this.userData.isSelecting = true;
 }
 
@@ -978,6 +874,7 @@ function onSelectStart(e) {
 function onSelectEnd() {
   this.userData.isSelecting = false;
 	selectState = false;
+	console.log("select end")
 
 	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
 	try {
@@ -1020,7 +917,8 @@ function handleDrawing(controller) {
 	}
 
 	if (gamepad1) {
-		const relativePos = getRelativePosition(stylus, currentBox);
+		const brush = vrControl.getBrush();
+		const relativePos = brush ? getRelativePosition(brush, currentBox) : getRelativePosition(stylus, currentBox);
 		if (userData.isSelecting || isDrawing) {
 			cursor.set(relativePos.x, relativePos.y, relativePos.z);
 			painter.lineTo(cursor);
@@ -1051,7 +949,8 @@ function getCurrentObjs() {
 
 // MARK: Raycast function
 function raycast() {
-	const objsToTest = getCurrentObjs()
+	const objsToTest = getCurrentObjs();
+
 	return objsToTest.reduce( ( closestIntersection, obj ) => {
 		const intersection = raycaster.intersectObject( obj, true );
 
@@ -1067,13 +966,55 @@ function raycast() {
 	}, null );
 
 }
+// MARK: Survey buttons intersection
+function updateButtons() {
+
+
+	// Find closest intersecting object
+	let intersect;
+	const objsToTest = getCurrentObjs();
+
+	if ( renderer.xr.isPresenting && isQuestionnaireMode) {
+
+		vrControl.setFromController(raycaster.ray);
+		intersect = raycast();
+
+		// Position the little white dot at the end of the controller pointing ray
+		if ( intersect ) vrControl.setPointerAt(intersect.point);
+
+	}
+
+	// Update targeted button state (if any)
+	if ( intersect && intersect.object.isUI ) {
+		if ( selectState ) {
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			intersect.object.setState( 'selected' );
+		} else {
+			intersect.object.setState( 'hovered' );
+		}
+	}
+
+	// Update non-targeted buttons state
+	objsToTest.forEach( ( obj ) => {
+		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
+			// Component.setState internally call component.set with the options you defined in component.setupState
+			obj.setState( 'idle' );
+		}
+	} );
+
+}
 
 
 // MARK: Button Feedback
 function buttonFeedback() {
 	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
-	gamepadInterface.getHapticActuator(0).pulse(1.0, 200); // Haptic line - intensity and duration
 	clickSound.play(); // Sound effect for button press
+
+	// checks if gamepad has haptics (breaks on hand)
+	const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
+	if (actuator && typeof actuator.pulse === 'function') {
+		actuator.pulse(1.0, 200);
+	}
 }
 
 // MARK: SVG Load Functions
@@ -1177,6 +1118,10 @@ const Calibrate = () => {
 	contextText.makeVisible();
 	loadSVG(practiceSvgArray[0], CENTER_POSITION);
 	stylus.userData.painter = practicePaints[0];
+	// only draw brush once and only draw it on controller
+	if (!mx_ink_connected) {
+		vrControl.drawBrush(stylusPos)
+	}
 }
 
 // MARK: MODE: Practice
@@ -1324,13 +1269,13 @@ const ShowResultsMode = () => {
 	nextButton.makeInvisible();
 }
 
-// MARK: Questionnaire Mode
+// MARK: MODE: Questionnaire
 const QuestionnaireMode = () => {
 
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = true;
-		controller.point.visible = true;
-	})
+	isQuestionnaireMode = true;
+
+	// make ray and point visible for active controller
+	vrControl.makeRayVisible();
 
 	originalText.makeInvisible();
 	originalSvgManager.makeSurfaceInvisible();
@@ -1373,10 +1318,8 @@ const QuestionnaireMode = () => {
 }
 
 const SetupNextTask = () => {
-	vrControl.controllers.forEach(controller => {
-		controller.ray.visible = false;
-		controller.point.visible = false;
-	})
+	isQuestionnaireMode = false;
+	vrControl.makeRayInvisible()
 
 	// todo export, task check
 	console.log(questionnaire1.getAnswers())
@@ -1424,9 +1367,8 @@ const SetupNextTask = () => {
 			break;
 	}
 }
-
+// MARK: MODE:  Finish
 const FinishMode = () => {
-	// todo other one to export thank you Lukas
 	event_logger.logEventData(questionnaire4.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
@@ -1477,60 +1419,4 @@ const FinishMode = () => {
 				break;
 		}
 	})
-}
-function updateButtons() {
-
-	// Find closest intersecting object
-
-	let intersect;
-	const objsToTest = getCurrentObjs();
-
-	if ( renderer.xr.isPresenting ) {
-
-		vrControl.setFromController( 0, raycaster.ray );
-
-		intersect = raycast();
-
-		// Position the little white dot at the end of the controller pointing ray
-		if ( intersect ) vrControl.setPointerAt( 0, intersect.point );
-
-	} else if ( mouse.x !== null && mouse.y !== null ) {
-
-		raycaster.setFromCamera( mouse, camera );
-
-		intersect = raycast();
-
-	}
-
-	// Update targeted button state (if any)
-
-	if ( intersect && intersect.object.isUI ) {
-
-		if ( selectState ) {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			intersect.object.setState( 'selected' );
-
-		} else {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			intersect.object.setState( 'hovered' );
-
-		}
-
-	}
-
-	// Update non-targeted buttons state
-
-	objsToTest.forEach( ( obj ) => {
-
-		if ( ( !intersect || obj !== intersect.object ) && obj.isUI ) {
-
-			// Component.setState internally call component.set with the options you defined in component.setupState
-			obj.setState( 'idle' );
-
-		}
-
-	} );
-
 }
