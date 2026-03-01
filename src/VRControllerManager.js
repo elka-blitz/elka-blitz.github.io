@@ -159,11 +159,21 @@ export default class VRControllerManager {
     makeRayVisible() {
         this.ray.visible = true;
         this.point.visible = true;
+
+        // make brush invisible when doing questionnaire
+        if (this.controller.brush) {
+            this.controller.brush.visible = false;
+        }
     }
 
     makeRayInvisible() {
         this.ray.visible = false;
         this.point.visible = false;
+
+        // make brush visible
+        if (this.controller.brush) {
+            this.controller.brush.visible = true;
+        }
     }
 
     drawBrush(position) {
@@ -187,10 +197,8 @@ export default class VRControllerManager {
         this.controller.brush.position.copy( position );
     }
 
-
     getBrush() {
         return this.controller.brush;
     }
-
 
 }
