@@ -23,7 +23,7 @@ function generateRayTexture() {
 
 // Generate the texture of the point helper sprite
 
-function generatePointerTexture() {
+function generatePointerTexture(color) {
 
     const canvas = document.createElement( 'canvas' );
     canvas.width = 64;
@@ -35,7 +35,7 @@ function generatePointerTexture() {
     ctx.arc( 32, 32, 29, 0, 2 * Math.PI );
     ctx.lineWidth = 5;
     ctx.stroke();
-    ctx.fillStyle = 'magenta';
+    ctx.fillStyle = color || 'white';
     ctx.fill();
 
     return canvas;
@@ -168,7 +168,7 @@ export default class VRControllerManager {
 
     drawBrush(position) {
         const spriteMaterial = new THREE.SpriteMaterial( {
-            map: new THREE.CanvasTexture( generatePointerTexture() ),
+            map: new THREE.CanvasTexture( generatePointerTexture("magenta") ),
             sizeAttenuation: false,
             depthTest: false
         } );
