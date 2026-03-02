@@ -12,11 +12,6 @@ mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
 
 const questionsArray = [
-    // SAMS
-    "How pleasant or enjoyable did you find this task?",
-    "How mentally activated or stimulated did you feel during this task?",
-    "How in control did you feel during the task?",
-
     // NASA TLX
     "How frustrated did you feel during this task?",
     "How mentally demanding was the drawing task?",
@@ -26,6 +21,10 @@ const questionsArray = [
     "How successful were you in accomplishing the task?",
     "How insecure, discourages, irritated, stressed and annoyed were you?",
 
+    // SAMS
+    "How pleasant or enjoyable did you find this task?",
+    "How mentally activated or stimulated did you feel during this task?",
+    "How in control did you feel during the task?",
 
     // Flow
     "I felt just the right amount of challenge.",
@@ -38,6 +37,16 @@ const questionsArray = [
     "The right thought/movements occurred of their own accord.",
     "I felt that I had everything under control.",
     "I was completely lost in thought",
+
+    // UEQ-S
+    "Rate the controller/stylus: 1 = obstructive, 7 = supportive",
+    "Rate the controller/stylus: 1 = complicated, 7 = easy",
+    "Rate the controller/stylus: 1 = inefficient, 7 = efficient",
+    "Rate the controller/stylus: 1 = confusing, 7 = clear",
+    "Rate the controller/stylus: 1 = boring, 7 = exciting",
+    "Rate the controller/stylus: 1 = not interesting, 7 = interesting",
+    "Rate the controller/stylus: 1 = conventional, 7 = inventive",
+    "Rate the controller/stylus: 1 = usual, 7 = leading edge",
 ]
 
 export default class QuestionnaireManager {
