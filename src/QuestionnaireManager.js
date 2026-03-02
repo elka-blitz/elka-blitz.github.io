@@ -49,6 +49,41 @@ const questionsArray = [
     "Rate the controller/stylus: 1 = usual, 7 = leading edge",
 ]
 
+const buttonOptions = {
+    width: 0.4,
+    height: 0.15,
+    justifyContent: 'center',
+    offset: 0.05,
+    margin: 0.02,
+    borderRadius: 0.075
+};
+
+const hoveredStateAttributes = {
+    state: 'hovered',
+    attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x999999 ),
+        backgroundOpacity: 1,
+        fontColor: new THREE.Color( 0xffffff )
+    },
+};
+
+const idleStateAttributes = {
+    state: 'idle',
+    attributes: {
+        offset: 0.035,
+        backgroundColor: new THREE.Color( 0x666666 ),
+        backgroundOpacity: 0.3,
+        fontColor: new THREE.Color( 0xffffff )
+    },
+};
+
+const selectedAttributes = {
+    offset: 0.02,
+    backgroundColor: new THREE.Color( 0x777777 ),
+    fontColor: new THREE.Color( 0x222222 )
+};
+
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
     constructor(scene, objsToTest) {
@@ -65,15 +100,12 @@ export default class QuestionnaireManager {
             textAlign: 'left',
             fontFamily: FontJSON,
             fontTexture: FontImage,
-            // interLine: 0,
         } );
 
         questionContainer.position.set( 0, 1.8, -1.8 );
-        // questionContainer.rotation.x = -0.55;
         scene.add( questionContainer );
 
         const questionText = new ThreeMeshUI.Text( {
-            // content: 'This library supports line-break-friendly-characters,',
             content: questionsArray[qNum],
             fontSize: 0.055
         } )
@@ -100,59 +132,14 @@ export default class QuestionnaireManager {
 
         // MARK: BUTTONS
 
-        // ui
-        const buttonOptions = {
-            width: 0.4,
-            height: 0.15,
-            justifyContent: 'center',
-            offset: 0.05,
-            margin: 0.02,
-            borderRadius: 0.075
-        };
-
-        const hoveredStateAttributes = {
-            state: 'hovered',
-            attributes: {
-                offset: 0.035,
-                backgroundColor: new THREE.Color( 0x999999 ),
-                backgroundOpacity: 1,
-                fontColor: new THREE.Color( 0xffffff )
-            },
-        };
-
-        const idleStateAttributes = {
-            state: 'idle',
-            attributes: {
-                offset: 0.035,
-                backgroundColor: new THREE.Color( 0x666666 ),
-                backgroundOpacity: 0.3,
-                fontColor: new THREE.Color( 0xffffff )
-            },
-        };
-
-        const selectedAttributes = {
-            offset: 0.02,
-            backgroundColor: new THREE.Color( 0x777777 ),
-            fontColor: new THREE.Color( 0x222222 )
-        };
-
-        // Buttons creation
-
-        const button1 = new ThreeMeshUI.Block( buttonOptions );
-        const button2 = new ThreeMeshUI.Block( buttonOptions );
-        const button3 = new ThreeMeshUI.Block( buttonOptions );
-        const button4 = new ThreeMeshUI.Block( buttonOptions );
-        const button5 = new ThreeMeshUI.Block( buttonOptions );
-        const button6 = new ThreeMeshUI.Block( buttonOptions );
-        const button7 = new ThreeMeshUI.Block( buttonOptions );
         const buttonArray = [
-            button7,
-            button6,
-            button5,
-            button4,
-            button3,
-            button2,
-            button1,
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
         ]
 
 
@@ -173,7 +160,7 @@ export default class QuestionnaireManager {
 
                     // MARK: End of survey
                     if (qNum === questionsArray.length) {
-                        console.log("Survey complete")
+                        console.log("Survey complete", this.answers)
                         scene.remove(questionContainer, this.container)
                         this.nextTaskButton && this.nextTaskButton.makeVisible();
                     }
