@@ -11,43 +11,44 @@ const mouse = new THREE.Vector2();
 mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
 
-const questionsArray = [
-    // NASA TLX
-    "How frustrated did you feel during this task?",
-    "How mentally demanding was the drawing task?",
-    "How physically demanding was the drawing task?",
-    "How hard did you have to work to accomplish your level of performance?",
-    "How rushed or pressured did you feel?",
-    "How successful were you in accomplishing the task?",
-    "How insecure, discourages, irritated, stressed and annoyed were you?",
-
-    // SAMS
-    "How pleasant or enjoyable did you find this task?",
-    "How mentally activated or stimulated did you feel during this task?",
-    "How in control did you feel during the task?",
-
-    // Flow
-    "I felt just the right amount of challenge.",
-    "My thoughts and actions flowed smoothly while drawing.",
-    "I was completely absorbed in what I was doing.",
-    "I knew exactly what to do at each step of the task.",
-    "I didn't notice time passing.",
-    "I had no difficulty concentrating.",
-    "My mind was completely clear.",
-    "The right thought/movements occurred of their own accord.",
-    "I felt that I had everything under control.",
-    "I was completely lost in thought",
-
-    // UEQ-S
-    "Rate the controller/stylus: 1 = obstructive, 7 = supportive",
-    "Rate the controller/stylus: 1 = complicated, 7 = easy",
-    "Rate the controller/stylus: 1 = inefficient, 7 = efficient",
-    "Rate the controller/stylus: 1 = confusing, 7 = clear",
-    "Rate the controller/stylus: 1 = boring, 7 = exciting",
-    "Rate the controller/stylus: 1 = not interesting, 7 = interesting",
-    "Rate the controller/stylus: 1 = conventional, 7 = inventive",
-    "Rate the controller/stylus: 1 = usual, 7 = leading edge",
-]
+const questionsObj = {
+    NASA_TLX: [
+        "How frustrated did you feel during this task?",
+        "How mentally demanding was the drawing task?",
+        "How physically demanding was the drawing task?",
+        "How hard did you have to work to accomplish your level of performance?",
+        "How rushed or pressured did you feel?",
+        "How successful were you in accomplishing the task?",
+        "How insecure, discouraged, irritated, stressed and annoyed were you?",
+    ],
+    SAMS: [
+        "How pleasant or enjoyable did you find this task?",
+        "How mentally activated or stimulated did you feel during this task?",
+        "How in control did you feel during the task?",
+    ],
+    Flow: [
+        "I felt just the right amount of challenge.",
+        "My thoughts and actions flowed smoothly while drawing.",
+        "I was completely absorbed in what I was doing.",
+        "I knew exactly what to do at each step of the task.",
+        "I didn't notice time passing.",
+        "I had no difficulty concentrating.",
+        "My mind was completely clear.",
+        "The right thought/movements occurred of their own accord.",
+        "I felt that I had everything under control.",
+        "I was completely lost in thought",
+    ],
+    UEQ_S: [
+        "Rate the controller/stylus: 1 = obstructive, 7 = supportive",
+        "Rate the controller/stylus: 1 = complicated, 7 = easy",
+        "Rate the controller/stylus: 1 = inefficient, 7 = efficient",
+        "Rate the controller/stylus: 1 = confusing, 7 = clear",
+        "Rate the controller/stylus: 1 = boring, 7 = exciting",
+        "Rate the controller/stylus: 1 = not interesting, 7 = interesting",
+        "Rate the controller/stylus: 1 = conventional, 7 = inventive",
+        "Rate the controller/stylus: 1 = usual, 7 = leading edge",
+    ]
+}
 
 const buttonOptions = {
     width: 0.4,
@@ -106,7 +107,7 @@ export default class QuestionnaireManager {
         scene.add( questionContainer );
 
         const questionText = new ThreeMeshUI.Text( {
-            content: questionsArray[qNum],
+            content: questionsObj.NASA_TLX[qNum],
             fontSize: 0.055
         } )
 
@@ -116,7 +117,7 @@ export default class QuestionnaireManager {
         // MARK: Answers
         this.objsToTest = objsToTest;
 
-        this.container = new ThreeMeshUI.Block( {
+        this.answerContainer = new ThreeMeshUI.Block( {
             justifyContent: 'center',
             contentDirection: 'row-reverse',
             fontFamily: FontJSON,
@@ -126,11 +127,24 @@ export default class QuestionnaireManager {
             borderRadius: 0.11
         } );
 
-        this.container.position.set( 0, 1.5, -1.2 );
-        this.container.rotation.x = -0.55;
-        scene.add( this.container );
+        this.answerContainer.position.set( 0, 1.5, -1.2 );
+        scene.add(this.answerContainer)
 
-        // MARK: BUTTONS
+        this.answerContainer2 = new ThreeMeshUI.Block( {
+            justifyContent: 'center',
+            contentDirection: 'row-reverse',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11
+        } );
+
+        this.answerContainer2.position.set( 0, 1.5, -1.2 );
+   
+
+
+        // MARK: FLOW
 
         const buttonArray = [
             new ThreeMeshUI.Block( buttonOptions ),
@@ -156,13 +170,18 @@ export default class QuestionnaireManager {
                 onSet: () => {
                     this.answers.push(7 - i)
                     qNum += 1;
-                    questionText.set({content: questionsArray[qNum]});
+                    questionText.set({content: questionsObj.NASA_TLX[qNum]});
 
                     // MARK: End of survey
-                    if (qNum === questionsArray.length) {
+                    if (qNum === questionsObj.NASA_TLX.length) {
                         console.log("Survey complete", this.answers)
-                        scene.remove(questionContainer, this.container)
-                        this.nextTaskButton && this.nextTaskButton.makeVisible();
+                        scene.remove(questionContainer, this.answerContainer)
+                        scene.add(questionContainer, this.answerContainer2)
+                        qNum = 0;
+                        questionText.set({content: questionsObj.SAMS[qNum]});
+
+                        samsButtonArray.map(x => this.objsToTest.push(x))
+                        // this.nextTaskButton && this.nextTaskButton.makeVisible();
                     }
 
                 }
@@ -171,15 +190,59 @@ export default class QuestionnaireManager {
             button.setupState( idleStateAttributes );
 
             // add button to groups
-            this.container.add(button);
+            this.answerContainer.add(button);
             this.objsToTest.push(button);
 
         })
 
+        // MARK: SAMS
+        const samsButtonArray = [
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+        ]
+        samsButtonArray.forEach((samsButton, i) => {
+            // text
+            samsButton.add(
+                new ThreeMeshUI.Text( { content: `${5 - i}` } )
+            );
+
+            // MARK: Button press
+            samsButton.setupState( {
+                state: 'selected',
+                attributes: selectedAttributes,
+                onSet: () => {
+                    this.answers.push(5 - i)
+                    qNum += 1;
+                    questionText.set({content: questionsObj.SAMS[qNum]});
+
+                    // MARK: End of survey
+                    if (qNum === questionsObj.SAMS.length) {
+                        console.log("Survey complete", this.answers)
+                        scene.remove(questionContainer, this.answerContainer2)
+                        // scene.add(questionContainer, this.answerContainer2)
+                        this.nextTaskButton && this.nextTaskButton.makeVisible();
+                    }
+
+                }
+            } );
+            samsButton.setupState( hoveredStateAttributes );
+            samsButton.setupState( idleStateAttributes );
+
+            // add button to groups
+            this.answerContainer2.add(samsButton);
+
+        })
+
+
+
+
         // make invisible
         this.questionContainer = questionContainer;
         this.questionContainer.visible = false;
-        this.container.visible = false
+        this.answerContainer.visible = false
     }
 
     getAnswers() {
@@ -188,7 +251,7 @@ export default class QuestionnaireManager {
 
     makeQuestionnaireVisible(nextTaskButton) {
         this.questionContainer.visible = true;
-        this.container.visible = true;
+        this.answerContainer.visible = true;
         this.nextTaskButton = nextTaskButton;
     }
 
@@ -198,7 +261,7 @@ export default class QuestionnaireManager {
             position.y + 0.8,
             -1.4
         )
-        this.container.position.set(
+        this.answerContainer.position.set(
             position.x,
             position.y + 0.3,
             -1.2
