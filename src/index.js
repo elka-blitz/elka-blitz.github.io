@@ -336,7 +336,25 @@ function init() {
 		requiredFeatures: ['hand-tracking'],
 	};
 
-	document.body.appendChild(VRButton.createButton(renderer, sessionInit));
+	const htmlVRButton = VRButton.createButton(renderer, sessionInit);
+	htmlVRButton.style.cssText = "position: absolute; " +
+		"bottom: 20px; " +
+		"border-radius: 4px; " +
+		"background: rgb(200, 0, 0); " +
+		"background: rgb(200, 0, 0); " +
+		"color: rgb(255, 255, 255); " +
+		"font: 13px sans-serif; " +
+		"text-align: center; " +
+		"opacity: 1; " +
+		"outline: none; " +
+		"z-index: 10; " +
+		"height: 100px;" +
+		"width: 100px;" +
+		"cursor: pointer; " +
+		"border-radius: 16px;" +
+		"left: calc(50% - 50px);"
+
+	document.body.appendChild(htmlVRButton);
 
 	// MARK: Key Input
 	// Keyboard buttonpress listener for testing in browser
