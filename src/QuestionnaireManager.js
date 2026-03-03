@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import ThreeMeshUI from 'three-mesh-ui';
-
-import { gsap } from 'gsap';
+import {SVGLoader} from "three/examples/jsm/loaders/SVGLoader";
 
 let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
 let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
@@ -10,6 +9,8 @@ let selectState = false;
 const mouse = new THREE.Vector2();
 mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
+
+// MARK: Questions Obj
 
 const questionsObj = {
     NASA_TLX: [
@@ -50,6 +51,7 @@ const questionsObj = {
     ]
 }
 
+// MARK: button options
 const buttonOptions = {
     width: 0.4,
     height: 0.15,
@@ -84,6 +86,74 @@ const selectedAttributes = {
     backgroundColor: new THREE.Color( 0x777777 ),
     fontColor: new THREE.Color( 0x222222 )
 };
+
+// MARK: SAMS Svg loader
+function loadSamsSvg(url, button) {
+    const loader = new SVGLoader();
+    console.log("button before loader", button)
+
+
+
+    loader.load(url, function (data) {
+        const group = new THREE.Group();
+
+        let renderOrder = 0;
+
+        for (const path of data.paths) {
+            const strokeColor = path.userData.style.fill;
+
+            const material = new THREE.MeshBasicMaterial({
+                color: "white",
+
+                side: THREE.DoubleSide,
+                depthWrite: false,
+            });
+
+            for (const subPath of path.subPaths) {
+                const geometry = SVGLoader.pointsToStroke(
+                    subPath.getPoints(),
+                    path.userData.style,
+                );
+                geometry.rotateZ( Math.PI ) // rotate right side up
+
+                if (geometry) {
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.renderOrder = renderOrder++;
+
+                    group.add(mesh);
+                }
+            }
+        }
+
+        const box = new THREE.Box3().setFromObject(group);
+        const size = box.getSize(new THREE.Vector3());
+
+        const scale = Math.min(
+           button.size.x  / size.x,
+           button.size.y / size.y,
+        );
+
+        group.scale.setScalar(scale);
+
+        // centering
+        box.setFromObject(group);
+        const center = box.getCenter(new THREE.Vector3());
+        group.position.sub(center);
+        group.position.z = -0.01;
+
+
+        button.add(group);
+    });
+}
+
+const samsSvgs = [
+    "./assets/samsPleasant/sams1.svg",
+    "./assets/samsPleasant/sams2.svg",
+    "./assets/samsPleasant/sams3.svg",
+    "./assets/samsPleasant/sams4.svg",
+    "./assets/samsPleasant/sams5.svg",
+]
+
 
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
@@ -204,10 +274,8 @@ export default class QuestionnaireManager {
             new ThreeMeshUI.Block( buttonOptions ),
         ]
         samsButtonArray.forEach((samsButton, i) => {
-            // text
-            samsButton.add(
-                new ThreeMeshUI.Text( { content: `${5 - i}` } )
-            );
+
+            loadSamsSvg(samsSvgs[i], samsButton);
 
             // MARK: Button press
             samsButton.setupState( {
