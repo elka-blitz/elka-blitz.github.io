@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import ThreeMeshUI from 'three-mesh-ui';
 import {SVGLoader} from "three/examples/jsm/loaders/SVGLoader";
+import {getFilledRect} from "./shapeFunctions";
 
 let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
 let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
@@ -100,7 +101,7 @@ function loadSamsSvg(url, button) {
             const strokeColor = path.userData.style.fill;
 
             const material = new THREE.MeshBasicMaterial({
-                color: "white",
+                color: "black",
 
                 side: THREE.DoubleSide,
                 depthWrite: false,
@@ -144,11 +145,11 @@ function loadSamsSvg(url, button) {
 }
 
 const samsSvgs = [
-    "./assets/samsPleasant/sams1.svg",
-    "./assets/samsPleasant/sams2.svg",
-    "./assets/samsPleasant/sams3.svg",
-    "./assets/samsPleasant/sams4.svg",
-    "./assets/samsPleasant/sams5.svg",
+    "./assets/samsExcited/sams5.svg",
+    "./assets/samsExcited/sams4.svg",
+    "./assets/samsExcited/sams3.svg",
+    "./assets/samsExcited/sams2.svg",
+    "./assets/samsExcited/sams1.svg",
 ]
 
 // TODO: FIX ANSWERS LOGGING
@@ -190,6 +191,11 @@ export default class QuestionnaireManager {
         // MARK: Answers
         this.objsToTest = objsToTest;
 
+        const rect = getFilledRect(3, 0.3, '#ffffff');
+        scene.add(rect)
+        rect.position.set(0, 1.5, -1.3)
+        rect.visible = false;
+
         this.answerContainer = new ThreeMeshUI.Block( {
             justifyContent: 'center',
             contentDirection: 'row-reverse',
@@ -197,7 +203,7 @@ export default class QuestionnaireManager {
             fontTexture: FontImage,
             fontSize: 0.07,
             padding: 0.02,
-            borderRadius: 0.11
+            borderRadius: 0.11,
         } );
 
         this.answerContainer.position.set( 0, 1.5, -1.2 );
@@ -273,11 +279,12 @@ export default class QuestionnaireManager {
                         scene.remove(this.answerContainer)
                         scene.add(this.answerContainer2)
                         qNum = 0;
-                        questionText.set({content: questionsObj.SAMS[qNum]});
+                        // questionText.set({content: questionsObj.SAMS[qNum]});
 
                         this.objsToTest.length = 0; // clear array
 
                         samsButtonArray.map(x => this.objsToTest.push(x))
+                        rect.visible = true;
                     }
 
                 }
@@ -309,11 +316,11 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     this.answers.push(["SAMS: ", qNum ,(5 - i)])
-                    qNum += 1;
                     questionText.set({content: questionsObj.SAMS[qNum]});
+                    qNum += 1;
 
                     // MARK: End of survey
-                    if (qNum === questionsObj.SAMS.length) {
+                    if (qNum === questionsObj.SAMS.length + 1) {
                         scene.remove(this.answerContainer2)
                         scene.add(this.answerContainer3)
                         qNum = 0;
@@ -322,6 +329,8 @@ export default class QuestionnaireManager {
                         this.objsToTest.length = 0; // clear array
 
                         flowButtonArray.map(x => this.objsToTest.push(x))
+                        rect.visible = false;
+
                     }
 
                 }
@@ -430,7 +439,15 @@ export default class QuestionnaireManager {
         // make invisible
         this.questionContainer = questionContainer;
         this.questionContainer.visible = false;
-        this.answerContainer.visible = false
+        this.answerContainer.visible = false;
+
+        this.containerArray = [
+            this.answerContainer,
+            this.answerContainer2,
+            this.answerContainer3,
+            this.answerContainer4,
+            rect,
+        ]
     }
 
     getAnswers() {
@@ -449,10 +466,13 @@ export default class QuestionnaireManager {
             position.y + 0.8,
             -1.4
         )
-        this.answerContainer.position.set(
-            position.x,
-            position.y + 0.3,
-            -1.2
-        )
+        this.containerArray.forEach((c) => {
+            c.position.set(
+                position.x,
+                position.y + 0.3,
+                -1.2
+            )
+        })
+
     }
 }
