@@ -14,40 +14,40 @@ const raycaster = new THREE.Raycaster();
 
 const questionsObj = {
     NASA_TLX: [
-        "How frustrated did you feel during this task?",
-        "How mentally demanding was the drawing task?",
-        "How physically demanding was the drawing task?",
-        "How hard did you have to work to accomplish your level of performance?",
-        "How rushed or pressured did you feel?",
-        "How successful were you in accomplishing the task?",
-        "How insecure, discouraged, irritated, stressed and annoyed were you?",
+        "1 How frustrated did you feel during this task?",                            // 1
+        "2 How mentally demanding was the drawing task?",                             // 2
+        "3 How physically demanding was the drawing task?",                           // 3
+        "4 How hard did you have to work to accomplish your level of performance?",   // 4
+        "5 How rushed or pressured did you feel?",                                    // 5
+        "6 How successful were you in accomplishing the task?",                       // 6
+        "7 How insecure, discouraged, irritated, stressed and annoyed were you?",     // 7
     ],
     SAMS: [
-        "How pleasant or enjoyable did you find this task?",
-        "How mentally activated or stimulated did you feel during this task?",
-        "How in control did you feel during the task?",
+        "1 How pleasant or enjoyable did you find this task?",                        // 1
+        "2 How mentally activated or stimulated did you feel during this task?",      // 2
+        "3 How in control did you feel during the task?",                             // 3
     ],
     Flow: [
-        "I felt just the right amount of challenge.",
-        "My thoughts and actions flowed smoothly while drawing.",
-        "I was completely absorbed in what I was doing.",
-        "I knew exactly what to do at each step of the task.",
-        "I didn't notice time passing.",
-        "I had no difficulty concentrating.",
-        "My mind was completely clear.",
-        "The right thought/movements occurred of their own accord.",
-        "I felt that I had everything under control.",
-        "I was completely lost in thought",
+        "1 I felt just the right amount of challenge.",                          // 1
+        "2 My thoughts and actions flowed smoothly while drawing.",                   // 2
+        "3 I was completely absorbed in what I was doing.",                           // 3
+        "4 I knew exactly what to do at each step of the task.",                      // 4
+        "5 I didn't notice time passing.",                                            // 5
+        "6 I had no difficulty concentrating.",                                       // 6
+        "7 My mind was completely clear.",                                            // 7
+        "8 The right thought/movements occurred of their own accord.",                // 8
+        "9 I felt that I had everything under control.",                              // 9
+        "10 I was completely lost in thought",                                     // 10
     ],
     UEQ_S: [
-        "Rate the controller/stylus: 1 = obstructive, 7 = supportive",
-        "Rate the controller/stylus: 1 = complicated, 7 = easy",
-        "Rate the controller/stylus: 1 = inefficient, 7 = efficient",
-        "Rate the controller/stylus: 1 = confusing, 7 = clear",
-        "Rate the controller/stylus: 1 = boring, 7 = exciting",
-        "Rate the controller/stylus: 1 = not interesting, 7 = interesting",
-        "Rate the controller/stylus: 1 = conventional, 7 = inventive",
-        "Rate the controller/stylus: 1 = usual, 7 = leading edge",
+        "1 Rate the controller/stylus: 1 = obstructive, 7 = supportive",         // 1
+        "2 Rate the controller/stylus: 1 = complicated, 7 = easy",                    // 2
+        "3 Rate the controller/stylus: 1 = inefficient, 7 = efficient",               // 3
+        "4 Rate the controller/stylus: 1 = confusing, 7 = clear",                     // 4
+        "5 Rate the controller/stylus: 1 = boring, 7 = exciting",                     // 5
+        "6 Rate the controller/stylus: 1 = not interesting, 7 = interesting",         // 6
+        "7 Rate the controller/stylus: 1 = conventional, 7 = inventive",              // 7
+        "8 Rate the controller/stylus: 1 = usual, 7 = leading edge",              // 8
     ]
 }
 
@@ -90,9 +90,6 @@ const selectedAttributes = {
 // MARK: SAMS Svg loader
 function loadSamsSvg(url, button) {
     const loader = new SVGLoader();
-    console.log("button before loader", button)
-
-
 
     loader.load(url, function (data) {
         const group = new THREE.Group();
@@ -154,7 +151,13 @@ const samsSvgs = [
     "./assets/samsPleasant/sams5.svg",
 ]
 
-
+// TODO: FIX ANSWERS LOGGING
+/*
+- SAMS
+- UEQ-S
+- Progress bar?
+- test in vr
+ */
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
     constructor(scene, objsToTest) {
@@ -211,10 +214,33 @@ export default class QuestionnaireManager {
         } );
 
         this.answerContainer2.position.set( 0, 1.5, -1.2 );
-   
+
+        this.answerContainer3 = new ThreeMeshUI.Block( {
+            justifyContent: 'center',
+            contentDirection: 'row-reverse',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11
+        } );
+
+        this.answerContainer3.position.set( 0, 1.5, -1.2 );
+
+        this.answerContainer4 = new ThreeMeshUI.Block( {
+            justifyContent: 'center',
+            contentDirection: 'row-reverse',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11
+        } );
+
+        this.answerContainer4.position.set( 0, 1.5, -1.2 );
 
 
-        // MARK: FLOW
+        // MARK: NASA-TLX
 
         const buttonArray = [
             new ThreeMeshUI.Block( buttonOptions ),
@@ -238,13 +264,12 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(7 - i)
+                    this.answers.push(["NASA:", qNum, (7 - i)])
                     qNum += 1;
                     questionText.set({content: questionsObj.NASA_TLX[qNum]});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.NASA_TLX.length) {
-                        console.log("Survey complete", this.answers)
                         scene.remove(this.answerContainer)
                         scene.add(this.answerContainer2)
                         qNum = 0;
@@ -283,16 +308,20 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(5 - i)
+                    this.answers.push(["SAMS: ", qNum ,(5 - i)])
                     qNum += 1;
                     questionText.set({content: questionsObj.SAMS[qNum]});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.SAMS.length) {
-                        console.log("Survey complete", this.answers)
                         scene.remove(this.answerContainer2)
-                        // scene.add(questionContainer, this.answerContainer2)
-                        this.nextTaskButton && this.nextTaskButton.makeVisible();
+                        scene.add(this.answerContainer3)
+                        qNum = 0;
+                        // questionText.set({content: questionsObj.Flow[qNum]});
+
+                        this.objsToTest.length = 0; // clear array
+
+                        flowButtonArray.map(x => this.objsToTest.push(x))
                     }
 
                 }
@@ -302,6 +331,96 @@ export default class QuestionnaireManager {
 
             // add button to groups
             this.answerContainer2.add(samsButton);
+
+        })
+
+        // MARK: FLOW
+        const flowButtonArray = [
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+        ]
+        flowButtonArray.forEach((flowButton, i) => {
+
+            flowButton.add(
+                new ThreeMeshUI.Text( { content: `${7 - i}` } )
+            );
+
+            // MARK: Button press
+            flowButton.setupState( {
+                state: 'selected',
+                attributes: selectedAttributes,
+                onSet: () => {
+                    this.answers.push(["Flow: ", qNum, (7 - i)])
+                    questionText.set({content: questionsObj.Flow[qNum]});
+                    qNum += 1;
+                    console.log(qNum)
+
+                    // MARK: End of survey
+                    if (qNum === questionsObj.Flow.length + 1) {
+                        scene.remove(this.answerContainer3)
+                        scene.add(this.answerContainer4)
+                        qNum = 0;
+                        questionText.set({content: questionsObj.UEQ_S[qNum]});
+
+                        this.objsToTest.length = 0; // clear array
+
+                        ueqButtonsArray.map(x => this.objsToTest.push(x))
+                    }
+
+                }
+            } );
+            flowButton.setupState( hoveredStateAttributes );
+            flowButton.setupState( idleStateAttributes );
+
+            // add button to groups
+            this.answerContainer3.add(flowButton);
+
+        })
+
+        // MARK: UEQ-S
+        const ueqButtonsArray = [
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+            new ThreeMeshUI.Block( buttonOptions ),
+        ]
+        ueqButtonsArray.forEach((ueqButton, i) => {
+
+            ueqButton.add(
+                new ThreeMeshUI.Text( { content: `o` } )
+            );
+
+            // MARK: Button press
+            ueqButton.setupState( {
+                state: 'selected',
+                attributes: selectedAttributes,
+                onSet: () => {
+                    this.answers.push(["UEQ-S", qNum, (7 - i)])
+                    questionText.set({content: questionsObj.UEQ_S[qNum]});
+                    qNum += 1;
+
+                    // MARK: End of survey
+                    if (qNum === questionsObj.UEQ_S.length + 1) {
+                        console.log("Survey complete", this.answers)
+                        scene.remove(questionContainer, this.answerContainer4)
+                        this.nextTaskButton && this.nextTaskButton.makeVisible();
+                    }
+
+                }
+            } );
+            ueqButton.setupState( hoveredStateAttributes );
+            ueqButton.setupState( idleStateAttributes );
+
+            // add button to groups
+            this.answerContainer4.add(ueqButton);
 
         })
 
