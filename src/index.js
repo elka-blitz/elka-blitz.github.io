@@ -52,6 +52,8 @@ import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import DrawingAccuracy from "./drawingAccuracy.js";
+import { ArcballControlsMouseActionOperations } from "three/examples/jsm/Addons.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -196,6 +198,10 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+// MARK: Accuracy
+let accuracy_calculator
+let accuracy_raycaster = new THREE.Raycaster()
+let accuracy_line;
 
 init();
 
@@ -231,6 +237,9 @@ function init() {
 	const player = new THREE.Group();
 	scene.add(player);
 	player.add(camera);
+
+	accuracy_raycaster.camera = camera
+	accuracy_calculator = new DrawingAccuracy(scene)
 
 	canvas = document.querySelector('canvas.webgl');
 
@@ -621,7 +630,29 @@ function onFrame(time, frame) {
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
-		// MARK: Speed function
+
+		// MARK: Accuracy Check
+		if (accuracy_line) {
+			desk_manager.removeDebugLine(accuracy_line, scene)
+		}
+
+		// TODO: Place so it only loads once per svg change
+		try{
+			let dash_line_points = desk_manager.getDashPositions()
+			// console.log('dashklinepointsfrommain', dash_line_points)
+			let closest_dash_position = accuracy_calculator.getClosestPoint(dash_line_points, stylus.position)
+			console.log('Closest: ', closest_dash_position)
+
+			// if (closest_dash_position !== false) {
+			// 	// accuracy_line = desk_manager.drawDebugLine(stylus.position, closest_dash_position, scene)
+			desk_manager.drawAllDebugLines(stylus.position, scene)
+
+			// }
+
+		} catch (e) {
+			console.log(e)
+		}
+
 		/*
 		 		This returns a number representing the stylus speed
 				This number can be used to represent stylus speed
@@ -759,6 +790,9 @@ function onFrame(time, frame) {
 			// Should be triggered alongside
 			// downloadCSV(JSON.stringify(logData));
 			event_logger.logEventData('Back button pressed');
+			
+			desk_manager.drawAllDebugLines(stylus.position, scene)
+
 			//event_logger.downloadUnityData()
 			//
 			// MARK: Export
@@ -773,7 +807,6 @@ function onFrame(time, frame) {
 		prevBackPushed = backPushed;
 		backPushed = gamepad1.buttons[1].value > 0;
 	}
-
 
 }
 
@@ -828,10 +861,16 @@ function animate(time, frame) {
 
 // MARK: Connect Event
 function onControllerConnected(e) {
+
 	event_logger.logEventData(e.data.profiles[0] + ' ControllerConnected-handedness=' + e.data.handedness)
 	console.log('Controller connected:' + e.data.profiles);
 
 	if (e.data.profiles[0] === ("logitech-mx-ink")) {
+
+		accuracy_raycaster.setFromXRController(e.target)
+
+		// console.log(accuracy_raycaster.intersectObjects(scene.children))
+
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
 
@@ -984,6 +1023,7 @@ function raycast() {
 	}, null );
 
 }
+
 // MARK: Survey buttons intersection
 function updateButtons() {
 
@@ -1040,6 +1080,7 @@ function loadSVG(url, position, isResult) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
+		accuracy_calculator = new DrawingAccuracy(scene)
 		const group = new THREE.Group();
 
 		let renderOrder = 0;
@@ -1067,6 +1108,25 @@ function loadSVG(url, position, isResult) {
 					mesh.renderOrder = renderOrder++;
 
 					group.add(mesh);
+					let center_position = new THREE.Vector3()
+
+					mesh.updateMatrixWorld(true)
+					group.updateMatrixWorld(true)
+					scene.updateMatrixWorld(true)
+
+					// console.log('uuid:', mesh.uuid)
+
+					// break; // So these subpaths are the individual 'linedashes'
+
+					// Maybe store all mesh uuids, then, later when positioned in deskmanager try getting position for each
+
+					// Get an average point for this sub path and push it to an array
+					// Check this array for all points, should not be more then 100
+					// accuracy_calculator.setAccuracyReferencePointForSubPath()
+
+
+					// MARK: SVG Accuracy init
+					// console.log('AccCalcLoad: ', accuracy_calculator.get_svg())
 				}
 			}
 		}

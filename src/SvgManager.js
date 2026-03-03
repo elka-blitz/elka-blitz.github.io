@@ -235,6 +235,18 @@ export default class SvgManager {
 
 		this.surface.add(svgGroup);
 
+		console.log('Hello from deskmanager. svgGroup:', svgGroup)
+
+		// for (const dash in svgGroup.children) {
+		// 	// console.log(svgGroup.children[dash].castShadow)
+		// 	let dash_details = svgGroup.children[dash]
+		// 	// console.log(dash_details.position)
+
+		// 	let worldPosition = new THREE.Vector3();
+		// 	dash_details.getWorldPosition(worldPosition);
+		// 	console.log(dash_details.uuid, worldPosition); // Outputs the global position (x, y, z)
+		// }
+
 	}
 
 	getSurface() {
