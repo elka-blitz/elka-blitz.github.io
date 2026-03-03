@@ -65,8 +65,8 @@ const hoveredStateAttributes = {
     state: 'hovered',
     attributes: {
         offset: 0.035,
-        backgroundColor: new THREE.Color( 0x999999 ),
-        backgroundOpacity: 1,
+        backgroundColor: new THREE.Color('#0f94e6' ),
+        backgroundOpacity: 0.2,
         fontColor: new THREE.Color( 0xffffff )
     },
 };
@@ -76,7 +76,7 @@ const idleStateAttributes = {
     attributes: {
         offset: 0.035,
         backgroundColor: new THREE.Color( 0x666666 ),
-        backgroundOpacity: 0.3,
+        backgroundOpacity: 0,
         fontColor: new THREE.Color( 0xffffff )
     },
 };
@@ -139,7 +139,7 @@ function loadSamsSvg(url, button) {
         box.setFromObject(group);
         const center = box.getCenter(new THREE.Vector3());
         group.position.sub(center);
-        group.position.z = -0.01;
+        group.position.z = 0.01;
 
 
         button.add(group);
@@ -245,13 +245,14 @@ export default class QuestionnaireManager {
                     // MARK: End of survey
                     if (qNum === questionsObj.NASA_TLX.length) {
                         console.log("Survey complete", this.answers)
-                        scene.remove(questionContainer, this.answerContainer)
-                        scene.add(questionContainer, this.answerContainer2)
+                        scene.remove(this.answerContainer)
+                        scene.add(this.answerContainer2)
                         qNum = 0;
                         questionText.set({content: questionsObj.SAMS[qNum]});
 
+                        this.objsToTest.length = 0; // clear array
+
                         samsButtonArray.map(x => this.objsToTest.push(x))
-                        // this.nextTaskButton && this.nextTaskButton.makeVisible();
                     }
 
                 }
@@ -289,7 +290,7 @@ export default class QuestionnaireManager {
                     // MARK: End of survey
                     if (qNum === questionsObj.SAMS.length) {
                         console.log("Survey complete", this.answers)
-                        scene.remove(questionContainer, this.answerContainer2)
+                        scene.remove(this.answerContainer2)
                         // scene.add(questionContainer, this.answerContainer2)
                         this.nextTaskButton && this.nextTaskButton.makeVisible();
                     }
