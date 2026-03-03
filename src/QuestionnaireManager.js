@@ -98,11 +98,11 @@ function loadSamsSvg(url, button) {
         let renderOrder = 0;
 
         for (const path of data.paths) {
-            const strokeColor = path.userData.style.fill;
+            const strokeColor = path.userData.style.stroke;
 
             const material = new THREE.MeshBasicMaterial({
-                color: "black",
-
+                color: strokeColor,
+                opacity: path.userData.style.strokeOpacity,
                 side: THREE.DoubleSide,
                 depthWrite: false,
             });
@@ -145,11 +145,27 @@ function loadSamsSvg(url, button) {
 }
 
 const samsSvgs = [
-    "./assets/samsExcited/sams5.svg",
-    "./assets/samsExcited/sams4.svg",
-    "./assets/samsExcited/sams3.svg",
-    "./assets/samsExcited/sams2.svg",
-    "./assets/samsExcited/sams1.svg",
+    [
+        "./assets/samsPleasant/sams5.svg",
+        "./assets/samsPleasant/sams4.svg",
+        "./assets/samsPleasant/sams3.svg",
+        "./assets/samsPleasant/sams2.svg",
+        "./assets/samsPleasant/sams1.svg",
+    ],
+    [
+        "./assets/samsExcited/sams5.svg",
+        "./assets/samsExcited/sams4.svg",
+        "./assets/samsExcited/sams3.svg",
+        "./assets/samsExcited/sams2.svg",
+        "./assets/samsExcited/sams1.svg",
+    ],
+    [
+        "./assets/samsControl/sams5.svg",
+        "./assets/samsControl/sams4.svg",
+        "./assets/samsControl/sams3.svg",
+        "./assets/samsControl/sams2.svg",
+        "./assets/samsControl/sams1.svg",
+    ]
 ]
 
 // TODO: FIX ANSWERS LOGGING
@@ -308,7 +324,7 @@ export default class QuestionnaireManager {
         ]
         samsButtonArray.forEach((samsButton, i) => {
 
-            loadSamsSvg(samsSvgs[i], samsButton);
+            loadSamsSvg(samsSvgs[2][i], samsButton);
 
             // MARK: Button press
             samsButton.setupState( {
@@ -318,6 +334,9 @@ export default class QuestionnaireManager {
                     this.answers.push(["SAMS: ", qNum ,(5 - i)])
                     questionText.set({content: questionsObj.SAMS[qNum]});
                     qNum += 1;
+                    samsButton.clear();
+                    // loadSamsSvg(samsSvgs[qNum][i], samsButton);
+
 
                     // MARK: End of survey
                     if (qNum === questionsObj.SAMS.length + 1) {
