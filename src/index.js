@@ -199,6 +199,7 @@ let envMap
 const speed_meter = new speedMeter()
 
 // MARK: Accuracy
+// TODO: Encapsulate in class
 let accuracy_calculator
 let accuracy_raycaster = new THREE.Raycaster()
 let accuracy_line;
@@ -206,6 +207,7 @@ let realtime_accuracy_percentage = false
 let accuracy_percentage_mean = false
 let closest_dash_position = false
 let shortest_distance = false
+let sample_no = 2
 
 init();
 
@@ -842,6 +844,14 @@ function animate(time, frame) {
 		if (shortest_distance <= 0.1) {	// Threshold
 			realtime_accuracy_percentage = (0.1 - shortest_distance)  * 10
 			interface_text.updateText(realtime_accuracy_percentage.toString())
+
+			if (!accuracy_percentage_mean){
+				// Setting initial nonzero value
+				accuracy_percentage_mean = realtime_accuracy_percentage
+			}
+
+			accuracy_percentage_mean = (realtime_accuracy_percentage + accuracy_percentage_mean) / sample_no
+			sample_no += 1
 		}
 	}
 
@@ -1333,18 +1343,36 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task1=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task2=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task4_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task3=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task4ParentManager.makeVertical();
 			break;
 	}
@@ -1467,6 +1495,12 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+
+	
+	// Log and reset accuracy %
+	event_logger.logEventData('average_acc_task4=' + accuracy_percentage_mean.toString())
+	accuracy_percentage_mean = false
+	sample_no = 2
 
 	// MARK: Export
 	// Export all data
