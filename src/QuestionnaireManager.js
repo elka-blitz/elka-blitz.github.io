@@ -5,8 +5,7 @@ import {getFilledRect} from "./shapeFunctions";
 
 let FontJSON = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.json";
 let FontImage = "https://cdn.jsdelivr.net/npm/msdf-fonts/build/OpenSans-Regular-msdf.png";
-let textNum = 0;
-let selectState = false;
+
 const mouse = new THREE.Vector2();
 mouse.x = mouse.y = null;
 const raycaster = new THREE.Raycaster();
@@ -41,20 +40,31 @@ const questionsObj = {
         "10 I was completely lost in thought",                                     // 10
     ],
     UEQ_S: [
-        "1 Rate the controller/stylus: 1 = obstructive, 7 = supportive",         // 1
-        "2 Rate the controller/stylus: 1 = complicated, 7 = easy",                    // 2
-        "3 Rate the controller/stylus: 1 = inefficient, 7 = efficient",               // 3
-        "4 Rate the controller/stylus: 1 = confusing, 7 = clear",                     // 4
-        "5 Rate the controller/stylus: 1 = boring, 7 = exciting",                     // 5
-        "6 Rate the controller/stylus: 1 = not interesting, 7 = interesting",         // 6
-        "7 Rate the controller/stylus: 1 = conventional, 7 = inventive",              // 7
-        "8 Rate the controller/stylus: 1 = usual, 7 = leading edge",              // 8
+        "1 Rate the input device",         // 1
+        "2 Rate the input device",                    // 2
+        "3 Rate the input device",               // 3
+        "4 Rate the input device",                     // 4
+        "5 Rate the input device",                     // 5
+        "6 Rate the input device",         // 6
+        "7 Rate the input device",              // 7
+        "8 Rate the input device",              // 8
     ]
 }
 
+const ueq_sWords = [
+    {first: "obstructive", second: "supportive"},
+    {first: "complicated", second: "easy"},
+    {first: "inefficient", second: "efficient"},
+    {first: "confusing", second: "clear"},
+    {first: "boring", second: "exciting"},
+    {first: "not interesting", second: "interesting"},
+    {first: "conventional", second: "inventive"},
+    {first: "usual", second: "leading edge"},
+]
+
 // MARK: button options
 const buttonOptions = {
-    width: 0.4,
+    width: 0.2,
     height: 0.15,
     justifyContent: 'center',
     offset: 0.05,
@@ -193,6 +203,7 @@ export default class QuestionnaireManager {
             textAlign: 'left',
             fontFamily: FontJSON,
             fontTexture: FontImage,
+            backgroundOpacity: 1,
         } );
 
         questionContainer.position.set( 0, 1.8, -1.8 );
@@ -223,7 +234,7 @@ export default class QuestionnaireManager {
             justifyContent: 'center',
         })
 
-        progressText.position.y += 0.15;
+        progressText.position.y += 0.1;
 
 
         progressContainer.add(progressText);
@@ -231,11 +242,62 @@ export default class QuestionnaireManager {
 
         questionContainer.add(questionText);
 
+        this.ueq_sContainer1 = new ThreeMeshUI.Block( {
+            width: 0.4,
+            height: 0.15,
+            padding: 0.02,
+
+            justifyContent: 'center',
+            textAlign: 'center',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            borderRadius: 0.05,
+            backgroundOpacity: 1,
+
+        } );
+        this.ueq_sContainer2 = new ThreeMeshUI.Block( {
+            width: 0.4,
+            height: 0.15,
+            padding: 0.02,
+
+            justifyContent: 'center',
+            textAlign: 'center',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            borderRadius: 0.05,
+            backgroundOpacity: 1,
+
+
+        } );
+
+        scene.add(this.ueq_sContainer1, this.ueq_sContainer2);
+
+        const ueq_sText1 = new ThreeMeshUI.Text({
+            content: `${ueq_sWords[0].first}`,
+            fontSize: 0.045,
+            align: 'center',
+            justifyContent: 'center',
+        })
+        const ueq_sText2 = new ThreeMeshUI.Text({
+            content: `${ueq_sWords[0].second}`,
+            fontSize: 0.045,
+            align: 'center',
+            justifyContent: 'center',
+        })
+
+        this.ueq_sContainer1.add(ueq_sText1)
+        this.ueq_sContainer2.add(ueq_sText2)
+
+        this.ueq_sContainer1.visible = false;
+        this.ueq_sContainer2.visible = false;
+
+
+
 
         // MARK: Answers
         this.objsToTest = objsToTest;
 
-        const rect = getFilledRect(3, 0.3, '#ffffff');
+        const rect = getFilledRect(2.5, 0.3, '#ffffff');
         scene.add(rect)
         rect.position.set(0, 1.5, -1.3)
         rect.visible = false;
@@ -248,6 +310,7 @@ export default class QuestionnaireManager {
             fontSize: 0.07,
             padding: 0.02,
             borderRadius: 0.11,
+            backgroundOpacity: 1,
         } );
 
         this.answerContainer.position.set( 0, 1.5, -1.2 );
@@ -260,7 +323,8 @@ export default class QuestionnaireManager {
             fontTexture: FontImage,
             fontSize: 0.07,
             padding: 0.02,
-            borderRadius: 0.11
+            borderRadius: 0.11,
+            backgroundOpacity: 0,
         } );
 
         this.answerContainer2.position.set( 0, 1.5, -1.2 );
@@ -272,7 +336,9 @@ export default class QuestionnaireManager {
             fontTexture: FontImage,
             fontSize: 0.07,
             padding: 0.02,
-            borderRadius: 0.11
+            borderRadius: 0.11,
+            backgroundOpacity: 1,
+
         } );
 
         this.answerContainer3.position.set( 0, 1.5, -1.2 );
@@ -284,7 +350,8 @@ export default class QuestionnaireManager {
             fontTexture: FontImage,
             fontSize: 0.07,
             padding: 0.02,
-            borderRadius: 0.11
+            borderRadius: 0.11,
+            backgroundOpacity: 1,
         } );
 
         this.answerContainer4.position.set( 0, 1.5, -1.2 );
@@ -435,7 +502,7 @@ export default class QuestionnaireManager {
                     if (qNum === questionsObj.Flow.length + 1) {
                         scene.remove(this.answerContainer3)
                         scene.add(this.answerContainer4)
-                        qNum = 0;
+                        qNum = -1;
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
 
                         this.objsToTest.length = 0; // clear array
@@ -474,18 +541,37 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(["UEQ-S", qNum, (7 - i)])
-                    questionText.set({content: questionsObj.UEQ_S[qNum]});
                     qNum += 1;
+
                     overallQNum += 1;
+
                     progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
-                    // MARK: End of survey
-                    if (qNum === questionsObj.UEQ_S.length + 1) {
+
+                    if (qNum < questionsObj.UEQ_S.length ) {
+
+                    console.log("ueq q num", qNum, questionsObj.UEQ_S.length )
+
+
+                        this.answers.push(["UEQ-S", qNum, (7 - i)])
+                        questionText.set({content: questionsObj.UEQ_S[qNum]});
+                        this.ueq_sContainer1.visible = true;
+                        this.ueq_sContainer2.visible = true;
+                        ueq_sText1.set({content: `${ueq_sWords[qNum].first}`})
+                        ueq_sText2.set({content: `${ueq_sWords[qNum].second}`})
+                    } else {
                         console.log("Survey complete", this.answers)
-                        scene.remove(questionContainer, this.answerContainer4)
+                        scene.remove(questionContainer, this.answerContainer4, this.ueq_sContainer1, this.ueq_sContainer2)
+                        this.objsToTest.length = 0; // clear array
                         this.nextTaskButton && this.nextTaskButton.makeVisible();
+
                     }
+                    console.log("after check", qNum, questionsObj.UEQ_S.length, qNum === questionsObj.UEQ_S.length );
+
+
+
+
+
 
                 }
             } );
@@ -537,6 +623,17 @@ export default class QuestionnaireManager {
                 -1.2
             )
         })
+
+        this.ueq_sContainer1.position.set(
+            position.x - 1,
+            position.y + 0.3,
+            -1.2
+        )
+        this.ueq_sContainer2.position.set(
+            position.x + 1,
+            position.y + 0.3,
+            -1.2
+        )
 
     }
 }
