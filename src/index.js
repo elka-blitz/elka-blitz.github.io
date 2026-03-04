@@ -19,9 +19,6 @@ window.addEventListener('resize', () => {
 	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	interface_text.updateText(
-		'Resized window to: ' + sizes.width + 'x' + sizes.height,
-	);
 });
 
 import * as THREE from "three";
@@ -208,6 +205,15 @@ let accuracy_percentage_mean = false
 let closest_dash_position = false
 let shortest_distance = false
 let sample_no = 2
+let track_accuracy = false
+
+// Start area
+let stylus_in_startfield = false
+let prevStylus_in_start_field = false
+
+// End area
+let stylus_in_endfield = false
+let prevStylus_in_end_field = false
 
 init();
 
@@ -569,6 +575,8 @@ function init() {
 
 // MARK: OnFrame
 function onFrame(time, frame) {
+
+
 	// MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
@@ -636,6 +644,24 @@ function onFrame(time, frame) {
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
+
+		stylus_in_startfield = desk_manager.updateStartField(stylus.position)
+		
+		if (stylus_in_startfield && !prevStylus_in_start_field) {
+			track_accuracy = !track_accuracy
+			clickSound.play()
+		}
+
+		prevStylus_in_start_field = stylus_in_startfield
+
+		stylus_in_endfield = desk_manager.updateEndField(stylus.position)
+
+		if (stylus_in_startfield && !prevStylus_in_start_field) {
+			track_accuracy = !track_accuracy
+			clickSound.play()
+		}
+
+		prevStylus_in_end_field = stylus_in_endfield
 
 		// MARK: Accuracy Check
 		if (accuracy_line) {
@@ -801,9 +827,13 @@ function onFrame(time, frame) {
 			
 			desk_manager.drawAllDebugLines(stylus.position, scene)
 
-			//event_logger.downloadUnityData()
+
 			//
 			// MARK: Export
+
+			// event_logger.downloadUnityData()
+
+			gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
 			// Export all data
 			// event_logger.downloadAllData(); // Download stylus and task event data as text files
 
@@ -841,8 +871,11 @@ function animate(time, frame) {
 
 		shortest_distance = desk_manager.drawAllDebugLines(stylus.position, scene)
 
-		if (shortest_distance <= 0.1) {	// Threshold
-			realtime_accuracy_percentage = (0.1 - shortest_distance)  * 10
+
+		if (track_accuracy && shortest_distance.shortest_dist <= 0.1) {	// Threshold
+			realtime_accuracy_percentage = (0.1 - shortest_distance.shortest_dist)  * 10
+
+			// To see tracked percentage numbers
 			interface_text.updateText(realtime_accuracy_percentage.toString())
 
 			if (!accuracy_percentage_mean){
@@ -1132,25 +1165,15 @@ function loadSVG(url, position, isResult) {
 					mesh.renderOrder = renderOrder++;
 
 					group.add(mesh);
-					let center_position = new THREE.Vector3()
 
 					mesh.updateMatrixWorld(true)
 					group.updateMatrixWorld(true)
 					scene.updateMatrixWorld(true)
 
-					// console.log('uuid:', mesh.uuid)
+					// Bounding box helper?
+					desk_manager.drawStartField()
+					desk_manager.drawEndField()
 
-					// break; // So these subpaths are the individual 'linedashes'
-
-					// Maybe store all mesh uuids, then, later when positioned in deskmanager try getting position for each
-
-					// Get an average point for this sub path and push it to an array
-					// Check this array for all points, should not be more then 100
-					// accuracy_calculator.setAccuracyReferencePointForSubPath()
-
-
-					// MARK: SVG Accuracy init
-					// console.log('AccCalcLoad: ', accuracy_calculator.get_svg())
 				}
 			}
 		}
@@ -1290,7 +1313,7 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		taskTextPanel.updateText(
-			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+			`Task ${taskNum} complete` + '\nAccuracy: ' + accuracy_percentage_mean.toString() + '\nAre you ready to see your drawing?',
 
 		event_logger.logEventData('task1_complete')
 		);

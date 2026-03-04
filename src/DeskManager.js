@@ -54,6 +54,20 @@ export default class DeskManager {
 		drawingSurface.visible = false;
 
 		this.surface = drawingSurface;
+	
+		this.startfield_position;
+		this.startfield_object;
+		this.startfield_drawn = false
+		this.startfield_bounding_box = false
+
+		this.closest_point = false
+		this.first_point = false
+		this.last_point = false
+
+		this.endfield_position;
+		this.endfield_object;
+		this.endfield_drawn = false
+		this.endfield_bounding_box = false
 	}
 
 	lock() {
@@ -269,22 +283,22 @@ export default class DeskManager {
 
 			// console.log(center_of_focus_dash)			// Create a BufferGeometry with a single point
 
-			const dotGeometry = new THREE.BufferGeometry();
-			dotGeometry.setAttribute('position', new THREE.BufferAttribute(
-				new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
-				3 // 3 components per vertex (x, y, z)
-			));
+			// const dotGeometry = new THREE.BufferGeometry();
+			// dotGeometry.setAttribute('position', new THREE.BufferAttribute(
+			// 	new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
+			// 	3 // 3 components per vertex (x, y, z)
+			// ));
 
-			// Set up a point material (adjust size and color as needed)
-			const dotMaterial = new THREE.PointsMaterial({
-				size: 0.5,
-				color: 0xff0000, // Red color
-				sizeAttenuation: false // Keeps size consistent regardless of distance
-			});
+			// // Set up a point material (adjust size and color as needed)
+			// const dotMaterial = new THREE.PointsMaterial({
+			// 	size: 0.5,
+			// 	color: 0xff0000, // Red color
+			// 	sizeAttenuation: false // Keeps size consistent regardless of distance
+			// });
 
-			// Create the Points object and add it to the scene
-			const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
-			this.scene.add(debugPoint);
+			// // Create the Points object and add it to the scene
+			// const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
+			// this.scene.add(debugPoint);
 
 			this.dash_positions.push(center_of_focus_dash)
 		}
@@ -338,32 +352,123 @@ export default class DeskManager {
         return line;
     }
 
+	drawStartField() {
+		this.startfield_position = this.dash_positions[0] 
+
+		if (!this.startfield_drawn && typeof this.startfield_position !== 'undefined')	{
+			
+			console.log(this.startfield_position)
+
+			this.startfield_object = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }))
+
+			this.scene.add(this.startfield_object)
+			this.startfield_object.position.set(this.startfield_position.x, this.startfield_position.y, this.startfield_position.z)
+
+			// Bounding box
+			this.startfield_object.geometry.computeBoundingBox()
+
+			this.startfield_bounding_box = new THREE.Box3().setFromObject(this.startfield_object)
+			// this.scene.add(this.helper)
+
+			this.startfield_drawn = true
+
+		}
+	}
+
+	updateStartField(stylus_position) {
+		// Called onframe, handles spinning, haptics, color, frame to frame
+		if (this.startfield_drawn) {
+			this.startfield_object.rotateY(0.1)
+			this.startfield_object.rotateX(0.1)
+			this.startfield_object.updateMatrixWorld()
+
+			this.startfield_object.position.set(this.first_point.x, this.first_point.y, this.first_point.z)
+			this.startfield_bounding_box = new THREE.Box3().setFromObject(this.startfield_object)
+			// this.helper = new THREE.Box3Helper(this.startfield_bounding_box, 0xffff00)
+
+			return this.startfield_bounding_box.containsPoint(stylus_position)
+		}
+	}
+
+	drawEndField() {
+		this.endfield_position = this.last_point
+		console.log('endfield', this.endfield_position)
+
+		if (!this.endfield_drawn && typeof this.endfield_position !== 'undefined')	{
+			
+			console.log(this.endfield_position)
+
+			this.endfield_object = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }))
+
+			this.scene.add(this.endfield_object)
+			this.endfield_object.position.set(this.endfield_position.x, this.endfield_position.y, this.endfield_position.z)
+
+			// Bounding box
+			this.endfield_object.geometry.computeBoundingBox()
+
+			this.endfield_bounding_box = new THREE.Box3().setFromObject(this.endfield_object)
+			// this.scene.add(this.helper)
+
+			this.endfield_drawn = true
+
+		}
+	}
+
+	updateEndField(stylus_position) {
+		// Called onframe, handles spinning, haptics, color, frame to frame
+		if (this.endfield_drawn) {
+			this.endfield_object.rotateY(0.1)
+			this.endfield_object.rotateX(0.1)
+			this.endfield_object.updateMatrixWorld()
+
+			this.endfield_object.position.set(this.last_point.x, this.last_point.y, this.last_point.z)
+			this.endfield_bounding_box = new THREE.Box3().setFromObject(this.endfield_object)
+			// this.helper = new THREE.Box3Helper(this.endfield_bounding_box, 0xffff00)
+
+			return this.endfield_bounding_box.containsPoint(stylus_position)
+		}
+	}
+
 	drawAllDebugLines(target_point, scene, color = 0xff0000, size = 0.3)  {
 		this.scene.remove(this.debugLineGroup)	
 		// console.log(this.debugLineGroup)
 		this.debugLineGroup = new THREE.Group()
 		
 		let shortest_distance = Infinity
+		this.first_point = false
+		this.last_point = false
+		let iter_end_point = false
 
 		for (const point_index in this.dash_positions) {
+
+			if (!this.first_point) {
+				this.first_point = this.dash_positions[point_index]
+			}
+
 			let end_point = this.dash_positions[point_index]
 
-			const geometry = new THREE.BufferGeometry().setFromPoints([end_point, target_point]);
-			const material = new THREE.LineBasicMaterial({ color });
+			// Commented code generates the debug lines
 
-			const line = new THREE.Line(geometry, material);
+			// const geometry = new THREE.BufferGeometry().setFromPoints([end_point, target_point]);
+			// const material = new THREE.LineBasicMaterial({ color });
 
-			this.debugLineGroup.add(line)
+			// const line = new THREE.Line(geometry, material);
+
+			// this.debugLineGroup.add(line)
 
 			// Distance calc
 			let distance_check = end_point.distanceTo(target_point)
 			if (distance_check < shortest_distance) {
 				shortest_distance = distance_check
+				this.closest_point = end_point
 			}
-		}
 
-		this.scene.add(this.debugLineGroup)
-		return shortest_distance
+			iter_end_point = this.dash_positions[point_index]
+		}
+		this.first_point = this.dash_positions[0]
+		this.last_point = iter_end_point
+		
+		return {shortest_dist: shortest_distance}
 	}
 
 
