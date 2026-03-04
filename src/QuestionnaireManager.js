@@ -14,40 +14,40 @@ const raycaster = new THREE.Raycaster();
 
 const questionsObj = {
     NASA_TLX: [
-        "1 How frustrated did you feel during this task?",                            // 1
-        "2 How mentally demanding was the drawing task?",                             // 2
-        "3 How physically demanding was the drawing task?",                           // 3
-        "4 How hard did you have to work to accomplish your level of performance?",   // 4
-        "5 How rushed or pressured did you feel?",                                    // 5
-        "6 How successful were you in accomplishing the task?",                       // 6
-        "7 How insecure, discouraged, irritated, stressed and annoyed were you?",     // 7
+        "How frustrated did you feel during this task?",                            // 1
+        "How mentally demanding was the drawing task?",                             // 2
+        "How physically demanding was the drawing task?",                           // 3
+        "How hard did you have to work to accomplish your level of performance?",   // 4
+        "How rushed or pressured did you feel?",                                    // 5
+        "How successful were you in accomplishing the task?",                       // 6
+        "How insecure, discouraged, irritated, stressed and annoyed were you?",     // 7
     ],
     SAMS: [
-        "1 How pleasant or enjoyable did you find this task?",                        // 1
-        "2 How mentally activated or stimulated did you feel during this task?",      // 2
-        "3 How in control did you feel during the task?",                             // 3
+        "How pleasant or enjoyable did you find this task?",                        // 1
+        "How mentally activated or stimulated did you feel during this task?",      // 2
+        "How in control did you feel during the task?",                             // 3
     ],
     Flow: [
-        "1 I felt just the right amount of challenge.",                          // 1
-        "2 My thoughts and actions flowed smoothly while drawing.",                   // 2
-        "3 I was completely absorbed in what I was doing.",                           // 3
-        "4 I knew exactly what to do at each step of the task.",                      // 4
-        "5 I didn't notice time passing.",                                            // 5
-        "6 I had no difficulty concentrating.",                                       // 6
-        "7 My mind was completely clear.",                                            // 7
-        "8 The right thought/movements occurred of their own accord.",                // 8
-        "9 I felt that I had everything under control.",                              // 9
-        "10 I was completely lost in thought",                                     // 10
+        "I felt just the right amount of challenge.",                          // 1
+        "My thoughts and actions flowed smoothly while drawing.",                   // 2
+        "I was completely absorbed in what I was doing.",                           // 3
+        "I knew exactly what to do at each step of the task.",                      // 4
+        "I didn't notice time passing.",                                            // 5
+        "I had no difficulty concentrating.",                                       // 6
+        "My mind was completely clear.",                                            // 7
+        "The right thought/movements occurred of their own accord.",                // 8
+        "I felt that I had everything under control.",                              // 9
+        "I was completely lost in thought",                                     // 10
     ],
     UEQ_S: [
-        "1 Rate the input device",         // 1
-        "2 Rate the input device",                    // 2
-        "3 Rate the input device",               // 3
-        "4 Rate the input device",                     // 4
-        "5 Rate the input device",                     // 5
-        "6 Rate the input device",         // 6
-        "7 Rate the input device",              // 7
-        "8 Rate the input device",              // 8
+        "Rate the input device",         // 1
+        "Rate the input device",                    // 2
+        "Rate the input device",               // 3
+        "Rate the input device",                     // 4
+        "Rate the input device",                     // 5
+        "Rate the input device",         // 6
+        "Rate the input device",              // 7
+        "Rate the input device",              // 8
     ]
 }
 
@@ -178,13 +178,6 @@ const samsSvgs = [
     ]
 ]
 
-// TODO: FIX ANSWERS LOGGING
-/*
-- SAMS
-- UEQ-S
-- Progress bar?
-- test in vr
- */
 export default class QuestionnaireManager {
     // Class to manage desk movement, drawzone spawning and interaction
     constructor(scene, objsToTest) {
@@ -292,8 +285,6 @@ export default class QuestionnaireManager {
         this.ueq_sContainer2.visible = false;
 
 
-
-
         // MARK: Answers
         this.objsToTest = objsToTest;
 
@@ -391,7 +382,7 @@ export default class QuestionnaireManager {
                     if (qNum === questionsObj.NASA_TLX.length) {
                         scene.remove(this.answerContainer)
                         scene.add(this.answerContainer2)
-                        qNum = 0;
+                        qNum = -1;
                         // questionText.set({content: questionsObj.SAMS[qNum]});
 
                         this.objsToTest.length = 0; // clear array
@@ -428,6 +419,9 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    qNum += 1;
+                    overallQNum += 1;
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
                     if (qNum < questionsObj.SAMS.length){
                         this.answers.push(["SAMS: ", qNum ,(5 - i)])
@@ -440,24 +434,17 @@ export default class QuestionnaireManager {
 
                             loadSamsSvg(samsSvgs[qNum][index], x);
                     })}
-                    qNum += 1;
-                    overallQNum += 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
-
-
                     // MARK: End of survey
-                    if (qNum === questionsObj.SAMS.length + 1) {
+                    else {
                         scene.remove(this.answerContainer2)
                         scene.add(this.answerContainer3)
-                        qNum = 0;
+                        qNum = -1;
                         // questionText.set({content: questionsObj.Flow[qNum]});
 
                         this.objsToTest.length = 0; // clear array
 
                         flowButtonArray.map(x => this.objsToTest.push(x))
                         rect.visible = false;
-
                     }
 
                 }
@@ -491,22 +478,23 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(["Flow: ", qNum, (7 - i)])
-                    questionText.set({content: questionsObj.Flow[qNum]});
                     qNum += 1;
-                    console.log(qNum)
+
                     overallQNum += 1;
                     progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
+                    if (qNum < questionsObj.Flow.length){
+
+                        this.answers.push(["Flow: ", qNum, (7 - i)])
+                        questionText.set({content: questionsObj.Flow[qNum]});
+                    }
                     // MARK: End of survey
-                    if (qNum === questionsObj.Flow.length + 1) {
+                    else {
                         scene.remove(this.answerContainer3)
                         scene.add(this.answerContainer4)
                         qNum = -1;
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
-
                         this.objsToTest.length = 0; // clear array
-
                         ueqButtonsArray.map(x => this.objsToTest.push(x))
                     }
 
@@ -542,16 +530,10 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     qNum += 1;
-
                     overallQNum += 1;
-
                     progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
-
                     if (qNum < questionsObj.UEQ_S.length ) {
-
-                    console.log("ueq q num", qNum, questionsObj.UEQ_S.length )
-
 
                         this.answers.push(["UEQ-S", qNum, (7 - i)])
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
@@ -559,20 +541,15 @@ export default class QuestionnaireManager {
                         this.ueq_sContainer2.visible = true;
                         ueq_sText1.set({content: `${ueq_sWords[qNum].first}`})
                         ueq_sText2.set({content: `${ueq_sWords[qNum].second}`})
-                    } else {
+                    }
+                    // MARK: End of survey
+                    else {
                         console.log("Survey complete", this.answers)
                         scene.remove(questionContainer, this.answerContainer4, this.ueq_sContainer1, this.ueq_sContainer2)
                         this.objsToTest.length = 0; // clear array
                         this.nextTaskButton && this.nextTaskButton.makeVisible();
 
                     }
-                    console.log("after check", qNum, questionsObj.UEQ_S.length, qNum === questionsObj.UEQ_S.length );
-
-
-
-
-
-
                 }
             } );
             ueqButton.setupState( hoveredStateAttributes );
