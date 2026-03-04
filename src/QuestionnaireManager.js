@@ -372,11 +372,12 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(["NASA:", qNum, (7 - i)])
-                    qNum += 1;
+                    this.answers.push(7 - i)
                     overallQNum += 1;
-                    questionText.set({content: questionsObj.NASA_TLX[qNum]});
                     progressText.set({content: `${overallQNum} / ${totalQNum}`});
+
+                    qNum += 1;
+                    questionText.set({content: questionsObj.NASA_TLX[qNum]});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.NASA_TLX.length) {
@@ -420,11 +421,11 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     qNum += 1;
-                    overallQNum += 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
                     if (qNum < questionsObj.SAMS.length){
-                        this.answers.push(["SAMS: ", qNum ,(5 - i)])
+
+                        overallQNum += 1;
+                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
+                        this.answers.push(5 - i)
                         questionText.set({content: questionsObj.SAMS[qNum]});
 
                         // replacing with next set of samsSVGs
@@ -479,13 +480,11 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     qNum += 1;
-
-                    overallQNum += 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
                     if (qNum < questionsObj.Flow.length){
+                        overallQNum += 1;
+                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
-                        this.answers.push(["Flow: ", qNum, (7 - i)])
+                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.Flow[qNum]});
                     }
                     // MARK: End of survey
@@ -530,12 +529,12 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     qNum += 1;
-                    overallQNum += 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
                     if (qNum < questionsObj.UEQ_S.length ) {
 
-                        this.answers.push(["UEQ-S", qNum, (7 - i)])
+                        overallQNum += 1;
+                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
+
+                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
                         this.ueq_sContainer1.visible = true;
                         this.ueq_sContainer2.visible = true;
