@@ -202,6 +202,10 @@ const speed_meter = new speedMeter()
 let accuracy_calculator
 let accuracy_raycaster = new THREE.Raycaster()
 let accuracy_line;
+let realtime_accuracy_percentage = false
+let accuracy_percentage_mean = false
+let closest_dash_position = false
+let shortest_distance = false
 
 init();
 
@@ -640,12 +644,14 @@ function onFrame(time, frame) {
 		try{
 			let dash_line_points = desk_manager.getDashPositions()
 			// console.log('dashklinepointsfrommain', dash_line_points)
-			let closest_dash_position = accuracy_calculator.getClosestPoint(dash_line_points, stylus.position)
-			console.log('Closest: ', closest_dash_position)
+			// closest_dash_position = accuracy_calculator.getClosestPoint(dash_line_points, stylus.position)
+			// console.log('Closest: ', closest_dash_position.closest)
+			// console.log('Distance: ', closest_dash_position.distance)
 
-			// if (closest_dash_position !== false) {
-			// 	// accuracy_line = desk_manager.drawDebugLine(stylus.position, closest_dash_position, scene)
-			desk_manager.drawAllDebugLines(stylus.position, scene)
+			// MARK: Accuracy Calculation
+
+			// shortest_distance = desk_manager.drawAllDebugLines(stylus.position, scene)
+			// console.log('shortest_distance=', shortest_distance)
 
 			// }
 
@@ -829,6 +835,14 @@ function animate(time, frame) {
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
+
+
+		shortest_distance = desk_manager.drawAllDebugLines(stylus.position, scene)
+
+		if (shortest_distance <= 0.1) {	// Threshold
+			realtime_accuracy_percentage = (0.1 - shortest_distance)  * 10
+			interface_text.updateText(realtime_accuracy_percentage.toString())
+		}
 	}
 
 	// MARK: drawing logic

@@ -340,9 +340,10 @@ export default class DeskManager {
 
 	drawAllDebugLines(target_point, scene, color = 0xff0000, size = 0.3)  {
 		this.scene.remove(this.debugLineGroup)	
-		console.log(this.debugLineGroup)
+		// console.log(this.debugLineGroup)
 		this.debugLineGroup = new THREE.Group()
-
+		
+		let shortest_distance = Infinity
 
 		for (const point_index in this.dash_positions) {
 			let end_point = this.dash_positions[point_index]
@@ -353,9 +354,16 @@ export default class DeskManager {
 			const line = new THREE.Line(geometry, material);
 
 			this.debugLineGroup.add(line)
+
+			// Distance calc
+			let distance_check = end_point.distanceTo(target_point)
+			if (distance_check < shortest_distance) {
+				shortest_distance = distance_check
+			}
 		}
 
 		this.scene.add(this.debugLineGroup)
+		return shortest_distance
 	}
 
 

@@ -51,8 +51,8 @@ export default class DrawingAccuracy {
                 
             }
         }
-        console.log(min_distance)
-        return closest_point
+        // console.log(min_distance)
+        return {closest: closest_point, distance: min_distance}
 
     }
 }
