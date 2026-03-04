@@ -180,6 +180,8 @@ export default class QuestionnaireManager {
     constructor(scene, objsToTest) {
         // MARK: Question Block
         let qNum = 0;
+        let overallQNum = 0;
+        const totalQNum = Object.values(questionsObj).flat().length
         this.answers = []
         this.nextTaskButton = undefined;
 
@@ -200,6 +202,32 @@ export default class QuestionnaireManager {
             content: questionsObj.NASA_TLX[qNum],
             fontSize: 0.055
         } )
+
+        const progressContainer = new ThreeMeshUI.Block( {
+            width: 1.3,
+            height: 0.1,
+            padding: 0.05,
+            paddingBottom: 0.07,
+            justifyContent: 'center',
+            textAlign: 'center',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            backgroundOpacity: 0
+        } );
+
+
+        const progressText = new ThreeMeshUI.Text({
+            content: `${overallQNum} / ${totalQNum}`,
+            fontSize: 0.045,
+            align: 'center',
+            justifyContent: 'center',
+        })
+
+        progressText.position.y += 0.15;
+
+
+        progressContainer.add(progressText);
+        questionContainer.add(progressContainer)
 
         questionContainer.add(questionText);
 
@@ -288,7 +316,9 @@ export default class QuestionnaireManager {
                 onSet: () => {
                     this.answers.push(["NASA:", qNum, (7 - i)])
                     qNum += 1;
+                    overallQNum += 1;
                     questionText.set({content: questionsObj.NASA_TLX[qNum]});
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.NASA_TLX.length) {
@@ -335,6 +365,7 @@ export default class QuestionnaireManager {
                     if (qNum < questionsObj.SAMS.length){
                         this.answers.push(["SAMS: ", qNum ,(5 - i)])
                         questionText.set({content: questionsObj.SAMS[qNum]});
+
                         // replacing with next set of samsSVGs
                         samsButtonArray.forEach((x, index) => {
                             const svg = x.getObjectByName("samsSVG");
@@ -342,7 +373,11 @@ export default class QuestionnaireManager {
 
                             loadSamsSvg(samsSvgs[qNum][index], x);
                     })}
-                    qNum += 1
+                    qNum += 1;
+                    overallQNum += 1;
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
+
+
 
                     // MARK: End of survey
                     if (qNum === questionsObj.SAMS.length + 1) {
@@ -393,6 +428,8 @@ export default class QuestionnaireManager {
                     questionText.set({content: questionsObj.Flow[qNum]});
                     qNum += 1;
                     console.log(qNum)
+                    overallQNum += 1;
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.Flow.length + 1) {
@@ -440,6 +477,8 @@ export default class QuestionnaireManager {
                     this.answers.push(["UEQ-S", qNum, (7 - i)])
                     questionText.set({content: questionsObj.UEQ_S[qNum]});
                     qNum += 1;
+                    overallQNum += 1;
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
                     // MARK: End of survey
                     if (qNum === questionsObj.UEQ_S.length + 1) {
