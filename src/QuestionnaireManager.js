@@ -138,7 +138,7 @@ function loadSamsSvg(url, button) {
         const center = box.getCenter(new THREE.Vector3());
         group.position.sub(center);
         group.position.z = 0.01;
-
+        group.name = "samsSVG"
 
         button.add(group);
     });
@@ -324,19 +324,25 @@ export default class QuestionnaireManager {
         ]
         samsButtonArray.forEach((samsButton, i) => {
 
-            loadSamsSvg(samsSvgs[2][i], samsButton);
+            loadSamsSvg(samsSvgs[qNum][i], samsButton);
 
             // MARK: Button press
             samsButton.setupState( {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
-                    this.answers.push(["SAMS: ", qNum ,(5 - i)])
-                    questionText.set({content: questionsObj.SAMS[qNum]});
-                    qNum += 1;
-                    samsButton.clear();
-                    // loadSamsSvg(samsSvgs[qNum][i], samsButton);
 
+                    if (qNum < questionsObj.SAMS.length){
+                        this.answers.push(["SAMS: ", qNum ,(5 - i)])
+                        questionText.set({content: questionsObj.SAMS[qNum]});
+                        // replacing with next set of samsSVGs
+                        samsButtonArray.forEach((x, index) => {
+                            const svg = x.getObjectByName("samsSVG");
+                            if (svg) x.remove(svg);
+
+                            loadSamsSvg(samsSvgs[qNum][index], x);
+                    })}
+                    qNum += 1
 
                     // MARK: End of survey
                     if (qNum === questionsObj.SAMS.length + 1) {
