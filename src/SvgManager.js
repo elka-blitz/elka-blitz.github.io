@@ -57,24 +57,24 @@ export default class SvgManager {
 	constructor() {
 		this.array = [
 			{ url: 'assets/task1/base.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task1/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
+			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.075 } },
+			{ url: 'assets/task1/banner_short.svg', position: { x: 0, y: -0.08 } },
 			{ url: 'assets/task1/door_top.svg', position: { x: -0.05, y: -0.015 } },
 			{ url: 'assets/task1/window.svg', position: { x: 0.04, y: -0.02 } },
 			{ url: 'assets/task1/window2.svg', position: { x: 0.04, y: 0.03 } },
+			{ url: 'assets/task1/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
 			{ url: 'assets/task1/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
-			{ url: 'assets/task1/banner_short.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.075 } },
 		];
 
 		this.t2Array = [
-			{ url: 'assets/task2/outline.svg', position: { x: 0, y: 0.025 } },
-			{ url: 'assets/task2/awning.svg', position: { x: 0, y: -0.047 } },
-			{ url: 'assets/task2/bush.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task2/door.svg', position: { x: 0.038, y: 0.04 } },
-			{ url: 'assets/task2/door_window.svg', position: { x: 0.036, y: 0.015 } },
-			{ url: 'assets/task2/flower.svg', position: { x: 0.036, y: 0.015 } },
-			{ url: 'assets/task2/window.svg', position: { x: -0.032, y: 0.012 } },
-			{ url: 'assets/task2/windowsill.svg', position: { x: -0.032, y: 0.045 } },
+			{ url: 'assets/task2/cup.svg', position: { x: 0, y: 0.025 } },
+			{ url: 'assets/task2/plate1.svg', position: { x: 0, y: -0.08 } },
+			{ url: 'assets/task2/plate2.svg', position: { x: 0.038, y: 0.04 } },
+			{ url: 'assets/task2/rim.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/tea.svg', position: { x: -0.032, y: 0.012 } },
+			{ url: 'assets/task2/steam.svg', position: { x: 0.036, y: 0.015 } },
+			{ url: 'assets/task2/handle.svg', position: { x: 0, y: -0.047 } },
+			{ url: 'assets/task2/teabag.svg', position: { x: -0.032, y: 0.045 } },
 		];
 
 		this.t3Array = [
@@ -102,10 +102,6 @@ export default class SvgManager {
 			// { url: 'assets/task4/column_end.svg', position: { x: -0.0619, y: 0.09 } },
 			// { url: 'assets/task4/column_top.svg', position: { x: -0.0619, y: -0.053 } },
 		];
-		shuffle(this.array);
-		shuffle(this.t2Array);
-		shuffle(this.t3Array);
-		shuffle(this.t4Array);
 
 		this.t1Paints = [
 			paint1,
