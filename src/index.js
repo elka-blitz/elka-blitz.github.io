@@ -870,7 +870,7 @@ function onControllerConnected(e) {
 			0.2,
 		);
 		Calibrate();
-		deskCoords = desk_manager.getDeskCoordinates();
+		deskCoords = {x: 0, y: 1.6, z: -0.5}
 
 
 	}
@@ -881,7 +881,6 @@ function onControllerConnected(e) {
 function onSelectStart(e) {
   if (e.target !== stylus || !desk_set) return;
 	selectState = true;
-	console.log("select start")
 
 	const painter = stylus.userData.painter;
 	painter.moveTo(stylusPos);
@@ -892,7 +891,6 @@ function onSelectStart(e) {
 function onSelectEnd() {
   this.userData.isSelecting = false;
 	selectState = false;
-	console.log("select end")
 
 	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
 	try {
@@ -1303,6 +1301,12 @@ const QuestionnaireMode = () => {
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
+
+	if (BROWSER_TESTING) {
+		questionnaire1.setPosition(deskCoords);
+		questionnaire1.makeQuestionnaireVisible(nextTaskButton);
+		task1ParentManager.makeInvisible();
+	}
 
 
 	switch (taskNum) {
