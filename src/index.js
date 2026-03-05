@@ -53,6 +53,7 @@ import { gsap } from 'gsap';
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 import accuracyHelper from "./accuracyHelper.js";
+import EnterField from "./fieldHelper.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -201,6 +202,9 @@ const speed_meter = new speedMeter()
 let accuracy_helper
 let svg_points = []
 
+// EntryFields
+let enter_field
+
 
 init();
 
@@ -309,6 +313,9 @@ function init() {
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
+
+	// Initialise enterfield
+	enter_field = new EnterField(scene)
 
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup);
@@ -1086,6 +1093,10 @@ function loadSVG(url, position, isResult) {
 		isResult ? originalSvgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
 
 		svg_points = desk_manager.getDashPoints()
+		let start_point = svg_points[0]
+		enter_field.setNewStartPosition(new THREE.Vector3(start_point.x, start_point.y, start_point.z))
+		enter_field.setEndState()
+		enter_field.addEnterField()	
 	});
 }
 
