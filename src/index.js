@@ -54,8 +54,7 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 
 // MARK: Conditions
-const isHorizontalSurface = false;
-
+const isHorizontalSurface = true;
 
 const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -425,12 +424,12 @@ function init() {
 	interface_text = new UIText(scene);
 
 	const contextTextStr =
-		'You are an illustrator designing buildings for the city.' +
-		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
-		'\nThe three clients want to build a bakery, a florist, a studio and a library.' +
-		'\n\nPlease go ahead and draw some practice shapes. After that the tasks will begin. Good luck!';
+		'Hello Inkspirer, a new commission is in! You are designing the logo for a new bakery opening in town.\n'+
+		'The client is excited, and has sent you a few ideas they’d like to see sketched before choosing the final design.\n'+
+		'They suggested three possible concepts for the logo: the bakery storefront, a cup of tea, and a slice of cake.\n'+
+		'Before starting the final logo design, let’s practice to get comfortable with the drawing tool. Good luck!'
 
-	const taskTextPanelStr = 'Task 1: The Bakery';
+	const taskTextPanelStr = 'Task 1: The Storefront';
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
