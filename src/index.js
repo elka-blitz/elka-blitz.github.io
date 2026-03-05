@@ -205,6 +205,7 @@ let svg_points = []
 // EntryFields
 let enter_field
 let drawing_completed = false
+let prev_drawing_completes = false
 
 
 init();
