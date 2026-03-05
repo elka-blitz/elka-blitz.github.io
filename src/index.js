@@ -65,7 +65,6 @@ const raycaster = new THREE.Raycaster();
 const objsToTest1 = [];
 const objsToTest2 = [];
 const objsToTest3 = [];
-const objsToTest4 = [];
 
 // MARK: setup declarations
 let camera, scene, renderer, vrControl;
@@ -92,17 +91,15 @@ let pracBox,
 	task1Box, task1ParentManager,
 	task2Box, task2ParentManager,
 	task3Box, task3ParentManager,
-	task4Box, task4ParentManager,
 	questionnaire1,
 	questionnaire2,
-	questionnaire3,
-	questionnaire4;
+	questionnaire3;
 
 // todo organise this into a class or something
 
 const practiceSvgArray = [
 	'assets/task1/window.svg',
-	'assets/task1/door_top.svg',
+	'assets/task2/rim.svg',
 	'assets/task1/window_curtain.svg',
 ];
 
@@ -168,7 +165,7 @@ lsw_group.name = 'lsw_env'
 // MARK: Hands
 let hand1, hand2;
 
-let controller1, controllerGrip1, controller2, controllerGrip2;
+let controller1, controllerGrip1;
 
 let mx_ink_connected = false;
 const left_hand_container = new THREE.Group();
@@ -511,9 +508,6 @@ function init() {
 	task3ParentManager = new DrawParent();
 	task3Box = task3ParentManager.getParent();
 
-	task4ParentManager = new DrawParent();
-	task4Box = task4ParentManager.getParent();
-
 	svgManager = new SvgManager();
 	svgWithPositionsArray = svgManager.getSVGArray();
 
@@ -535,19 +529,16 @@ function init() {
 	desk_manager.addMesh(task1Box);
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
-	desk_manager.addMesh(task4Box);
 	desk_manager.addMesh(pracBox);
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
-	task4Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
 
 	// MARK: Questionnaire
 	questionnaire1 = new QuestionnaireManager(scene, objsToTest1);
 	questionnaire2 = new QuestionnaireManager(scene, objsToTest2);
 	questionnaire3 = new QuestionnaireManager(scene, objsToTest3);
-	questionnaire4 = new QuestionnaireManager(scene, objsToTest4);
 
 }
 
@@ -701,7 +692,7 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 
-				if (taskNum !== 4) {
+				if (taskNum !== 3) {
 					SetupNextTask();
 					TaskMode();
 				} else {
@@ -731,7 +722,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y
-				if (taskNum !== 4) {
+				if (taskNum !== 3) {
 					SetupNextTask();
 					TaskMode();
 				} else {
@@ -892,7 +883,6 @@ function onSelectEnd() {
   this.userData.isSelecting = false;
 	selectState = false;
 
-	//   console.log(this.userData.painter.mesh.geometry.attributes.position.array)
 	try {
 	paint_exporter_instance.saveMesh(this.userData.painter.mesh) // Save painting with uuid, can be used to reference painting later for export or other functions
 	}
@@ -927,9 +917,6 @@ function handleDrawing(controller) {
 		case 3:
 			currentBox = task3Box;
 			break;
-		case 4:
-			currentBox = task4Box;
-			break;
 	}
 
 	if (gamepad1) {
@@ -953,10 +940,6 @@ function getCurrentObjs() {
 			break;
 		case 3:
 			currentObj = objsToTest3;
-			break;
-
-		case 4:
-			currentObj = objsToTest4;
 			break;
 	}
 	return currentObj
@@ -1265,12 +1248,6 @@ const ShowResultsMode = () => {
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
 			break;
-		case 4:
-			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
-			event_logger.logEventData('task4_loaded')
-			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task4ParentManager.makeVertical();
-			break;
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
@@ -1327,12 +1304,6 @@ const QuestionnaireMode = () => {
 			questionnaire3.makeQuestionnaireVisible(nextTaskButton);
 			task3ParentManager.makeInvisible();
 			break;
-		case 4:
-			questionnaire4.setPosition(deskCoords);
-			questionnaire4.makeQuestionnaireVisible(nextTaskButton);
-			task4ParentManager.makeInvisible();
-
-			break;
 	}
 
 	questionnaire1.setPosition(deskCoords);
@@ -1370,9 +1341,6 @@ const SetupNextTask = () => {
 		case 1:
 			break;
 		case 2:
-			// todo change these console logs to exports thanks Lukas
-
-			// Ok!
 			event_logger.logEventData(questionnaire1.getAnswers())
 			taskTextPanel.updateText('Task 2: Cup of Tea');
 			svgManager.setupPaints(2, task2Box);
@@ -1382,16 +1350,12 @@ const SetupNextTask = () => {
 			taskTextPanel.updateText('Task 3: Cake');
 			svgManager.setupPaints(3, task3Box);
 			break;
-		case 4:
-			event_logger.logEventData(questionnaire3.getAnswers())
-			taskTextPanel.updateText('Task 4: Library');
-			svgManager.setupPaints(4, task4Box);
-			break;
+
 	}
 }
 // MARK: MODE:  Finish
 const FinishMode = () => {
-	event_logger.logEventData(questionnaire4.getAnswers())
+	event_logger.logEventData(questionnaire3.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
@@ -1420,7 +1384,6 @@ const FinishMode = () => {
 		task1ParentManager.getParent(),
 		task2ParentManager.getParent(),
 		task3ParentManager.getParent(),
-		task4ParentManager.getParent(),
 	];
 
 	parentArray.forEach((p, i) => {
@@ -1429,15 +1392,11 @@ const FinishMode = () => {
 			case 0:
 				p.position.z -= 1.5;
 				break;
-
 			case 1:
 				p.position.z -= 1;
 				break;
 
 			case 2:
-				break;
-			case 3:
-				p.position.z += 0.5;
 				break;
 		}
 	})
