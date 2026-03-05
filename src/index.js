@@ -204,6 +204,7 @@ let svg_points = []
 
 // EntryFields
 let enter_field
+let drawing_completed = false
 
 
 init();
@@ -812,6 +813,9 @@ function animate(time, frame) {
 		accuracy_helper.getClosestPointOnSvg(stylus.position)
 		accuracy_helper.calculateAccuracy() // Conditional embedded
 
+		drawing_completed = enter_field.checkForStylus(stylus.position)
+		enter_field.rotateField()
+
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
@@ -1095,8 +1099,8 @@ function loadSVG(url, position, isResult) {
 		svg_points = desk_manager.getDashPoints()
 		let start_point = svg_points[0]
 		enter_field.setNewStartPosition(new THREE.Vector3(start_point.x, start_point.y, start_point.z))
-		enter_field.setEndState()
-		enter_field.addEnterField()	
+		enter_field.setStartState()
+		enter_field.updateEnterField()	
 	});
 }
 
