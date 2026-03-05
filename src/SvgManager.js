@@ -78,14 +78,14 @@ export default class SvgManager {
 		];
 
 		this.t3Array = [
-			{ url: 'assets/task3/extension_outline.svg', position: { x: -0.022, y: 0.04 }, },
-			{ url: 'assets/task3/main_outline.svg', position: { x: 0.02, y: 0.022 } },
-			{ url: 'assets/task3/big_window.svg', position: { x: -0.02, y: 0.04 } },
-			{ url: 'assets/task3/side_window.svg', position: { x: 0.07, y: 0.032 } },
-			{ url: 'assets/task3/top_window.svg', position: { x: 0, y: -0.03 } },
-			{ url: 'assets/task3/roof_slant.svg', position: { x: 0.04, y: -0.071 } },
-			{ url: 'assets/task3/roof_window.svg', position: { x: 0.007, y: -0.07 } },
-			{ url: 'assets/task3/triangle_roof.svg', position: { x: 0.04, y: -0.075 }, },
+			{ url: 'assets/task3/cake_side.svg', position: { x: -0.022, y: 0.04 }, },
+			{ url: 'assets/task3/cake_top.svg', position: { x: 0.02, y: 0.022 } },
+			{ url: 'assets/task3/cherry.svg', position: { x: -0.02, y: 0.04 } },
+			{ url: 'assets/task3/icing_blob.svg', position: { x: 0.07, y: 0.032 } },
+			{ url: 'assets/task3/layer_icing.svg', position: { x: 0, y: -0.03 } },
+			{ url: 'assets/task3/spoon_handle.svg', position: { x: 0.04, y: -0.071 } },
+			{ url: 'assets/task3/spoon_top.svg', position: { x: 0.007, y: -0.07 } },
+			{ url: 'assets/task3/top_icing.svg', position: { x: 0.04, y: -0.075 }, },
 		];
 
 		this.t4Array = [

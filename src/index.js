@@ -402,7 +402,7 @@ function init() {
 	)
 	scene.add(controllerGrip1);
 	scene.add(controller1);
-	console.log(controller1, controllerGrip1)
+
 
 	controller1.name = 'controller-right';
 
@@ -1379,7 +1379,7 @@ const SetupNextTask = () => {
 			break;
 		case 3:
 			event_logger.logEventData(questionnaire2.getAnswers())
-			taskTextPanel.updateText('Task 3: Studio');
+			taskTextPanel.updateText('Task 3: Cake');
 			svgManager.setupPaints(3, task3Box);
 			break;
 		case 4:
