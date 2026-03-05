@@ -54,7 +54,7 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 
 
-const BROWSER_TESTING = true; // todo remove before deployment
+const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
