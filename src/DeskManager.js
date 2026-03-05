@@ -8,6 +8,10 @@ export default class DeskManager {
 		this.coordinates;
 		this.scene = scene;
 
+		this.svgGroup;
+		this.dash_positions = []
+		this.debugLineGroup = false
+
 		// adding to the instance adds to the group, so any positions are relevant to the desk model's
 		// center (x and z are in the center, y is on the floor so add 0.75 as the model's height)
 		this.desk_asset_instance = desk_asset_instance; // Of THREE.group() nature
@@ -50,6 +54,20 @@ export default class DeskManager {
 		drawingSurface.visible = false;
 
 		this.surface = drawingSurface;
+	
+		this.startfield_position;
+		this.startfield_object;
+		this.startfield_drawn = false
+		this.startfield_bounding_box = false
+
+		this.closest_point = false
+		this.first_point = false
+		this.last_point = false
+
+		this.endfield_position;
+		this.endfield_object;
+		this.endfield_drawn = false
+		this.endfield_bounding_box = false
 	}
 
 	lock() {
@@ -212,6 +230,9 @@ export default class DeskManager {
 	}
 
 	placeSVG(svgGroup, position) {
+		// console.log('Hello from placesvg')
+		this.dash_positions = [] // Clear per shapeload
+		this.svgGroup = svgGroup
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
 
@@ -231,7 +252,68 @@ export default class DeskManager {
 		svgGroup.position.y -= position.y;
 
 		this.surface.add(svgGroup);
+		// console.log('Hello from deskmanager. svgGroup:', svgGroup)
+		// console.log('surfacechildren after', this.surface.children[0].children)
 
+		for (const dash in this.surface.children[0].children) {
+			// console.log(svgGroup.children[dash].castShadow)
+			let dash_details = this.surface.children[0].children[dash]
+			// console.log(dash_details.position)
+
+
+
+			// let worldPosition = new THREE.Vector3();
+			// dash_details.getWorldPosition(worldPosition);
+			// console.log(dash_details.uuid, worldPosition); // Outputs the global position (x, y, z)
+			this.scene.updateMatrixWorld(true)
+			// this.dash_details.computeBoundingBox()
+
+			const dashBoundingBox = new THREE.Box3().setFromObject(dash_details)
+			
+			// this.surface.add(dashBoundingBox)
+
+			// Make bounding box visible, add to desk/surface
+
+
+			const center_of_focus_dash = new THREE.Vector3()
+			dashBoundingBox.getCenter(center_of_focus_dash)
+		
+			let world_pos = new THREE.Vector3()
+			dash_details.getWorldPosition(world_pos)
+
+			// console.log(center_of_focus_dash)			// Create a BufferGeometry with a single point
+
+			// const dotGeometry = new THREE.BufferGeometry();
+			// dotGeometry.setAttribute('position', new THREE.BufferAttribute(
+			// 	new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
+			// 	3 // 3 components per vertex (x, y, z)
+			// ));
+
+			// // Set up a point material (adjust size and color as needed)
+			// const dotMaterial = new THREE.PointsMaterial({
+			// 	size: 0.5,
+			// 	color: 0xff0000, // Red color
+			// 	sizeAttenuation: false // Keeps size consistent regardless of distance
+			// });
+
+			// // Create the Points object and add it to the scene
+			// const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
+			// this.scene.add(debugPoint);
+
+			this.dash_positions.push(center_of_focus_dash)
+		}
+
+		// Remove last value, it is the overall centrepoint and not useful
+		this.dash_positions.pop()
+		this.dash_positions.pop()
+	}
+
+	getSVGGroup() {
+		return this.svgGroup
+	}
+
+	getDashPositions() {
+		return this.dash_positions
 	}
 
 	clearSurface() {
@@ -249,5 +331,159 @@ export default class DeskManager {
 		this.surface.visible = true;
 	}
 
+    drawDebugLine(pointA, pointB, scene, color = 0x00ff00, size = 0.3) {
+        const points = [pointA, pointB];
+		let geometry;
+		let material;
+
+		try {
+
+			geometry = new THREE.BufferGeometry().setFromPoints(points);
+			material = new THREE.LineBasicMaterial({ color });
+		} catch (e) {
+			// console.log(e, points)
+			return false
+		}
+
+        const line = new THREE.Line(geometry, material);
+
+        scene.add(line);
+
+        return line;
+    }
+
+	drawStartField() {
+		this.startfield_position = this.dash_positions[0] 
+
+		if (!this.startfield_drawn && typeof this.startfield_position !== 'undefined')	{
+			
+			console.log(this.startfield_position)
+
+			this.startfield_object = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }))
+
+			this.scene.add(this.startfield_object)
+			this.startfield_object.position.set(this.startfield_position.x, this.startfield_position.y, this.startfield_position.z)
+
+			// Bounding box
+			this.startfield_object.geometry.computeBoundingBox()
+
+			this.startfield_bounding_box = new THREE.Box3().setFromObject(this.startfield_object)
+			// this.scene.add(this.helper)
+
+			this.startfield_drawn = true
+
+		}
+	}
+
+	updateStartField(stylus_position) {
+		// Called onframe, handles spinning, haptics, color, frame to frame
+		if (this.startfield_drawn) {
+			this.startfield_object.rotateY(0.1)
+			this.startfield_object.rotateX(0.1)
+			this.startfield_object.updateMatrixWorld()
+
+			this.startfield_object.position.set(this.first_point.x, this.first_point.y, this.first_point.z)
+			this.startfield_bounding_box = new THREE.Box3().setFromObject(this.startfield_object)
+			// this.helper = new THREE.Box3Helper(this.startfield_bounding_box, 0xffff00)
+
+			return this.startfield_bounding_box.containsPoint(stylus_position)
+		}
+	}
+
+	drawEndField() {
+		this.endfield_position = this.last_point
+		console.log('endfield', this.endfield_position)
+
+		if (!this.endfield_drawn && typeof this.endfield_position !== 'undefined')	{
+			
+			console.log(this.endfield_position)
+
+			this.endfield_object = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }))
+
+			this.scene.add(this.endfield_object)
+			this.endfield_object.position.set(this.endfield_position.x, this.endfield_position.y, this.endfield_position.z)
+
+			// Bounding box
+			this.endfield_object.geometry.computeBoundingBox()
+
+			this.endfield_bounding_box = new THREE.Box3().setFromObject(this.endfield_object)
+			// this.scene.add(this.helper)
+
+			this.endfield_drawn = true
+
+		}
+	}
+
+	updateEndField(stylus_position) {
+		// Called onframe, handles spinning, haptics, color, frame to frame
+		if (this.endfield_drawn) {
+			this.endfield_object.rotateY(0.1)
+			this.endfield_object.rotateX(0.1)
+			this.endfield_object.updateMatrixWorld()
+
+			this.endfield_object.position.set(this.last_point.x, this.last_point.y, this.last_point.z)
+			this.endfield_bounding_box = new THREE.Box3().setFromObject(this.endfield_object)
+			// this.helper = new THREE.Box3Helper(this.endfield_bounding_box, 0xffff00)
+
+			return this.endfield_bounding_box.containsPoint(stylus_position)
+		}
+	}
+
+	drawAllDebugLines(target_point, scene, color = 0xff0000, size = 0.3)  {
+		this.scene.remove(this.debugLineGroup)	
+		// console.log(this.debugLineGroup)
+		this.debugLineGroup = new THREE.Group()
+		
+		let shortest_distance = Infinity
+		this.first_point = false
+		this.last_point = false
+		let iter_end_point = false
+
+		for (const point_index in this.dash_positions) {
+
+			if (!this.first_point) {
+				this.first_point = this.dash_positions[point_index]
+			}
+
+			let end_point = this.dash_positions[point_index]
+
+			// Commented code generates the debug lines
+
+			// const geometry = new THREE.BufferGeometry().setFromPoints([end_point, target_point]);
+			// const material = new THREE.LineBasicMaterial({ color });
+
+			// const line = new THREE.Line(geometry, material);
+
+			// this.debugLineGroup.add(line)
+
+			// Distance calc
+			let distance_check = end_point.distanceTo(target_point)
+			if (distance_check < shortest_distance) {
+				shortest_distance = distance_check
+				this.closest_point = end_point
+			}
+
+			iter_end_point = this.dash_positions[point_index]
+		}
+		this.first_point = this.dash_positions[0]
+		this.last_point = iter_end_point
+		
+		return {shortest_dist: shortest_distance}
+	}
+
+
+
+    removeDebugLine(line, scene) {
+        scene.remove(line)
+        line.geometry.dispose()
+        line.material.dispose()
+
+		if (this.debugLineGroup !== false) {
+			scene.remove(this.debugLineGroup)
+			this.debugLineGroup.geometry.dispose()
+			this.debugLineGroup.material.dispose()
+		}
+    }
+	
 }
 

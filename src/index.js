@@ -19,9 +19,6 @@ window.addEventListener('resize', () => {
 	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	interface_text.updateText(
-		'Resized window to: ' + sizes.width + 'x' + sizes.height,
-	);
 });
 
 import * as THREE from "three";
@@ -52,6 +49,8 @@ import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import DrawingAccuracy from "./drawingAccuracy.js";
+import { ArcballControlsMouseActionOperations } from "three/examples/jsm/Addons.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -196,6 +195,25 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+// MARK: Accuracy
+// TODO: Encapsulate in class
+let accuracy_calculator
+let accuracy_raycaster = new THREE.Raycaster()
+let accuracy_line;
+let realtime_accuracy_percentage = false
+let accuracy_percentage_mean = false
+let closest_dash_position = false
+let shortest_distance = false
+let sample_no = 2
+let track_accuracy = false
+
+// Start area
+let stylus_in_startfield = false
+let prevStylus_in_start_field = false
+
+// End area
+let stylus_in_endfield = false
+let prevStylus_in_end_field = false
 
 init();
 
@@ -231,6 +249,9 @@ function init() {
 	const player = new THREE.Group();
 	scene.add(player);
 	player.add(camera);
+
+	accuracy_raycaster.camera = camera
+	accuracy_calculator = new DrawingAccuracy(scene)
 
 	canvas = document.querySelector('canvas.webgl');
 
@@ -554,6 +575,8 @@ function init() {
 
 // MARK: OnFrame
 function onFrame(time, frame) {
+
+
 	// MARK: Desk Calibration
 	// Desk setup logic: before allowing draw, desk must be set up
 	if (prevIsMovingDesk && isMovingDesk && !desk_locked) {
@@ -621,7 +644,49 @@ function onFrame(time, frame) {
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
-		// MARK: Speed function
+
+		stylus_in_startfield = desk_manager.updateStartField(stylus.position)
+		
+		if (stylus_in_startfield && !prevStylus_in_start_field) {
+			track_accuracy = !track_accuracy
+			clickSound.play()
+		}
+
+		prevStylus_in_start_field = stylus_in_startfield
+
+		stylus_in_endfield = desk_manager.updateEndField(stylus.position)
+
+		if (stylus_in_startfield && !prevStylus_in_start_field) {
+			track_accuracy = !track_accuracy
+			clickSound.play()
+		}
+
+		prevStylus_in_end_field = stylus_in_endfield
+
+		// MARK: Accuracy Check
+		if (accuracy_line) {
+			desk_manager.removeDebugLine(accuracy_line, scene)
+		}
+
+		// TODO: Place so it only loads once per svg change
+		try{
+			let dash_line_points = desk_manager.getDashPositions()
+			// console.log('dashklinepointsfrommain', dash_line_points)
+			// closest_dash_position = accuracy_calculator.getClosestPoint(dash_line_points, stylus.position)
+			// console.log('Closest: ', closest_dash_position.closest)
+			// console.log('Distance: ', closest_dash_position.distance)
+
+			// MARK: Accuracy Calculation
+
+			// shortest_distance = desk_manager.drawAllDebugLines(stylus.position, scene)
+			// console.log('shortest_distance=', shortest_distance)
+
+			// }
+
+		} catch (e) {
+			console.log(e)
+		}
+
 		/*
 		 		This returns a number representing the stylus speed
 				This number can be used to represent stylus speed
@@ -759,9 +824,16 @@ function onFrame(time, frame) {
 			// Should be triggered alongside
 			// downloadCSV(JSON.stringify(logData));
 			event_logger.logEventData('Back button pressed');
-			//event_logger.downloadUnityData()
+			
+			desk_manager.drawAllDebugLines(stylus.position, scene)
+
+
 			//
 			// MARK: Export
+
+			// event_logger.downloadUnityData()
+
+			gamepadInterface.getHapticActuator(0).pulse(0.5, 100)
 			// Export all data
 			// event_logger.downloadAllData(); // Download stylus and task event data as text files
 
@@ -773,7 +845,6 @@ function onFrame(time, frame) {
 		prevBackPushed = backPushed;
 		backPushed = gamepad1.buttons[1].value > 0;
 	}
-
 
 }
 
@@ -796,6 +867,25 @@ function animate(time, frame) {
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
+
+
+		shortest_distance = desk_manager.drawAllDebugLines(stylus.position, scene)
+
+
+		if (track_accuracy && shortest_distance.shortest_dist <= 0.1) {	// Threshold
+			realtime_accuracy_percentage = (0.1 - shortest_distance.shortest_dist)  * 10
+
+			// To see tracked percentage numbers
+			interface_text.updateText(realtime_accuracy_percentage.toString())
+
+			if (!accuracy_percentage_mean){
+				// Setting initial nonzero value
+				accuracy_percentage_mean = realtime_accuracy_percentage
+			}
+
+			accuracy_percentage_mean = (realtime_accuracy_percentage + accuracy_percentage_mean) / sample_no
+			sample_no += 1
+		}
 	}
 
 	// MARK: drawing logic
@@ -828,10 +918,16 @@ function animate(time, frame) {
 
 // MARK: Connect Event
 function onControllerConnected(e) {
+
 	event_logger.logEventData(e.data.profiles[0] + ' ControllerConnected-handedness=' + e.data.handedness)
 	console.log('Controller connected:' + e.data.profiles);
 
 	if (e.data.profiles[0] === ("logitech-mx-ink")) {
+
+		accuracy_raycaster.setFromXRController(e.target)
+
+		// console.log(accuracy_raycaster.intersectObjects(scene.children))
+
 		// Set mx_ink_connected to true
 		mx_ink_connected = true;
 
@@ -982,6 +1078,7 @@ function raycast() {
 	}, null );
 
 }
+
 // MARK: Survey buttons intersection
 function updateButtons() {
 
@@ -1038,6 +1135,7 @@ function loadSVG(url, position, isResult) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
+		accuracy_calculator = new DrawingAccuracy(scene)
 		const group = new THREE.Group();
 
 		let renderOrder = 0;
@@ -1065,6 +1163,15 @@ function loadSVG(url, position, isResult) {
 					mesh.renderOrder = renderOrder++;
 
 					group.add(mesh);
+
+					mesh.updateMatrixWorld(true)
+					group.updateMatrixWorld(true)
+					scene.updateMatrixWorld(true)
+
+					// Bounding box helper?
+					desk_manager.drawStartField()
+					desk_manager.drawEndField()
+
 				}
 			}
 		}
@@ -1204,7 +1311,7 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		taskTextPanel.updateText(
-			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+			`Task ${taskNum} complete` + '\nAccuracy: ' + accuracy_percentage_mean.toString() + '\nAre you ready to see your drawing?',
 
 		event_logger.logEventData('task1_complete')
 		);
@@ -1257,18 +1364,36 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task1=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task2=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task4_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			
+			// Log and reset accuracy %
+			event_logger.logEventData('average_acc_task3=' + accuracy_percentage_mean.toString())
+			accuracy_percentage_mean = false
+			sample_no = 2
+
 			task4ParentManager.makeVertical();
 			break;
 	}
@@ -1397,6 +1522,12 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+
+	
+	// Log and reset accuracy %
+	event_logger.logEventData('average_acc_task4=' + accuracy_percentage_mean.toString())
+	accuracy_percentage_mean = false
+	sample_no = 2
 
 	// MARK: Export
 	// Export all data
