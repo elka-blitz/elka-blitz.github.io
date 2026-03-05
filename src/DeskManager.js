@@ -256,22 +256,22 @@ export default class DeskManager {
 
 				// console.log(center_of_focus_dash)			// Create a BufferGeometry with a single point
 
-				const dotGeometry = new THREE.BufferGeometry();
-				dotGeometry.setAttribute('position', new THREE.BufferAttribute(
-					new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
-					3 // 3 components per vertex (x, y, z)
-				));
+				// const dotGeometry = new THREE.BufferGeometry();
+				// dotGeometry.setAttribute('position', new THREE.BufferAttribute(
+				// 	new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
+				// 	3 // 3 components per vertex (x, y, z)
+				// ));
 
-				// Set up a point material (adjust size and color as needed)
-				const dotMaterial = new THREE.PointsMaterial({
-					size: 0.5,
-					color: 0xff0000, // Red color
-					sizeAttenuation: false // Keeps size consistent regardless of distance
-				});
+				// // Set up a point material (adjust size and color as needed)
+				// const dotMaterial = new THREE.PointsMaterial({
+				// 	size: 0.5,
+				// 	color: 0xff0000, // Red color
+				// 	sizeAttenuation: false // Keeps size consistent regardless of distance
+				// });
 
-				// Create the Points object and add it to the scene
-				const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
-				this.scene.add(debugPoint);
+				// // Create the Points object and add it to the scene
+				// const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
+				// this.scene.add(debugPoint);
 
 				this.dash_positions.push(center_of_focus_dash)
 			}

@@ -206,6 +206,7 @@ let svg_points = []
 let enter_field
 let drawing_completed = false
 let prev_drawing_completed = false
+let tracing_in_progress = false
 
 
 init();
@@ -663,21 +664,12 @@ function onFrame(time, frame) {
 		}
 
 		// MARK: Practice/Task
-		if (nextButton.returnExists() === true) {
-			if (
-				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
-					true &&
-				!wasChangeButton
-			) {
-				buttonFeedback();
-				isPracticeMode ? PracticeMode() : TaskMode();
-			}
-			wasChangeButton = nextButton.pressCheckReusable(
-				stylus.position,
-				scene,
-				'white',
-			);
+		if (drawing_completed && !prev_drawing_completed) {
+			console.log('drawingcompleted - main')
+			// buttonFeedback();
+			isPracticeMode ? PracticeMode() : TaskMode();
 		}
+		prev_drawing_completed = drawing_completed
 
 		// MARK: Show result button
 		if (resultButton.returnExists() === true) {
@@ -815,6 +807,7 @@ function animate(time, frame) {
 		accuracy_helper.calculateAccuracy() // Conditional embedded
 
 		drawing_completed = enter_field.checkForStylus(stylus.position)
+		tracing_in_progress = enter_field.getUserStartedDrawing()
 		enter_field.rotateField()
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
@@ -828,7 +821,7 @@ function animate(time, frame) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
 
-			if (isDrawing && !prevIsDrawing) {
+			if (isDrawing && !prevIsDrawing && enter_field.getUserStartedDrawing()) {
 				const painter = stylus?.userData.painter;
 				painter.moveTo(stylusPos);
 			}
@@ -1098,8 +1091,15 @@ function loadSVG(url, position, isResult) {
 		isResult ? originalSvgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
 
 		svg_points = desk_manager.getDashPoints()
-		let start_point = svg_points[0]
-		enter_field.setNewStartPosition(new THREE.Vector3(start_point.x, start_point.y, start_point.z))
+		
+		// TODO: When new shapes are in, 
+		// Override for special shapes (squiggle, large square, multishape)
+		// enter_field.endPositionOverride(svg_points[7])
+		let first_point = svg_points[0]
+		let last_point = svg_points[svg_points.length -1]
+
+		// enter_field.setNewStartPosition(new THREE.Vector3(start_point.x, start_point.y, start_point.z))
+		enter_field.setNewStartAndEndPositions(new THREE.Vector3(first_point.x, first_point.y, first_point.z), new THREE.Vector3(last_point.x, last_point.y, last_point.z))
 		enter_field.setStartState()
 		enter_field.updateEnterField()	
 	});

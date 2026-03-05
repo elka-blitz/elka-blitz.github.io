@@ -6,12 +6,17 @@ export default class EnterField {
         this.colour = false
         this.start_state = true
         this.start_end_position = false
+
+        this.start_position = false
+        this.end_position = false
+
         this.enterfield_object = false
         this.enterfield_drawn = false
         this.enterfield_boundingbox = false
         this.user_is_drawing = false // true when 2cm from cube
         this.prev_user_is_drawing = false
         this.user_started_drawing = false
+        this.override_end_position // special shapes
     }
 
     setStartState() {
@@ -28,6 +33,11 @@ export default class EnterField {
         this.start_end_position = position_vector
     }
 
+    setNewStartAndEndPositions(start_vector, end_vector) {
+        this.start_position = start_vector
+        this.end_position = end_vector
+    }
+
     updateEnterField() {
 
         if (this.enterfield_drawn) {
@@ -38,7 +48,16 @@ export default class EnterField {
 
         this.enterfield_object = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: this.colour, wireframe: true }))
         this.scene.add(this.enterfield_object)
-        this.enterfield_object.position.set(this.start_end_position.x, this.start_end_position.y, this.start_end_position.z)
+
+        if (this.start_state) {
+            this.enterfield_object.position.set(this.start_position.x, this.start_position.y, this.start_position.z)
+        }
+
+        if (!this.start_state) {
+            this.enterfield_object.position.set(this.end_position.x, this.end_position.y, this.end_position.z)
+        }
+
+        // this.enterfield_object.position.set(this.start_end_position.x, this.start_end_position.y, this.start_end_position.z)
         this.enterfield_drawn = true
 
         this.enterfield_object.geometry.computeBoundingBox()
@@ -51,7 +70,15 @@ export default class EnterField {
         this.enterfield_object = false
     }
 
+    getUserStartedDrawing() {
+        return this.user_is_drawing
+    }
+
     checkForStylus(stylus_pos) {
+        if (this.override_end_position !== false) { 
+            this.start_end_position = this.override_end_position
+            console.log('override')
+        }
         // if (this.enterfield_drawn == true) {
 
             // ifelif
@@ -59,19 +86,19 @@ export default class EnterField {
 
             // console.log('stylusfarcond', stylus_pos.distanceTo(this.start_end_position) >= 0.02)
             try {
-                console.log('stylus2cmdist: ', stylus_pos.distanceTo(this.start_end_position) >= 0.02)
-                console.log('startstateshouldbe false', this.start_state)
-                console.log('userstartdraw should be true', this.user_started_drawing)
+                // console.log('stylus2cmdist: ', stylus_pos.distanceTo(this.start_end_position) >= 0.02)
+                // console.log('startstateshouldbe false', this.start_state)
+                // console.log('userstartdraw should be true', this.user_started_drawing)
 
-                if (stylus_pos.distanceTo(this.start_end_position) >= 0.02 && !this.start_state && this.user_started_drawing) {
+                // Condition: Drawing completed
+                if (stylus_pos.distanceTo(this.end_position) >= 0.05 && !this.start_state && this.user_started_drawing) {
                     this.user_started_drawing = false
                     this.user_is_drawing = true
                     this.updateEnterField() //framediffish
                     return false
-
                 }
 
-                else if (!this.user_started_drawing && !this.user_is_drawing && !this.enterfield_drawn && this.start_state && stylus_pos.distanceTo(this.start_end_position) >= 0.02) {
+                else if (!this.user_started_drawing && !this.user_is_drawing && !this.enterfield_drawn && this.start_state && stylus_pos.distanceTo(this.end_position) >= 0.05) {
                     // Force user to move pen 2cm from cube to start next drawing and spawn next cube
                     this.updateEnterField() 
                 }
@@ -85,6 +112,9 @@ export default class EnterField {
                     this.removeEnterField()
                     this.start_state = false
                     this.user_started_drawing = true
+
+
+
                     return false
                 }
 
@@ -94,11 +124,15 @@ export default class EnterField {
                     this.setStartState()
                     this.removeEnterField()
                     // this.updateEnterField()
+
+
+
                     this.user_started_drawing = false
                     this.user_is_drawing = false
-
+                    console.log('Drawing ended - helper')
                     return true
                 }
+
             } catch {
                 console.log('caught')
             }
@@ -108,6 +142,12 @@ export default class EnterField {
         // if (stylus_pos.distanceTo(this.start_end_position) >= 0.02 && !this.start_state) {
         //     this.updateEnterField()
         // }
+        this.override_end_position = false
+    }
+    
+    endPositionOverride(end_position_override_vector) {
+        // this.override_end_position = end_position_override_vector
+        return false
     }
 
     rotateField() {
