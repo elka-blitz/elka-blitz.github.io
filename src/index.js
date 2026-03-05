@@ -52,9 +52,9 @@ import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import accuracyHelper from "./accuracyHelper.js";
 
-
-const BROWSER_TESTING = false; // todo remove before deployment
+const BROWSER_TESTING = true; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -195,6 +195,10 @@ let environment_switcher;
 let envMap
 
 const speed_meter = new speedMeter()
+
+// Accuracy
+let accuracy_helper
+let svg_points = []
 
 
 init();
@@ -519,6 +523,8 @@ function init() {
 
 	originalSvgManager = new SvgManager();
 
+	accuracy_helper = new accuracyHelper()
+
 	svgManager.setupPaints(1, task1Box);
 	svgPaintsArray = svgManager.getPaintsArray(1);
 
@@ -792,6 +798,12 @@ function animate(time, frame) {
 		accumulatedTime -= logInterval;
 		
 		event_logger.logStylusData(stylus)
+
+		// Calculate accuracy
+		accuracy_helper.setSvgPoints(svg_points)
+		accuracy_helper.getClosestPointOnSvg(stylus.position)
+		accuracy_helper.calculateAccuracy() // Conditional embedded
+		
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
@@ -1250,6 +1262,9 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			
+			accuracy_helper.startAccuracyTracking()
+
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
@@ -1257,18 +1272,35 @@ const ShowResultsMode = () => {
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+
+
+			accuracy_helper.stopaccuracytracking()
+			event_logger.logeventdata('task1accuracy=' + accuracy_helper.getmeanaccuracy().tostring())
+			console.log('maintask1complete', accuracy_helper.getmeanaccuracy())
+			accuracy_helper.resetmeanaccuracy()
+
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+
+			accuracy_helper.stopAccuracyTracking()
+			event_logger.logEventData('task4accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+			accuracy_helper.resetMeanAccuracy()
+
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
 			event_logger.logEventData('task4_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+
+			accuracy_helper.stopAccuracyTracking()
+			event_logger.logEventData('task3accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+			accuracy_helper.resetMeanAccuracy()
+
 			task4ParentManager.makeVertical();
 			break;
 	}
@@ -1397,6 +1429,9 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+
+	event_logger.logEventData('task4accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+	accuracy_helper.resetMeanAccuracy()
 
 	// MARK: Export
 	// Export all data
