@@ -52,6 +52,8 @@ import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';   
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import accuracyHelper from "./accuracyHelper.js";
+import EnterField from "./fieldHelper.js";
 
 
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -196,6 +198,16 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+// Accuracy
+let accuracy_helper
+let svg_points = []
+
+// EntryFields
+let enter_field
+let drawing_completed = false
+let prev_drawing_completed = false
+let tracing_in_progress = false
+
 
 init();
 
@@ -304,6 +316,9 @@ function init() {
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
+
+	// Initialise enterfield
+	enter_field = new EnterField(scene)
 
 	// Initialise desk manager
 	desk_manager = new DeskManager(scene, tableGroup);
@@ -517,6 +532,8 @@ function init() {
 	svgManager = new SvgManager();
 	svgWithPositionsArray = svgManager.getSVGArray();
 
+	accuracy_helper = new accuracyHelper()
+
 	originalSvgManager = new SvgManager();
 
 	svgManager.setupPaints(1, task1Box);
@@ -647,21 +664,12 @@ function onFrame(time, frame) {
 		}
 
 		// MARK: Practice/Task
-		if (nextButton.returnExists() === true) {
-			if (
-				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
-					true &&
-				!wasChangeButton
-			) {
-				buttonFeedback();
-				isPracticeMode ? PracticeMode() : TaskMode();
-			}
-			wasChangeButton = nextButton.pressCheckReusable(
-				stylus.position,
-				scene,
-				'white',
-			);
+		if (drawing_completed && !prev_drawing_completed) {
+			console.log('drawingcompleted - main')
+			// buttonFeedback();
+			isPracticeMode ? PracticeMode() : TaskMode();
 		}
+		prev_drawing_completed = drawing_completed
 
 		// MARK: Show result button
 		if (resultButton.returnExists() === true) {
@@ -793,6 +801,15 @@ function animate(time, frame) {
 		
 		event_logger.logStylusData(stylus)
 
+		// Calculate accuracy
+		accuracy_helper.setSvgPoints(svg_points)
+		accuracy_helper.getClosestPointOnSvg(stylus.position)
+		accuracy_helper.calculateAccuracy() // Conditional embedded
+
+		drawing_completed = enter_field.checkForStylus(stylus.position)
+		tracing_in_progress = enter_field.getUserStartedDrawing()
+		enter_field.rotateField()
+
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
@@ -804,7 +821,7 @@ function animate(time, frame) {
 			prevIsDrawing = isDrawing;
 			isDrawing = gamepad1.buttons[5].value > 0;
 
-			if (isDrawing && !prevIsDrawing) {
+			if (isDrawing && !prevIsDrawing && enter_field.getUserStartedDrawing()) {
 				const painter = stylus?.userData.painter;
 				painter.moveTo(stylusPos);
 			}
@@ -1070,6 +1087,19 @@ function loadSVG(url, position, isResult) {
 		}
 
 		isResult ? originalSvgManager.svgSurface(group) :desk_manager.placeSVG(group, position)
+
+		svg_points = desk_manager.getDashPoints()
+		
+		// TODO: When new shapes are in, 
+		// Override for special shapes (squiggle, large square, multishape)
+		// enter_field.endPositionOverride(svg_points[7])
+		let first_point = svg_points[0]
+		let last_point = svg_points[svg_points.length -1]
+
+		// enter_field.setNewStartPosition(new THREE.Vector3(start_point.x, start_point.y, start_point.z))
+		enter_field.setNewStartAndEndPositions(new THREE.Vector3(first_point.x, first_point.y, first_point.z), new THREE.Vector3(last_point.x, last_point.y, last_point.z))
+		enter_field.setStartState()
+		enter_field.updateEnterField()	
 	});
 }
 
@@ -1248,6 +1278,9 @@ const ShowResultsMode = () => {
 	switch (taskNum) {
 		case 1:
 			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+
+			accuracy_helper.startAccuracyTracking()
+
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
@@ -1255,18 +1288,34 @@ const ShowResultsMode = () => {
 			break;
 		case 2:
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
+
+			accuracy_helper.stopAccuracyTracking()
+			event_logger.logEventData('task1accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+			console.log('maintask1complete', accuracy_helper.getMeanAccuracy())
+			accuracy_helper.resetMeanAccuracy()
+
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+
+			accuracy_helper.stopAccuracyTracking()
+			event_logger.logEventData('task2accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+			accuracy_helper.resetMeanAccuracy()
+
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
 			break;
 		case 4:
 			loadSVG('assets/task4/task4.svg', CENTER_POSITION, true);
+
+			accuracy_helper.stopAccuracyTracking()
+			event_logger.logEventData('task3accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+			accuracy_helper.resetMeanAccuracy()
+
 			event_logger.logEventData('task4_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task4ParentManager.makeVertical();
@@ -1397,6 +1446,10 @@ const FinishMode = () => {
 	});
 	taskTextPanel.makeVisible();
 	taskTextPanel.updateText('All Done! Behold!');
+
+	accuracy_helper.stopAccuracyTracking()
+	event_logger.logEventData('task4accuracy=' + accuracy_helper.getMeanAccuracy().toString())
+	accuracy_helper.resetMeanAccuracy()
 
 	// MARK: Export
 	// Export all data
