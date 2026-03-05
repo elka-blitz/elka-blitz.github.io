@@ -1374,7 +1374,7 @@ const SetupNextTask = () => {
 
 			// Ok!
 			event_logger.logEventData(questionnaire1.getAnswers())
-			taskTextPanel.updateText('Task 2: Florist');
+			taskTextPanel.updateText('Task 2: Cup of Tea');
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:

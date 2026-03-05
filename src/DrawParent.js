@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export default class DrawParent {
-	constructor() {		// todo remove because both are just for testing purposes
+	constructor() {
 		const boxGeometry = new THREE.PlaneGeometry(0.5, 0.3);
 		this.drawingBox = new THREE.Mesh(
 			boxGeometry,
