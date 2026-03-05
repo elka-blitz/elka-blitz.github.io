@@ -48,7 +48,7 @@ export default class DeskManager {
 
 		} else {
 			drawingSurface.rotateX(Math.PI / 36) // 85 degrees
-			drawingSurface.position.y = 1;
+			drawingSurface.position.y = 1.2;
 
 		}
 
