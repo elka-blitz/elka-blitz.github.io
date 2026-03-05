@@ -53,6 +53,9 @@ import { gsap } from 'gsap';
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 
+// MARK: Conditions
+const isHorizontalSurface = false;
+
 
 const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -294,16 +297,13 @@ function init() {
 	scene.add(tableGroup);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup);
+	desk_manager = new DeskManager(scene, tableGroup, isHorizontalSurface);
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
-
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup);
 
 	tableGroup.position.set(0, -3, 0);
 	// office_group.position.set(0, -0.3, 0);

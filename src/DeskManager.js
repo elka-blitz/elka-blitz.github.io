@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor(scene, desk_asset_instance) {
+	constructor(scene, desk_asset_instance, isHorizontalSurface) {
 		this.coordinates;
 		this.scene = scene;
 
@@ -24,7 +24,6 @@ export default class DeskManager {
 		// 3D drawing zone instance variables
 		this.drawingzone_identifier = '';
 		this.current_desk_quaternion = new THREE.Quaternion();
-		this.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff', desk_asset_instance);
 
 		// Sequence control variables
 		this.desk_positioned = false;
@@ -37,13 +36,21 @@ export default class DeskManager {
 			color: '#B3B3B3',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
-			opacity: 0.3,
+			opacity: 1,
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
-		drawingSurface.position.y = 0.82; // slightly above model
 		drawingSurface.rotateY(Math.PI / 2);
-		drawingSurface.rotateX(Math.PI / 3);	// angle towards
+
+		if (isHorizontalSurface) {
+			drawingSurface.rotateX((Math.PI / 2) - (Math.PI / 12)) 		// 15 degrees
+			drawingSurface.position.y = 0.778; // slightly above model
+
+		} else {
+			drawingSurface.rotateX(Math.PI / 36) // 85 degrees
+			drawingSurface.position.y = 1;
+
+		}
 
 
 		desk_asset_instance.add(drawingSurface);
@@ -178,35 +185,6 @@ export default class DeskManager {
 		});
 	}
 
-	spawnDrawingAreaOnDesk(width, height, depth, colour, desk_model) {
-		// Spawn a 3D area on desk wherein the user may draw
-		// Possibly follow with the object to trace within the drawing zone
-
-		// Transparent cube
-		// const drawing_zone = new THREE.Mesh(
-		// 	new THREE.BoxGeometry(width, height, depth),
-		// 	new THREE.MeshStandardMaterial({
-		// 		color: colour,
-		// 		transparent: true,
-		// 		opacity: 0.3,
-		// 	}),
-		// );
-		//
-		// // Store uuid of drawing zone for visibility toggle
-		// this.drawingzone_identifier = drawing_zone.uuid;
-		//
-		// this.scene.add(drawing_zone);
-		// drawing_zone.position.set(
-		// 	desk_model.position.x,
-		// 	desk_model.position.y + 1,
-		// 	desk_model.position.z - 3,
-		// );
-		//
-		// // Rotate the cube in accordance with the desk's rotation
-		// drawing_zone.quaternion.copy(this.current_desk_quaternion);
-		// drawing_zone.visible = false;
-
-	}
 	spawnDrawingSurface() {
 		this.surface.visible = true;
 	}
