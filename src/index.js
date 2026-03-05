@@ -96,6 +96,7 @@ let pracBox,
 	questionnaire1,
 	questionnaire2,
 	questionnaire3;
+const inkColor = new THREE.Color('#002C42')
 
 // todo organise this into a class or something
 
@@ -518,7 +519,7 @@ function init() {
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: 'black',
+			color: inkColor,
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
@@ -1069,7 +1070,7 @@ function loadSVGs(svgObjs) {
 				const strokeColor = path.userData.style.fill;
 
 				const material = new THREE.MeshBasicMaterial({
-					color: 'black',
+					color: inkColor,
 					opacity: path.userData.style.strokeOpacity,
 					transparent: true,
 					side: THREE.DoubleSide,
