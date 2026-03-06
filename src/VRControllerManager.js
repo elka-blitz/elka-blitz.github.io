@@ -186,7 +186,7 @@ export default class VRControllerManager {
 
         const pointer = new THREE.Sprite( spriteMaterial );
 
-        pointer.scale.set( 0.015, 0.015, 1.2 );
+        pointer.scale.set( 0.025, 0.025, 1.2 );
 
         const brush = pointer.clone();
 
