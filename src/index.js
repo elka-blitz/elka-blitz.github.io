@@ -61,7 +61,12 @@ const degreesObj = {
 	vertical: (Math.PI / 36)						// 85 degrees
 }
 
-const BROWSER_TESTING = false; // todo remove before deployment
+const surfaceDimensions = {
+	width: 0.42,
+	height: 0.29
+}
+
+const BROWSER_TESTING = true; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -303,7 +308,7 @@ function init() {
 	scene.add(tableGroup);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup, degreesObj);
+	desk_manager = new DeskManager(scene, tableGroup, degreesObj, surfaceDimensions);
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -501,23 +506,23 @@ function init() {
 	surveyButton.makeInvisible();
 
 	// MARK: Drawing and paints setup
-	const pracParent = new DrawParent(degreesObj);
+	const pracParent = new DrawParent(degreesObj, surfaceDimensions);
 	pracBox = pracParent.getParent();
 
 	// todo make list?
-	task1ParentManager = new DrawParent(degreesObj);
+	task1ParentManager = new DrawParent(degreesObj, surfaceDimensions);
 	task1Box = task1ParentManager.getParent();
 
-	task2ParentManager = new DrawParent(degreesObj);
+	task2ParentManager = new DrawParent(degreesObj, surfaceDimensions);
 	task2Box = task2ParentManager.getParent();
 
-	task3ParentManager = new DrawParent(degreesObj);
+	task3ParentManager = new DrawParent(degreesObj, surfaceDimensions);
 	task3Box = task3ParentManager.getParent();
 
-	svgManager = new SvgManager();
+	svgManager = new SvgManager(surfaceDimensions);
 	svgWithPositionsArray = svgManager.getSVGArray();
 
-	originalSvgManager = new SvgManager();
+	originalSvgManager = new SvgManager(surfaceDimensions);
 
 	svgManager.setupPaints(1, task1Box);
 	svgPaintsArray = svgManager.getPaintsArray(1);

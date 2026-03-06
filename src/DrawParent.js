@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 export default class DrawParent {
-	constructor(degreesObj) {
-		const boxGeometry = new THREE.PlaneGeometry(0.5, 0.3);
+	constructor(degreesObj, surfaceDimensions) {
+		const boxGeometry =  new THREE.PlaneGeometry(surfaceDimensions.width, surfaceDimensions.height);
 		this.drawingBox = new THREE.Mesh(
 			boxGeometry,
 			new THREE.MeshBasicMaterial({

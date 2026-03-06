@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor(scene, desk_asset_instance, degreesObj) {
+	constructor(scene, desk_asset_instance, degreesObj, surfaceDimensions) {
 		this.coordinates;
 		this.scene = scene;
 
@@ -31,7 +31,7 @@ export default class DeskManager {
 		this.desk_locked_in_place = false;
 
 		// drawing surface
-		const rectGeometry = new THREE.PlaneGeometry(0.42, 0.29);
+		const rectGeometry = new THREE.PlaneGeometry(surfaceDimensions.width, surfaceDimensions.height);
 
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#f0f0f0',

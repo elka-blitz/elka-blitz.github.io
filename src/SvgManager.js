@@ -47,7 +47,7 @@ function shuffle(array) {
 
 export default class SvgManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor() {
+	constructor(surfaceDimensions) {
 		this.array = [
 			{ url: 'assets/task1/base.svg', position: { x: 0.005, y: 0 } },
 			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.1 } },
@@ -66,7 +66,7 @@ export default class SvgManager {
 			{ url: 'assets/task2/rim.svg', position: { x: -0.01, y: -0.021 } },
 			{ url: 'assets/task2/tea.svg', position: { x: -0.01, y: -0.023 } },
 			{ url: 'assets/task2/steam.svg', position: { x: -0.014, y: -0.1 } },
-			{ url: 'assets/task2/handle.svg', position: { x: 0.097, y:0.015 } },
+			{ url: 'assets/task2/handle.svg', position: { x: 0.05, y: 0.015 } },
 			{ url: 'assets/task2/teabag.svg', position: { x: -0.005, y: 0.038 } },
 		];
 
@@ -113,7 +113,7 @@ export default class SvgManager {
 			t3paint8,
 		];
 
-		const rectGeometry = new THREE.PlaneGeometry(0.42, 0.29);
+		const rectGeometry = new THREE.PlaneGeometry(surfaceDimensions.width, surfaceDimensions.height);
 		const rectMaterial = new THREE.MeshBasicMaterial({
 			color: '#f0f0f0',
 			side: THREE.DoubleSide, // optional, shows both sides
