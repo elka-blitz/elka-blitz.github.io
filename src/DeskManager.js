@@ -34,7 +34,7 @@ export default class DeskManager {
 		// drawing surface
 		const rectGeometry = getRoundedRect(0.42, 0.29, 0.01, 2)
 		const rectMaterial = new THREE.MeshBasicMaterial({
-			color: '#F0F0F0',
+			color: 'red',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
 			opacity: 1,
@@ -48,7 +48,7 @@ export default class DeskManager {
 
 		if (isHorizontalSurface) {
 			drawingSurface.rotateX((Math.PI / 2) - (Math.PI / 12)) 		// 15 degrees
-			drawingSurface.position.y = 0.778; // slightly above model
+			drawingSurface.position.y = 0.79; // slightly above model
 
 		} else {
 			drawingSurface.rotateX(Math.PI / 36) // 85 degrees
