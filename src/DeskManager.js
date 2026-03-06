@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import {degreesObj, taskOrder} from "./experimentConfig";
 
 import { gsap } from 'gsap';
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor(scene, desk_asset_instance, degreesObj, surfaceDimensions) {
+	constructor(scene, desk_asset_instance, surfaceDimensions) {
 		this.coordinates;
 		this.scene = scene;
 

@@ -49,25 +49,13 @@ import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { getRelativePosition } from './shapeFunctions';
-import { gsap } from 'gsap';   
+import { gsap } from 'gsap';
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import {taskOrder} from "./experimentConfig";
 
 // MARK: Conditions
-const BROWSER_TESTING = false; // todo remove before deployment
-
-const isHorizontalSurface = true;
-const degreesObj = {
-	isHorizontal: isHorizontalSurface,
-	horizontal: ((Math.PI / 2) - (Math.PI / 36)),	// 5 deg
-	vertical: (Math.PI / 36)						// 85 degrees
-}
-
-const taskOrder = [
-	{name: "Cake", url: "assets/task3/task3.svg"},
-	{name: "Cup of Tea", url: "assets/task2/task2.svg"},
-	{name: "Storefront", url: "assets/task1/task1.svg"},
-]
+const BROWSER_TESTING = true; // todo remove before deployment
 
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
@@ -314,7 +302,7 @@ function init() {
 	scene.add(tableGroup);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup, degreesObj, surfaceDimensions);
+	desk_manager = new DeskManager(scene, tableGroup, surfaceDimensions);
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -512,17 +500,17 @@ function init() {
 	surveyButton.makeInvisible();
 
 	// MARK: Drawing and paints setup
-	const pracParent = new DrawParent(degreesObj, surfaceDimensions);
+	const pracParent = new DrawParent(surfaceDimensions);
 	pracBox = pracParent.getParent();
 
 	// todo make list?
-	task1ParentManager = new DrawParent(degreesObj, surfaceDimensions);
+	task1ParentManager = new DrawParent(surfaceDimensions);
 	task1Box = task1ParentManager.getParent();
 
-	task2ParentManager = new DrawParent(degreesObj, surfaceDimensions);
+	task2ParentManager = new DrawParent(surfaceDimensions);
 	task2Box = task2ParentManager.getParent();
 
-	task3ParentManager = new DrawParent(degreesObj, surfaceDimensions);
+	task3ParentManager = new DrawParent(surfaceDimensions);
 	task3Box = task3ParentManager.getParent();
 
 	svgManager = new SvgManager(surfaceDimensions);
