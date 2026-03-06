@@ -55,6 +55,11 @@ import speedMeter from "./speedMeter.js";
 
 // MARK: Conditions
 const isHorizontalSurface = true;
+const degreesObj = {
+	isHorizontal: isHorizontalSurface,
+	horizontal: ((Math.PI / 2) - (Math.PI / 36)),	// 5 deg
+	vertical: (Math.PI / 36)						// 85 degrees
+}
 
 const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
@@ -298,7 +303,7 @@ function init() {
 	scene.add(tableGroup);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup, isHorizontalSurface);
+	desk_manager = new DeskManager(scene, tableGroup, degreesObj);
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
@@ -496,17 +501,17 @@ function init() {
 	surveyButton.makeInvisible();
 
 	// MARK: Drawing and paints setup
-	const pracParent = new DrawParent('blue', BROWSER_TESTING);
+	const pracParent = new DrawParent(degreesObj);
 	pracBox = pracParent.getParent();
 
 	// todo make list?
-	task1ParentManager = new DrawParent();
+	task1ParentManager = new DrawParent(degreesObj);
 	task1Box = task1ParentManager.getParent();
 
-	task2ParentManager = new DrawParent();
+	task2ParentManager = new DrawParent(degreesObj);
 	task2Box = task2ParentManager.getParent();
 
-	task3ParentManager = new DrawParent();
+	task3ParentManager = new DrawParent(degreesObj);
 	task3Box = task3ParentManager.getParent();
 
 	svgManager = new SvgManager();
@@ -736,7 +741,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				QuestionnaireMode();
+				ShowResultsMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -1239,19 +1244,19 @@ const ShowResultsMode = () => {
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
-			task1ParentManager.makeVertical(isHorizontalSurface);
+			task1ParentManager.makeVertical();
 			break;
 		case 2:
 			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task2ParentManager.makeVertical(isHorizontalSurface);
+			task2ParentManager.makeVertical();
 			break;
 		case 3:
 			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task3ParentManager.makeVertical(isHorizontalSurface);
+			task3ParentManager.makeVertical();
 			break;
 	}
 
@@ -1328,9 +1333,6 @@ const SetupNextTask = () => {
 
 	// Oneline - Logs environment change and cycles to next environment in shuffled list
 	// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
-
-	desk_manager.makeSurfaceVisible()
-	nextButton.makeVisible();
 
 	shapeIndex = -1;
 	taskNum += 1;

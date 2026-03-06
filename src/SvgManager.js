@@ -113,9 +113,9 @@ export default class SvgManager {
 			t3paint8,
 		];
 
-		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
+		const rectGeometry = new THREE.PlaneGeometry(0.42, 0.29);
 		const rectMaterial = new THREE.MeshBasicMaterial({
-			color: '#c6c6c6',
+			color: '#f0f0f0',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
 			opacity: 1,

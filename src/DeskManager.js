@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor(scene, desk_asset_instance, isHorizontalSurface) {
+	constructor(scene, desk_asset_instance, degreesObj) {
 		this.coordinates;
 		this.scene = scene;
 
@@ -43,12 +43,12 @@ export default class DeskManager {
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
 		drawingSurface.rotateY(Math.PI / 2);
 
-		if (isHorizontalSurface) {
-			drawingSurface.rotateX((Math.PI / 2) - (Math.PI / 36)) 		// 5 degrees
+		if (degreesObj.isHorizontal) {
+			drawingSurface.rotateX(degreesObj.horizontal) 		// 5 degrees
 			drawingSurface.position.y = 0.764; // slightly above model
 
 		} else {
-			drawingSurface.rotateX(Math.PI / 36) // 85 degrees
+			drawingSurface.rotateX(degreesObj.vertical) 		// 85 degrees
 			drawingSurface.position.y = 1.1;
 
 		}
