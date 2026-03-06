@@ -42,6 +42,52 @@ function generatePointerTexture(color) {
 
 }
 
+function generateBrushPointerTexture(color) {
+
+    const canvas = document.createElement( 'canvas' );
+    canvas.width = 128;  // doubled size for higher resolution
+    canvas.height = 128;
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.beginPath();
+// doubled coordinates (original center 32,32 -> now 64,64)
+    const p1 = { x: 64, y: 12 };   // top
+    const p2 = { x: 12, y: 116 };  // bottom-left
+    const p3 = { x: 116, y: 116 }; // bottom-right
+
+// rotate around canvas center (64,64) by angle radians
+    const angle = Math.PI ; // 30 degrees; change as needed
+
+    function rotatePoint(p, cx, cy, a) {
+        const x = p.x - cx;
+        const y = p.y - cy;
+        return {
+            x: cx + (x * Math.cos(a) - y * Math.sin(a)),
+            y: cy + (x * Math.sin(a) + y * Math.cos(a))
+        };
+    }
+
+    const c = { x: 64, y: 64 };
+    const r1 = rotatePoint(p1, c.x, c.y, angle);
+    const r2 = rotatePoint(p2, c.x, c.y, angle);
+    const r3 = rotatePoint(p3, c.x, c.y, angle);
+
+    ctx.moveTo(r1.x, r1.y);
+    ctx.lineTo(r2.x, r2.y);
+    ctx.lineTo(r3.x, r3.y);
+    ctx.closePath();
+
+    ctx.lineWidth = 10; // doubled line width for scale
+    ctx.stroke();
+    ctx.fillStyle = color || 'white';
+    ctx.fill();
+
+
+    return canvas;
+
+}
+
 export default class VRControllerManager {
     constructor(renderer, controller, controllerGrip) {
         this.controller = controller;
@@ -178,14 +224,14 @@ export default class VRControllerManager {
 
     drawBrush(position) {
         const spriteMaterial = new THREE.SpriteMaterial( {
-            map: new THREE.CanvasTexture( generatePointerTexture('#002C42') ),
+            map: new THREE.CanvasTexture( generateBrushPointerTexture('#002C42') ),
             sizeAttenuation: false,
             depthTest: false
         } );
 
         const pointer = new THREE.Sprite( spriteMaterial );
 
-        pointer.scale.set( 0.015, 0.015, 1.2 );
+        pointer.scale.set( 0.03, 0.03, 1.2 );
         pointer.renderOrder = Infinity;
 
         const brush = pointer.clone();
@@ -197,13 +243,13 @@ export default class VRControllerManager {
         this.controller.brush.position.copy( position );
 
         const lineMaterial = new THREE.LineBasicMaterial({
-            color: '#6C4EC5',
+            color: '#974f07',
             linewidth: 5,
         });
 
         // Create a line geometry
         const lineGeometry = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0), // Start point (controller position)
+            new THREE.Vector3(0, 0, 0.02), // Start point (controller position)
             position // End point (brush position)
         ]);
 
