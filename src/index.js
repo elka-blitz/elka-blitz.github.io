@@ -1242,20 +1242,17 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			// loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
-			// loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
-			// loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
