@@ -848,7 +848,7 @@ function onControllerConnected(e) {
 		stylusPos = {
 			x: e.target.position.x,
 			y: e.target.position.y,
-			z: e.target.position.z - 0.08,
+			z: e.target.position.z - 0.07,
 		}
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
