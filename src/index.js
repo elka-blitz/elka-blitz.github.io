@@ -526,7 +526,7 @@ function init() {
 	task3Box = task3ParentManager.getParent();
 
 	svgManager = new SvgManager(surfaceDimensions);
-	svgWithPositionsArray = svgManager.getSVGArray();
+	svgWithPositionsArray = svgManager.getTaskArray(taskOrder[0].name);
 
 	originalSvgManager = new SvgManager(surfaceDimensions);
 
