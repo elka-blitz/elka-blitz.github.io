@@ -54,6 +54,8 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 
 // MARK: Conditions
+const BROWSER_TESTING = false; // todo remove before deployment
+
 const isHorizontalSurface = true;
 const degreesObj = {
 	isHorizontal: isHorizontalSurface,
@@ -61,12 +63,12 @@ const degreesObj = {
 	vertical: (Math.PI / 36)						// 85 degrees
 }
 
-const surfaceDimensions = {
-	width: 0.42,
-	height: 0.29
-}
+const taskOrder = [
+	{name: "Cake", url: "assets/task3/task3.svg"},
+	{name: "Cup of Tea", url: "assets/task2/task2.svg"},
+	{name: "Storefront", url: "assets/task1/task1.svg"},
+]
 
-const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -90,6 +92,10 @@ const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
+const surfaceDimensions = {
+	width: 0.42,
+	height: 0.29
+}
 
 
 // drawing declarations
@@ -441,7 +447,7 @@ function init() {
 		'They suggested three possible concepts for the logo: the bakery storefront, a cup of tea, and a slice of cake.\n'+
 		'Before starting the final logo design, let’s practice to get comfortable with the drawing tool. Good luck!'
 
-	const taskTextPanelStr = 'Task 1: The Storefront';
+	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
@@ -1243,22 +1249,25 @@ const ShowResultsMode = () => {
 		-originalPos.z,
 	);
 
+	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+
+
 	switch (taskNum) {
 		case 1:
-			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
+			// loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
-			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
+			// loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
-			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
+			// loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
@@ -1342,7 +1351,7 @@ const SetupNextTask = () => {
 	shapeIndex = -1;
 	taskNum += 1;
 
-	svgWithPositionsArray = svgManager.getTaskArray(taskNum);
+	svgWithPositionsArray = svgManager.getTaskArray(taskOrder[taskNum -1].name);
 	svgPaintsArray = svgManager.getPaintsArray(taskNum);
 
 	desk_manager.makeSurfaceVisible();
@@ -1354,12 +1363,12 @@ const SetupNextTask = () => {
 			break;
 		case 2:
 			event_logger.logEventData(questionnaire1.getAnswers())
-			taskTextPanel.updateText('Task 2: Cup of Tea');
+			taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			event_logger.logEventData(questionnaire2.getAnswers())
-			taskTextPanel.updateText('Task 3: Cake');
+			taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;
 

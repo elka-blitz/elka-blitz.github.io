@@ -127,13 +127,13 @@ export default class SvgManager {
 		return this.array;
 	}
 
-	getTaskArray(taskNum) {
-		switch (taskNum) {
-			case 1:
+	getTaskArray(taskName) {
+		switch (taskName) {
+			case "Storefront":
 				return this.array;
-			case 2:
+			case "Cup of Tea":
 				return this.t2Array;
-			case 3:
+			case "Cake":
 				return this.t3Array;
 		}
 	}
