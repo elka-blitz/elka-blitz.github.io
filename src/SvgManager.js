@@ -188,7 +188,7 @@ export default class SvgManager {
 		box.setFromObject(svgGroup);
 		const center = box.getCenter(new THREE.Vector3());
 		svgGroup.position.sub(center);
-		svgGroup.position.z = -0.01;
+		svgGroup.position.z = -0.05;
 
 		this.surface.add(svgGroup);
 
