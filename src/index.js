@@ -1130,6 +1130,7 @@ const Calibrate = () => {
 	if (!mx_ink_connected) {
 		vrControl.drawBrush(stylusPos)
 		controllerGrip1.visible = false;
+		controller1.visible = false;
 	}
 }
 
@@ -1203,6 +1204,7 @@ const TaskMode = () => {
 		);
 		if (!mx_ink_connected) {
 			controllerGrip1.visible = true;
+			controller1.visible = true;
 		}
 
 	}
@@ -1351,6 +1353,7 @@ const SetupNextTask = () => {
 
 	if (!mx_ink_connected) {
 		controllerGrip1.visible = false;
+		controller1.visible = false;
 	}
 
 	switch (taskNum) {
