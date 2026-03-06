@@ -73,12 +73,12 @@ export default class SvgManager {
 		this.t3Array = [
 			{ url: 'assets/task3/cake_side.svg', position: { x: -0.035, y: 0.02 }, },
 			{ url: 'assets/task3/cake_top.svg', position: { x: -0.04, y: -0.045 } },
+			{ url: 'assets/task3/top_icing.svg', position: { x: -0.04, y: 0 }, },
+			{ url: 'assets/task3/layer_icing.svg', position: { x: -0.0425, y: 0.028 } },
+			{ url: 'assets/task3/spoon_top.svg', position: { x: 0.082, y: 0.038 } },
+			{ url: 'assets/task3/spoon_handle.svg', position: { x: 0, y: 0.1 } },
 			{ url: 'assets/task3/cherry.svg', position: { x: -0.020, y: -0.09 } },
 			{ url: 'assets/task3/icing_blob.svg', position: { x: -0.008, y: -0.073 } },
-			{ url: 'assets/task3/layer_icing.svg', position: { x: -0.0425, y: 0.028 } },
-			{ url: 'assets/task3/spoon_handle.svg', position: { x: 0, y: 0.1 } },
-			{ url: 'assets/task3/spoon_top.svg', position: { x: 0.082, y: 0.038 } },
-			{ url: 'assets/task3/top_icing.svg', position: { x: -0.04, y: 0 }, },
 		];
 
 
