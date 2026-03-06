@@ -66,7 +66,7 @@ export default class SvgManager {
 			{ url: 'assets/task2/rim.svg', position: { x: -0.01, y: -0.021 } },
 			{ url: 'assets/task2/tea.svg', position: { x: -0.01, y: -0.023 } },
 			{ url: 'assets/task2/steam.svg', position: { x: -0.014, y: -0.1 } },
-			{ url: 'assets/task2/handle.svg', position: { x: 0.05, y: 0.015 } },
+			{ url: 'assets/task2/handle.svg', position: { x: 0.097, y:0.015 } },
 			{ url: 'assets/task2/teabag.svg', position: { x: -0.005, y: 0.038 } },
 		];
 
