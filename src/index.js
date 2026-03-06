@@ -56,7 +56,7 @@ import speedMeter from "./speedMeter.js";
 // MARK: Conditions
 const isHorizontalSurface = true;
 
-const BROWSER_TESTING = false; // todo remove before deployment
+const BROWSER_TESTING = true; // todo remove before deployment
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -96,7 +96,8 @@ let pracBox,
 	questionnaire1,
 	questionnaire2,
 	questionnaire3;
-const inkColor = new THREE.Color('#002C42')
+const inkColor = new THREE.Color('#002C42');
+const outlineColor = new THREE.Color('#52a0c6')
 
 // todo organise this into a class or something
 
@@ -1029,7 +1030,7 @@ function loadSVG(url, position, isResult) {
 			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
-				color: "black",
+				color: outlineColor,
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
 				side: THREE.DoubleSide,

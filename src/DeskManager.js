@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import { gsap } from 'gsap';
-import {getRoundedRect} from "./shapeFunctions";
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
@@ -32,16 +31,14 @@ export default class DeskManager {
 		this.desk_locked_in_place = false;
 
 		// drawing surface
-		const rectGeometry = getRoundedRect(0.42, 0.29, 0.01, 2)
+		const rectGeometry = new THREE.PlaneGeometry(0.42, 0.29);
+
 		const rectMaterial = new THREE.MeshBasicMaterial({
-			color: 'red',
+			color: '#f0f0f0',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
 			opacity: 1,
 		});
-
-		const scaleRectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
-		this.scaleRect = new THREE.Mesh(scaleRectGeometry, rectMaterial);
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
 		drawingSurface.rotateY(Math.PI / 2);
@@ -198,8 +195,8 @@ export default class DeskManager {
 		const size = box.getSize(new THREE.Vector3());
 
 		const scale = Math.min(
-			this.scaleRect.geometry.parameters.width  / size.x,
-			this.scaleRect.geometry.parameters.height / size.y,
+			this.surface.geometry.parameters.width  / size.x,
+			this.surface.geometry.parameters.height / size.y,
 		);
 
 		svgGroup.scale.setScalar(scale);
