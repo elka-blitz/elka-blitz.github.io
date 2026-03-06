@@ -44,8 +44,8 @@ export default class DeskManager {
 		drawingSurface.rotateY(Math.PI / 2);
 
 		if (isHorizontalSurface) {
-			drawingSurface.rotateX((Math.PI / 2) - (Math.PI / 12)) 		// 15 degrees
-			drawingSurface.position.y = 0.79; // slightly above model
+			drawingSurface.rotateX((Math.PI / 2) - (Math.PI / 36)) 		// 5 degrees
+			drawingSurface.position.y = 0.764; // slightly above model
 
 		} else {
 			drawingSurface.rotateX(Math.PI / 36) // 85 degrees
