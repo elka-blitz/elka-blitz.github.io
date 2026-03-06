@@ -26,9 +26,12 @@ export default class DrawParent {
 		return this.drawingBox;
 	}
 
-	makeVertical() {
-		this.drawingBox.material.visible = true
-		this.drawingBox.rotateX(-Math.PI / 3);
+	makeVertical(isHorizontalSurface) {
+		this.drawingBox.material.visible = true;
+		isHorizontalSurface
+			? this.drawingBox.rotateX(- (Math.PI / 2) - (Math.PI / 12))
+			: this.drawingBox.rotateX(-Math.PI / 36)
+
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 		this.drawingBox.position.x += 0.5; // x and z are flipped
 		this.drawingBox.position.z += 0.5;

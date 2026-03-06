@@ -510,8 +510,7 @@ function init() {
 	task3Box = task3ParentManager.getParent();
 
 	svgManager = new SvgManager();
-	// svgWithPositionsArray = svgManager.getSVGArray();
-	svgWithPositionsArray = svgManager.getTaskArray(3);
+	svgWithPositionsArray = svgManager.getSVGArray();
 
 	originalSvgManager = new SvgManager();
 
@@ -1023,7 +1022,7 @@ function buttonFeedback() {
 }
 
 // MARK: SVG Load Functions
-function loadSVG(url, position, isResult) {
+function loadSVG(url, position, isResult, color) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
@@ -1035,7 +1034,7 @@ function loadSVG(url, position, isResult) {
 			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
-				color: outlineColor,
+				color: color || outlineColor,
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
 				side: THREE.DoubleSide,
@@ -1236,23 +1235,23 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
-			task1ParentManager.makeVertical();
+			task1ParentManager.makeVertical(isHorizontalSurface);
 			break;
 		case 2:
-			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
+			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task2ParentManager.makeVertical();
+			task2ParentManager.makeVertical(isHorizontalSurface);
 			break;
 		case 3:
-			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task3ParentManager.makeVertical();
+			task3ParentManager.makeVertical(isHorizontalSurface);
 			break;
 	}
 
