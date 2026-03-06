@@ -6,7 +6,6 @@ export default class DeskButton {
 	constructor(scene) {
 		this.scene = scene;
 		this.exists = true;
-		console.log('Red button initialised');
 		this.max_height;
 		this.min_height;
 		this.inititial_height;

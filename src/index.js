@@ -49,12 +49,14 @@ import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { getRelativePosition } from './shapeFunctions';
-import { gsap } from 'gsap';   
+import { gsap } from 'gsap';
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import {taskOrder} from "./experimentConfig";
 
-
+// MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
+
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
 let BROWSER_buttonPressed3 = false;
@@ -78,6 +80,10 @@ const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
+const surfaceDimensions = {
+	width: 0.42,
+	height: 0.29
+}
 
 
 // drawing declarations
@@ -94,6 +100,8 @@ let pracBox,
 	questionnaire1,
 	questionnaire2,
 	questionnaire3;
+const inkColor = new THREE.Color('#002C42');
+const outlineColor = new THREE.Color('#52a0c6')
 
 // todo organise this into a class or something
 
@@ -294,16 +302,13 @@ function init() {
 	scene.add(tableGroup);
 
 	// MARK: Desk
-	desk_manager = new DeskManager(scene, tableGroup);
+	desk_manager = new DeskManager(scene, tableGroup, surfaceDimensions);
 
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
 	light.position.set(0, 4, 0);
 	scene.add(light);
-
-	// Initialise desk manager
-	desk_manager = new DeskManager(scene, tableGroup);
 
 	tableGroup.position.set(0, -3, 0);
 	// office_group.position.set(0, -0.3, 0);
@@ -425,12 +430,12 @@ function init() {
 	interface_text = new UIText(scene);
 
 	const contextTextStr =
-		'You are an illustrator designing buildings for the city.' +
-		'\nYour co-worker Sandra is sick and now you have to deal with all her impatient clients.' +
-		'\nThe three clients want to build a bakery, a florist, a studio and a library.' +
-		'\n\nPlease go ahead and draw some practice shapes. After that the tasks will begin. Good luck!';
+		'Hello Inkspirer, a new commission is in! You are designing the logo for a new bakery opening in town.\n'+
+		'The client is excited, and has sent you a few ideas they’d like to see sketched before choosing the final design.\n'+
+		'They suggested three possible concepts for the logo: the bakery storefront, a cup of tea, and a slice of cake.\n'+
+		'Before starting the final logo design, let’s practice to get comfortable with the drawing tool. Good luck!'
 
-	const taskTextPanelStr = 'Task 1: The Bakery';
+	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
 	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
@@ -495,23 +500,23 @@ function init() {
 	surveyButton.makeInvisible();
 
 	// MARK: Drawing and paints setup
-	const pracParent = new DrawParent('blue', BROWSER_TESTING);
+	const pracParent = new DrawParent(surfaceDimensions);
 	pracBox = pracParent.getParent();
 
 	// todo make list?
-	task1ParentManager = new DrawParent();
+	task1ParentManager = new DrawParent(surfaceDimensions);
 	task1Box = task1ParentManager.getParent();
 
-	task2ParentManager = new DrawParent();
+	task2ParentManager = new DrawParent(surfaceDimensions);
 	task2Box = task2ParentManager.getParent();
 
-	task3ParentManager = new DrawParent();
+	task3ParentManager = new DrawParent(surfaceDimensions);
 	task3Box = task3ParentManager.getParent();
 
-	svgManager = new SvgManager();
-	svgWithPositionsArray = svgManager.getSVGArray();
+	svgManager = new SvgManager(surfaceDimensions);
+	svgWithPositionsArray = svgManager.getTaskArray(taskOrder[0].name);
 
-	originalSvgManager = new SvgManager();
+	originalSvgManager = new SvgManager(surfaceDimensions);
 
 	svgManager.setupPaints(1, task1Box);
 	svgPaintsArray = svgManager.getPaintsArray(1);
@@ -519,7 +524,7 @@ function init() {
 	practicePaints.forEach((paint, i) => {
 		practicePaints[i] = new TubePainter();
 		practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
-			color: 'black',
+			color: inkColor,
 			linewidth: 4,
 		});
 		practicePaints[i].setSize(0.2);
@@ -711,6 +716,7 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+				/*
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -719,6 +725,9 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
+				*/
+				TaskMode();
+
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y
@@ -731,7 +740,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				QuestionnaireMode();
+				ShowResultsMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -1017,7 +1026,7 @@ function buttonFeedback() {
 }
 
 // MARK: SVG Load Functions
-function loadSVG(url, position, isResult) {
+function loadSVG(url, position, isResult, color) {
 	const loader = new SVGLoader();
 
 	loader.load(url, function (data) {
@@ -1029,7 +1038,7 @@ function loadSVG(url, position, isResult) {
 			const strokeColor = path.userData.style.fill;
 
 			const material = new THREE.MeshBasicMaterial({
-				color: "black",
+				color: color || outlineColor,
 				opacity: path.userData.style.strokeOpacity,
 				transparent: true,
 				side: THREE.DoubleSide,
@@ -1070,7 +1079,7 @@ function loadSVGs(svgObjs) {
 				const strokeColor = path.userData.style.fill;
 
 				const material = new THREE.MeshBasicMaterial({
-					color: 'black',
+					color: inkColor,
 					opacity: path.userData.style.strokeOpacity,
 					transparent: true,
 					side: THREE.DoubleSide,
@@ -1228,22 +1237,25 @@ const ShowResultsMode = () => {
 		-originalPos.z,
 	);
 
+	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+
+
 	switch (taskNum) {
 		case 1:
-			loadSVG('assets/task1/task1.svg', CENTER_POSITION, true);
+			// loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
-			loadSVG('assets/task2/task2.svg', CENTER_POSITION, true);
+			// loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
-			loadSVG('assets/task3/task3.svg', CENTER_POSITION, true);
+			// loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
@@ -1253,8 +1265,9 @@ const ShowResultsMode = () => {
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
 		svgPaintsArray[i].mesh.position.y = obj.position.y;
-		svgPaintsArray[i].mesh.position.z -= 0.05;
+		svgPaintsArray[i].mesh.position.z -= 0.1;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
+		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
@@ -1324,13 +1337,10 @@ const SetupNextTask = () => {
 	// Oneline - Logs environment change and cycles to next environment in shuffled list
 	// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
-	desk_manager.makeSurfaceVisible()
-	nextButton.makeVisible();
-
 	shapeIndex = -1;
 	taskNum += 1;
 
-	svgWithPositionsArray = svgManager.getTaskArray(taskNum);
+	svgWithPositionsArray = svgManager.getTaskArray(taskOrder[taskNum -1].name);
 	svgPaintsArray = svgManager.getPaintsArray(taskNum);
 
 	desk_manager.makeSurfaceVisible();
@@ -1342,12 +1352,12 @@ const SetupNextTask = () => {
 			break;
 		case 2:
 			event_logger.logEventData(questionnaire1.getAnswers())
-			taskTextPanel.updateText('Task 2: Cup of Tea');
+			taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			event_logger.logEventData(questionnaire2.getAnswers())
-			taskTextPanel.updateText('Task 3: Cake');
+			taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;
 

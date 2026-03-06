@@ -1,12 +1,13 @@
 import * as THREE from 'three';
+import {degreesObj, taskOrder} from "./experimentConfig";
 
 export default class DrawParent {
-	constructor() {
-		const boxGeometry = new THREE.PlaneGeometry(0.5, 0.3);
+	constructor(surfaceDimensions) {
+		const boxGeometry =  new THREE.PlaneGeometry(surfaceDimensions.width, surfaceDimensions.height);
 		this.drawingBox = new THREE.Mesh(
 			boxGeometry,
 			new THREE.MeshBasicMaterial({
-				color: '#c6c6c6',
+				color: '#f0f0f0',
 				side: THREE.DoubleSide, // optional, shows both sides
 				transparent: true,
 				opacity: 1,
@@ -19,7 +20,11 @@ export default class DrawParent {
 		boxGeometry.translate(-boxCenter.x, -boxCenter.y, -boxCenter.z);
 		this.drawingBox.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
 		this.drawingBox.rotateY(Math.PI / 2);
-		this.drawingBox.rotateX(Math.PI / 3); // angle towards
+
+		degreesObj.isHorizontal
+			? this.drawingBox.rotateX(degreesObj.horizontal)
+			: this.drawingBox.rotateX(degreesObj.vertical)
+
 	}
 
 	getParent() {
@@ -27,8 +32,11 @@ export default class DrawParent {
 	}
 
 	makeVertical() {
-		this.drawingBox.material.visible = true
-		this.drawingBox.rotateX(-Math.PI / 3);
+		this.drawingBox.material.visible = true;
+		degreesObj.isHorizontal
+			? this.drawingBox.rotateX(-degreesObj.horizontal)
+			: this.drawingBox.rotateX(-degreesObj.vertical)
+
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 		this.drawingBox.position.x += 0.5; // x and z are flipped
 		this.drawingBox.position.z += 0.5;
