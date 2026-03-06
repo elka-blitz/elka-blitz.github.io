@@ -54,7 +54,7 @@ import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 
 // MARK: Conditions
-const isHorizontalSurface = false;
+const isHorizontalSurface = true;
 
 const BROWSER_TESTING = false; // todo remove before deployment
 let BROWSER_buttonPressed = false;

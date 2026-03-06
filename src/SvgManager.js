@@ -26,6 +26,7 @@ let paint1,
 	t3paint6,
 	t3paint7,
 	t3paint8;
+const inkColor = new THREE.Color('#002C42');
 
 function shuffle(array) {
 	let currentIndex = array.length;
@@ -163,7 +164,7 @@ export default class SvgManager {
 		paintArray.forEach((paint, i) => {
 			paintArray[i] = new TubePainter();
 			paintArray[i].mesh.material = new THREE.LineBasicMaterial({
-				color: "black",
+				color: inkColor,
 				linewidth: 4,
 			});
 			paintArray[i].setSize(0.2);
