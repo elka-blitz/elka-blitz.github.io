@@ -510,7 +510,8 @@ function init() {
 	task3Box = task3ParentManager.getParent();
 
 	svgManager = new SvgManager();
-	svgWithPositionsArray = svgManager.getSVGArray();
+	// svgWithPositionsArray = svgManager.getSVGArray();
+	svgWithPositionsArray = svgManager.getTaskArray(3);
 
 	originalSvgManager = new SvgManager();
 
@@ -712,6 +713,7 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+				/*
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -720,6 +722,9 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
+				*/
+				TaskMode();
+
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y

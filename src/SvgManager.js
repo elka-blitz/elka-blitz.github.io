@@ -48,36 +48,36 @@ export default class SvgManager {
 	// Class to manage desk movement, drawzone spawning and interaction
 	constructor() {
 		this.array = [
-			{ url: 'assets/task1/base.svg', position: { x: 0, y: 0 } },
-			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.075 } },
-			{ url: 'assets/task1/banner_short.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task1/door_top.svg', position: { x: -0.05, y: -0.015 } },
-			{ url: 'assets/task1/window.svg', position: { x: 0.04, y: -0.02 } },
-			{ url: 'assets/task1/window2.svg', position: { x: 0.04, y: 0.03 } },
-			{ url: 'assets/task1/door_bottom.svg', position: { x: -0.05, y: 0.06 } },
-			{ url: 'assets/task1/window_curtain.svg', position: { x: 0.04, y: -0.025 } },
+			{ url: 'assets/task1/base.svg', position: { x: 0.005, y: 0 } },
+			{ url: 'assets/task1/banner_long.svg', position: { x: 0, y: -0.1 } },
+			{ url: 'assets/task1/banner_short.svg', position: { x: 0, y: -0.116 } },
+			{ url: 'assets/task1/door_top.svg', position: { x: -0.06, y: -0.032 } },
+			{ url: 'assets/task1/window.svg', position: { x: 0.065, y: -0.015 } },
+			{ url: 'assets/task1/window2.svg', position: { x: 0.065, y: 0.055 } },
+			{ url: 'assets/task1/door_bottom.svg', position: { x: -0.06, y: 0.088 } },
+			{ url: 'assets/task1/window_curtain.svg', position: { x: 0.065, y: -0.027 } },
 		];
 
 		this.t2Array = [
-			{ url: 'assets/task2/cup.svg', position: { x: 0, y: 0.025 } },
-			{ url: 'assets/task2/plate1.svg', position: { x: 0, y: -0.08 } },
-			{ url: 'assets/task2/plate2.svg', position: { x: 0.038, y: 0.04 } },
-			{ url: 'assets/task2/rim.svg', position: { x: 0.036, y: 0.015 } },
-			{ url: 'assets/task2/tea.svg', position: { x: -0.032, y: 0.012 } },
-			{ url: 'assets/task2/steam.svg', position: { x: 0.036, y: 0.015 } },
-			{ url: 'assets/task2/handle.svg', position: { x: 0, y: -0.047 } },
-			{ url: 'assets/task2/teabag.svg', position: { x: -0.032, y: 0.045 } },
+			{ url: 'assets/task2/cup.svg', position: { x: -0.01, y: 0.03 } },
+			{ url: 'assets/task2/plate1.svg', position: { x: -0.01, y: 0.085 } },
+			{ url: 'assets/task2/plate2.svg', position: { x: -0.01, y: 0.073 } },
+			{ url: 'assets/task2/rim.svg', position: { x: -0.01, y: -0.021 } },
+			{ url: 'assets/task2/tea.svg', position: { x: -0.01, y: -0.023 } },
+			{ url: 'assets/task2/steam.svg', position: { x: -0.014, y: -0.1 } },
+			{ url: 'assets/task2/handle.svg', position: { x: 0.097, y:0.015 } },
+			{ url: 'assets/task2/teabag.svg', position: { x: -0.005, y: 0.038 } },
 		];
 
 		this.t3Array = [
-			{ url: 'assets/task3/cake_side.svg', position: { x: -0.022, y: 0.04 }, },
-			{ url: 'assets/task3/cake_top.svg', position: { x: 0.02, y: 0.022 } },
-			{ url: 'assets/task3/cherry.svg', position: { x: -0.02, y: 0.04 } },
-			{ url: 'assets/task3/icing_blob.svg', position: { x: 0.07, y: 0.032 } },
-			{ url: 'assets/task3/layer_icing.svg', position: { x: 0, y: -0.03 } },
-			{ url: 'assets/task3/spoon_handle.svg', position: { x: 0.04, y: -0.071 } },
-			{ url: 'assets/task3/spoon_top.svg', position: { x: 0.007, y: -0.07 } },
-			{ url: 'assets/task3/top_icing.svg', position: { x: 0.04, y: -0.075 }, },
+			{ url: 'assets/task3/cake_side.svg', position: { x: -0.035, y: 0.02 }, },
+			{ url: 'assets/task3/cake_top.svg', position: { x: -0.04, y: -0.045 } },
+			{ url: 'assets/task3/cherry.svg', position: { x: -0.020, y: -0.09 } },
+			{ url: 'assets/task3/icing_blob.svg', position: { x: -0.008, y: -0.073 } },
+			{ url: 'assets/task3/layer_icing.svg', position: { x: -0.0425, y: 0.028 } },
+			{ url: 'assets/task3/spoon_handle.svg', position: { x: 0, y: 0.1 } },
+			{ url: 'assets/task3/spoon_top.svg', position: { x: 0.082, y: 0.038 } },
+			{ url: 'assets/task3/top_icing.svg', position: { x: -0.04, y: 0 }, },
 		];
 
 
