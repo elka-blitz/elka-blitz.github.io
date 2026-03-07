@@ -44,6 +44,7 @@ import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
+import UiElementsManager from "./uiElement";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
@@ -74,7 +75,7 @@ let stylus = null;
 let stylusPos;
 let gamepad1;
 let gamepadInterface;
-let contextText, taskTextPanel, originalText, yourDrawingText;
+let taskTextPanel, originalText, yourDrawingText, uiManager;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -84,7 +85,6 @@ const surfaceDimensions = {
 	width: 0.42,
 	height: 0.29
 }
-
 
 // drawing declarations
 let isDrawing = false;
@@ -102,8 +102,6 @@ let pracBox,
 	questionnaire3;
 const inkColor = new THREE.Color('#002C42');
 const outlineColor = new THREE.Color('#52a0c6')
-
-// todo organise this into a class or something
 
 const practiceSvgArray = [
 	'assets/task1/window.svg',
@@ -429,15 +427,9 @@ function init() {
 	// MARK: UI Elements
 	interface_text = new UIText(scene);
 
-	const contextTextStr =
-		'Hello Inkspirer, a new commission is in! You are designing the logo for a new bakery opening in town.\n'+
-		'The client is excited, and has sent you a few ideas they’d like to see sketched before choosing the final design.\n'+
-		'They suggested three possible concepts for the logo: the bakery storefront, a cup of tea, and a slice of cake.\n'+
-		'Before starting the final logo design, let’s practice to get comfortable with the drawing tool. Good luck!'
 
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
-	contextText = new TextPanel(scene, contextTextStr, 0, 1.6, 1.5, 0.6, 1.5);
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
 	originalText = new TextPanel(
 		scene,
@@ -457,6 +449,8 @@ function init() {
 		0.1,
 		yourDrawingPos.z,
 	);
+
+	uiManager = new UiElementsManager(scene)
 
 	// MARK: Buttons
 	red_button = new DeskButton(scene);
@@ -869,8 +863,8 @@ function onControllerConnected(e) {
 			0.3,
 			0.2,
 		);
-		Calibrate();
 		deskCoords = {x: 0, y: 1.6, z: -0.5}
+		Calibrate();
 
 
 	}
@@ -1123,7 +1117,8 @@ const Calibrate = () => {
 	nextButton.makeVisible();
 	desk_set = true;
 	interface_text.updateText('Draw on the outline!');
-	contextText.makeVisible();
+
+	uiManager.practiceMode(deskCoords);
 	loadSVG(practiceSvgArray[0], CENTER_POSITION);
 	stylus.userData.painter = practicePaints[0];
 	// only draw brush once and only draw it on controller
@@ -1162,8 +1157,8 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
-		contextText.makeInvisible();
 		taskTextPanel.makeVisible();
+		uiManager.taskMode();
 
 	}
 
