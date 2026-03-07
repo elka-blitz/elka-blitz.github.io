@@ -1195,14 +1195,14 @@ const ShowResultsMode = () => {
 	originalText.setPosition({
 		x: deskCoords.x - 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1.3,
+		z: deskCoords.z + 1,
 	});
 
 	yourDrawingText.makeVisible();
 	yourDrawingText.setPosition({
 		x: deskCoords.x + 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1.3,
+		z: deskCoords.z + 1,
 	});
 
 	// original svg
