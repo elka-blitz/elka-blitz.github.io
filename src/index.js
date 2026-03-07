@@ -1235,13 +1235,13 @@ const ShowResultsMode = () => {
 	original.position.set(
 		deskCoords.x - 0.5,
 		deskCoords.y + 0.4,
-		deskCoords.z - 1.3,
+		deskCoords.z - 0.8,
 	);
 
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
 	const taskRevealPos = {
 		x: deskCoords.x + 0.5,
-		y: deskCoords.y + 0.33,
+		y: deskCoords.y + 0.4,
 		z: deskCoords.z + 1,
 	}
 
