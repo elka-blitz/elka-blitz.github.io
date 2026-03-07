@@ -50,9 +50,9 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';
+import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
-import {taskOrder} from "./experimentConfig";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -1265,8 +1265,8 @@ const ShowResultsMode = () => {
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.position.y = isHorizontalSurface ? obj.position.y : obj.position.y - 0.5;
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.y = obj.position.y;
 		svgPaintsArray[i].mesh.position.z -= 0.1;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
