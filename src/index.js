@@ -430,7 +430,7 @@ function init() {
 
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
-	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 1.6, 1, 0.3, 1.5);
+	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 2, 1, 0.3, 1.5);
 	originalText = new TextPanel(
 		scene,
 		'Original',
@@ -1157,7 +1157,7 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
-		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.6, deskCoords.z);
+		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
 		taskTextPanel.makeVisible();
 		uiManager.taskMode();
 
@@ -1241,7 +1241,7 @@ const ShowResultsMode = () => {
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
 	const taskRevealPos = {
 		x: deskCoords.x + 0.5,
-		y: deskCoords.y - 0.27,
+		y: deskCoords.y - 0.4,
 		z: deskCoords.z + 1.0,
 	}
 

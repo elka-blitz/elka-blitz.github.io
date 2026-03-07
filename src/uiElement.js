@@ -13,7 +13,7 @@ export default class UiElementsManager {
             backgroundOpacity: 0,
         });
 
-        this.calibrationContainer.position.set(0, 1.6,  - 0.8);
+        this.calibrationContainer.position.set(0, 1,  - 0.8);
         scene.add(this.calibrationContainer);
 
         const imgBlock = new ThreeMeshUI.Block({
@@ -74,7 +74,7 @@ export default class UiElementsManager {
         this.container.rotateY(Math.PI / 8)
         this.container.visible = true;
 
-        this.container2.position.set(deskCoords.x + 1, deskCoords.y + 0.2 , deskCoords.z - 0.3);
+        this.container2.position.set(deskCoords.x + 0.8, deskCoords.y + 0.2 , deskCoords.z - 0.3);
         this.container2.rotateY(- Math.PI / 8)
         this.container2.visible = true;
     }
