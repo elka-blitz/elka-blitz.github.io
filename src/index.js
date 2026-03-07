@@ -1157,6 +1157,7 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
+		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.6, deskCoords.z);
 		taskTextPanel.makeVisible();
 		uiManager.taskMode();
 
@@ -1214,16 +1215,16 @@ const ShowResultsMode = () => {
 	// text
 	originalText.makeVisible();
 	originalText.setPosition({
-		x: originalPos.x,
-		y: originalPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: originalPos.z,
+		x: deskCoords.x - 0.5,
+		y: deskCoords.y + 0.6,
+		z: deskCoords.z + 1.5,
 	});
 
 	yourDrawingText.makeVisible();
 	yourDrawingText.setPosition({
-		x: yourDrawingPos.x,
-		y: yourDrawingPos.y + desk_manager.getDeskCoordinates().y + 0.2,
-		z: yourDrawingPos.z,
+		x: deskCoords.x + 0.5,
+		y: deskCoords.y + 0.6,
+		z: deskCoords.z + 1.5,
 	});
 
 	// original svg
@@ -1232,30 +1233,46 @@ const ShowResultsMode = () => {
 	const original = originalSvgManager.getSurface();
 	scene.add(original);
 	original.position.set(
-		originalPos.x,
-		originalPos.y + desk_manager.getDeskCoordinates().y,
-		-originalPos.z,
+		deskCoords.x - 0.5,
+		deskCoords.y + 0.4,
+		deskCoords.z - 0.5,
 	);
 
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
-
+	const taskRevealPos = {
+		x: deskCoords.x + 0.5,
+		y: deskCoords.y - 0.27,
+		z: deskCoords.z + 1.0,
+	}
 
 	switch (taskNum) {
 		case 1:
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
-			task1ParentManager.makeVertical();
+			task1ParentManager.makeVertical(
+				taskRevealPos.x,
+				taskRevealPos.y,
+				taskRevealPos.z,
+			);
 			break;
 		case 2:
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task2ParentManager.makeVertical();
+			task2ParentManager.makeVertical(
+				taskRevealPos.x,
+				taskRevealPos.y,
+				taskRevealPos.z,
+			);
 			break;
 		case 3:
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			task3ParentManager.makeVertical();
+			task3ParentManager.makeVertical(
+				taskRevealPos.x,
+				taskRevealPos.y,
+				taskRevealPos.z,
+			);
 			break;
 	}
 

@@ -70,11 +70,11 @@ export default class UiElementsManager {
     practiceMode(deskCoords) {
 
         this.calibrationContainer.visible = false;
-        this.container.position.set(deskCoords.x - 1.3, deskCoords.y + 0.2 , deskCoords.z - 0.5);
+        this.container.position.set(deskCoords.x - 1, deskCoords.y + 0.2 , deskCoords.z - 0.3);
         this.container.rotateY(Math.PI / 8)
         this.container.visible = true;
 
-        this.container2.position.set(deskCoords.x + 1.3, deskCoords.y + 0.2 , deskCoords.z - 0.5);
+        this.container2.position.set(deskCoords.x + 1, deskCoords.y + 0.2 , deskCoords.z - 0.3);
         this.container2.rotateY(- Math.PI / 8)
         this.container2.visible = true;
     }
