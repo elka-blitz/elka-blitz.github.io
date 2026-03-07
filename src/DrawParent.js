@@ -40,7 +40,9 @@ export default class DrawParent {
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 		this.drawingBox.position.x += 0.5; // x and z are flipped
 		this.drawingBox.position.z += 0.5;
-		this.drawingBox.position.y += 0.35;
+		degreesObj.isHorizontal
+			? this.drawingBox.position.y += 0.35
+			: this.drawingBox.position.y += 0.15
 	}
 
 	makeInvisible() {

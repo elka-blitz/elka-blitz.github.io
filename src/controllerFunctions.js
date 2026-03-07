@@ -14,6 +14,7 @@ export const getControllerGrip = (index, renderer, controllerModelFactory) => {
 	return controllerGrip
 };
 
+// todo make these either work or get rid of them
 export function hideControllerModel(controller) {
 	if (controller.children.length > 0) {
 		const model = controller.children[0]; // Access the first child (the model)
