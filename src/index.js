@@ -27,7 +27,7 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
-import { getController, getControllerGrip } from './controllerFunctions';
+import { getController, getControllerGrip, hideControllerModel, showControllerModel} from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
@@ -1129,7 +1129,7 @@ const Calibrate = () => {
 	// only draw brush once and only draw it on controller
 	if (!mx_ink_connected) {
 		vrControl.drawBrush(stylusPos)
-		controller1.model.visible = false;
+		hideControllerModel(controller1)
 	}
 }
 
@@ -1202,7 +1202,7 @@ const TaskMode = () => {
 		event_logger.logEventData('task1_complete')
 		);
 		if (!mx_ink_connected) {
-			controller1.model.visible = true;
+			showControllerModel(controller1)
 		}
 
 	}
@@ -1350,7 +1350,7 @@ const SetupNextTask = () => {
 	taskTextPanel.makeVisible();
 
 	if (!mx_ink_connected) {
-		controller1.model.visible = false;
+		hideControllerModel(controller1)
 	}
 
 	switch (taskNum) {
