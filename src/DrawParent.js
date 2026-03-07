@@ -31,16 +31,14 @@ export default class DrawParent {
 		return this.drawingBox;
 	}
 
-	makeVertical() {
+	makeVertical(x, y, z) {
 		this.drawingBox.material.visible = true;
 		degreesObj.isHorizontal
 			? this.drawingBox.rotateX(-degreesObj.horizontal)
 			: this.drawingBox.rotateX(-degreesObj.vertical)
 
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-		this.drawingBox.position.x += 0.5; // x and z are flipped
-		this.drawingBox.position.z += 0.5;
-		this.drawingBox.position.y += 0.35;
+		this.drawingBox.position.set(x, y, z)
 	}
 
 	makeInvisible() {

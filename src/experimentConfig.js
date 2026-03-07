@@ -1,5 +1,15 @@
 // true: 5deg surface, false: 85 deg surface in air
+// MARK: Change surface type
 export const isHorizontalSurface = false;
+
+const controllerType = {
+    stylus: {calibrate: "assets/stylus_desk_calib.png", instructions: "assets/stylus_instructions.png"},
+    l_controller: {calibrate: "assets/left_controller_desk_calib.png", instructions: "assets/controller_instructions.png"},
+    r_controller: {calibrate: "assets/right_controller_desk_calib.png", instructions: "assets/controller_instructions.png"},
+}
+
+// MARK: Change controller type
+export const controllerObj = controllerType.r_controller;
 
 // task will follow order of this array
 export const taskOrder = [
