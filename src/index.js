@@ -1242,7 +1242,7 @@ const ShowResultsMode = () => {
 	const taskRevealPos = {
 		x: deskCoords.x + 0.5,
 		y: deskCoords.y + 0.25,
-		z: deskCoords.z + 1,
+		z: deskCoords.z + 0.8,
 	}
 
 	switch (taskNum) {
