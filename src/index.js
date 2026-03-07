@@ -1217,14 +1217,14 @@ const ShowResultsMode = () => {
 	originalText.setPosition({
 		x: deskCoords.x - 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1,
+		z: deskCoords.z + 1.3,
 	});
 
 	yourDrawingText.makeVisible();
 	yourDrawingText.setPosition({
 		x: deskCoords.x + 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1,
+		z: deskCoords.z + 1.3,
 	});
 
 	// original svg
@@ -1235,13 +1235,13 @@ const ShowResultsMode = () => {
 	original.position.set(
 		deskCoords.x - 0.5,
 		deskCoords.y + 0.4,
-		deskCoords.z + 1,
+		deskCoords.z - 1.3,
 	);
 
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
 	const taskRevealPos = {
 		x: deskCoords.x + 0.5,
-		y: deskCoords.y + 0.35,
+		y: deskCoords.y + 0.33,
 		z: deskCoords.z + 1,
 	}
 
