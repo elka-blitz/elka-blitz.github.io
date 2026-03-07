@@ -27,7 +27,7 @@ window.addEventListener('resize', () => {
 import * as THREE from "three";
 
 import { TextPanel, UIText } from './UIText.js';
-import { getController, getControllerGrip } from './controllerFunctions';
+import { getController, getControllerGrip, hideControllerModel, showControllerModel} from './controllerFunctions';
 
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
@@ -50,9 +50,9 @@ import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerM
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { getRelativePosition } from './shapeFunctions';
 import { gsap } from 'gsap';
+import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
-import {taskOrder} from "./experimentConfig";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -848,7 +848,7 @@ function onControllerConnected(e) {
 		stylusPos = {
 			x: e.target.position.x,
 			y: e.target.position.y,
-			z: e.target.position.z - 0.06,
+			z: e.target.position.z - 0.07,
 		}
 		stylus.userData.painter = practicePaints[0];
 		gamepad1 = e.data.gamepad;
@@ -1129,6 +1129,7 @@ const Calibrate = () => {
 	// only draw brush once and only draw it on controller
 	if (!mx_ink_connected) {
 		vrControl.drawBrush(stylusPos)
+		hideControllerModel(controller1)
 	}
 }
 
@@ -1200,6 +1201,10 @@ const TaskMode = () => {
 
 		event_logger.logEventData('task1_complete')
 		);
+		if (!mx_ink_connected) {
+			showControllerModel(controller1)
+		}
+
 	}
 }
 
@@ -1242,20 +1247,17 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			// loadSVG('assets/task1/task1.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task1_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical();
 			break;
 		case 2:
-			// loadSVG('assets/task2/task2.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task2_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical();
 			break;
 		case 3:
-			// loadSVG('assets/task3/task3.svg', CENTER_POSITION, true, "black");
 			event_logger.logEventData('task3_loaded')
 			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical();
@@ -1263,9 +1265,9 @@ const ShowResultsMode = () => {
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.position.y = isHorizontalSurface ? obj.position.y : obj.position.y + 0.3;
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.y = obj.position.y;
-		svgPaintsArray[i].mesh.position.z -= 0.1;
+		svgPaintsArray[i].mesh.position.z -= 0.02;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
 		svgPaintsArray[i].mesh.visible = true;
@@ -1346,6 +1348,10 @@ const SetupNextTask = () => {
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
 	taskTextPanel.makeVisible();
+
+	if (!mx_ink_connected) {
+		hideControllerModel(controller1)
+	}
 
 	switch (taskNum) {
 		case 1:

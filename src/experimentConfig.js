@@ -1,5 +1,5 @@
 // true: 5deg surface, false: 85 deg surface in air
-export const isHorizontalSurface = true;
+export const isHorizontalSurface = false;
 
 // task will follow order of this array
 export const taskOrder = [

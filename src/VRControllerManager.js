@@ -42,6 +42,7 @@ function generatePointerTexture(color) {
 
 }
 
+
 export default class VRControllerManager {
     constructor(renderer, controller, controllerGrip) {
         this.controller = controller;
@@ -178,15 +179,14 @@ export default class VRControllerManager {
 
     drawBrush(position) {
         const spriteMaterial = new THREE.SpriteMaterial( {
-            map: new THREE.CanvasTexture( generatePointerTexture("magenta") ),
+            map: new THREE.CanvasTexture( generatePointerTexture('#000000') ),
             sizeAttenuation: false,
             depthTest: false
         } );
 
         const pointer = new THREE.Sprite( spriteMaterial );
 
-        pointer.scale.set( 0.015, 0.015, 1 );
-        pointer.renderOrder = Infinity;
+        pointer.scale.set( 0.01, 0.01, 1.2 );
 
         const brush = pointer.clone();
 
@@ -195,6 +195,23 @@ export default class VRControllerManager {
 
         // const localPos = this.controller.worldToLocal( position );
         this.controller.brush.position.copy( position );
+
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: '#8270bd',
+            linewidth: 5,
+        });
+
+        // Create a line geometry
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, -0.02), // Start point (controller position)
+            position // End point (brush position)
+        ]);
+
+        // Create a line
+        const line = new THREE.Line(lineGeometry, lineMaterial);
+
+        // Add the line to the controller
+        this.controller.add(line);
     }
 
     getBrush() {
