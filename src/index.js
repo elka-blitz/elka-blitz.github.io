@@ -33,7 +33,6 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js';
 import DrawParent from './DrawParent';
-import EnvironmentSwitcher from "./environmentSwitcher.js";
 import EventLogger from "./eventLogger.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
@@ -160,13 +159,7 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 });
 
 // Moderate stimulation environment global
-let msw_group = new THREE.Group()
-msw_group.name = 'msw_env'
-
-// Low stimulation enviornment global
-let lsw_group = new THREE.Group()
-lsw_group.name = 'lsw_env'
-
+let environmentModel = new THREE.Group()
 
 // MARK: Hands
 let hand1, hand2;
@@ -254,9 +247,9 @@ function init() {
 	});
 
 	gltfLoader.load(
-		'./assets/lsw_env.glb',
+		'./assets/msw_env.glb',
 		function (gltf) {
-			lsw_group.add(gltf.scene);
+			environmentModel.add(gltf.scene);
 		},
 		undefined,
 		function (error) {
@@ -264,16 +257,7 @@ function init() {
 		},
 	);
 
-	gltfLoader.load(
-		'./assets/msw_env.glb',
-		function (gltf) {
-			msw_group.add(gltf.scene);
-		},
-		undefined,
-		function (error) {
-			console.error(error);
-		},
-	);
+	scene.add(environmentModel)
 
 	// Minimal environment (Just floor for pilot)
 	// Can be made more plain, adding lines for some differentiation
@@ -290,13 +274,9 @@ function init() {
 	floor.position.y = -0.5; // Position below the camera
 
 	// MARK: Model setup
-	environment_switcher = new EnvironmentSwitcher(scene, [lsw_group, msw_group], 4);
 
-	lsw_group.position.set(0, 1.2, 0)
-	msw_group.position.set(0,0.5,0)
+	environmentModel.position.set(0,0.5,0)
 
-	event_logger.logEventData('Environment changed' + environment_switcher.loadFirstEnvironmentalCondition())
-	// environment_switcher.loadFirstEnvironmentalCondition()
 	scene.add(tableGroup);
 
 	// MARK: Desk
@@ -364,7 +344,7 @@ function init() {
 				// question_panel.moveInputCubesDown();
 				// paint_exporter_instance.screenShotCanvas(canvas)
 				// takeScreenshot = true;
-				environment_switcher.loadNextEnvironmentCondition()
+				// environment_switcher.loadNextEnvironmentCondition()
 				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
 				scene.background = green;
@@ -865,8 +845,6 @@ function onControllerConnected(e) {
 		);
 		deskCoords = {x: 0, y: 1.6, z: -0.5}
 		Calibrate();
-
-
 	}
 
 }
@@ -1217,14 +1195,14 @@ const ShowResultsMode = () => {
 	originalText.setPosition({
 		x: deskCoords.x - 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1.3,
+		z: deskCoords.z + 1,
 	});
 
 	yourDrawingText.makeVisible();
 	yourDrawingText.setPosition({
 		x: deskCoords.x + 0.5,
 		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1.3,
+		z: deskCoords.z + 1,
 	});
 
 	// original svg
@@ -1248,7 +1226,7 @@ const ShowResultsMode = () => {
 	switch (taskNum) {
 		case 1:
 			event_logger.logEventData('task1_loaded')
-			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1258,7 +1236,7 @@ const ShowResultsMode = () => {
 			break;
 		case 2:
 			event_logger.logEventData('task2_loaded')
-			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1267,7 +1245,7 @@ const ShowResultsMode = () => {
 			break;
 		case 3:
 			event_logger.logEventData('task3_loaded')
-			event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
+			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
