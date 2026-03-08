@@ -714,7 +714,11 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				ShowResultsMode();
+				desk_manager.makeSurfaceInvisible();
+				taskTextPanel.makeInvisible();
+				uiManager.taskMode();
+
+				QuestionnaireMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;

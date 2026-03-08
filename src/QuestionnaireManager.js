@@ -420,12 +420,14 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(5 - i)
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.SAMS.length){
 
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
-                        this.answers.push(5 - i)
                         questionText.set({content: questionsObj.SAMS[qNum]});
 
                         // replacing with next set of samsSVGs
@@ -479,12 +481,14 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(7 - i)
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.Flow.length){
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
-                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.Flow[qNum]});
                     }
                     // MARK: End of survey
@@ -528,13 +532,14 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(7 - i)
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.UEQ_S.length ) {
 
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
-                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
                         this.ueq_sContainer1.visible = true;
                         this.ueq_sContainer2.visible = true;
