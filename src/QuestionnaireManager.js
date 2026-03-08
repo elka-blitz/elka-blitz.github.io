@@ -360,6 +360,11 @@ export default class QuestionnaireManager {
             new ThreeMeshUI.Block( buttonOptions ),
         ]
 
+        this.ueq_sContainer1.visible = true;
+        this.ueq_sContainer2.visible = true;
+        ueq_sText1.set({content: `Not At All`})
+        ueq_sText2.set({content: `Very Much`})
+
 
         buttonArray.forEach((button, i) => {
             // text
@@ -390,6 +395,8 @@ export default class QuestionnaireManager {
 
                         samsButtonArray.map(x => this.objsToTest.push(x))
                         rect.visible = true;
+                        this.ueq_sContainer1.visible = false;
+                        this.ueq_sContainer2.visible = false;
                     }
 
                 }
@@ -470,10 +477,23 @@ export default class QuestionnaireManager {
             new ThreeMeshUI.Block( buttonOptions ),
             new ThreeMeshUI.Block( buttonOptions ),
         ]
+
+        const likertLabels = [
+            "Strongly Agree",
+            "Agree",
+            "Somewhat Agree",
+            "Somewhat Disagree",
+            "Neither Agree nor Disagree",
+            "Disagree",
+            "Strongly Disagree",
+        ]
         flowButtonArray.forEach((flowButton, i) => {
 
             flowButton.add(
-                new ThreeMeshUI.Text( { content: `${7 - i}` } )
+                new ThreeMeshUI.Text( {
+                    content: `${likertLabels[i]}`,
+                    fontSize: 0.03
+                })
             );
 
             // MARK: Button press
