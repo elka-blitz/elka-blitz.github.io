@@ -198,6 +198,10 @@ export default class SvgManager {
 		return this.surface;
 	}
 
+	setPosition(position) {
+		this.surface.position.set(position.x, position.y, position.z)
+	}
+
 	makeSurfaceInvisible() {
 		this.surface.visible = false;
 	}

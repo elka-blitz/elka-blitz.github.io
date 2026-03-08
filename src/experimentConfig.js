@@ -12,10 +12,11 @@ const controllerType = {
 export const controllerObj = controllerType.r_controller;
 
 // task will follow order of this array
+// MARK: Change task order
 export const taskOrder = [
-    {name: "Cake", url: "assets/task3/task3.svg"},
-    {name: "Cup of Tea", url: "assets/task2/task2.svg"},
     {name: "Storefront", url: "assets/task1/task1.svg"},
+    {name: "Cup of Tea", url: "assets/task2/task2.svg"},
+    {name: "Cake", url: "assets/task3/task3.svg"},
 ]
 
 export const degreesObj = {

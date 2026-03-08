@@ -158,8 +158,9 @@ audioLoader.load('assets/score.ogg', (buffer) => {
 	scoreSound.setBuffer(buffer);
 });
 
-// Moderate stimulation environment global
+// MARK: Environment
 let environmentModel = new THREE.Group()
+let envMap
 
 // MARK: Hands
 let hand1, hand2;
@@ -181,14 +182,6 @@ let canvas
 let accumulatedTime = 0;
 let logInterval = 0.2; // 5 times per second
 let lastFrameTime = 0
-
-// MARK: Positions
-const originalPos = {x: -0.5, y: 0.4, z: 1.01}
-const yourDrawingPos = {x: 0.5, y: 0.4, z: 1.01}
-
-// Environment switcher instance
-let environment_switcher;
-let envMap
 
 const speed_meter = new speedMeter()
 
@@ -263,15 +256,15 @@ function init() {
 	// Can be made more plain, adding lines for some differentiation
 	// Floor for void environment
 
-	const minimalEnvironmentFloorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
-	const floorMaterial = new THREE.MeshBasicMaterial({ color: '#4a4a4a', side: THREE.DoubleSide });
-	const floor = new THREE.Mesh(minimalEnvironmentFloorGeometry, floorMaterial);
-	floor.rotation.x = -Math.PI / 2; // Rotate to lie flat on the XZ plane
-	 
-	const minimalEnvironment = new THREE.GridHelper(50, 30, 0x0000ff, 0x888888);
-	minimalEnvironment.add(floor)
-	minimalEnvironment.name = 'MinimalEnv'
-	floor.position.y = -0.5; // Position below the camera
+	// const minimalEnvironmentFloorGeometry = new THREE.PlaneGeometry(100, 100, 1, 1);
+	// const floorMaterial = new THREE.MeshBasicMaterial({ color: '#4a4a4a', side: THREE.DoubleSide });
+	// const floor = new THREE.Mesh(minimalEnvironmentFloorGeometry, floorMaterial);
+	// floor.rotation.x = -Math.PI / 2; // Rotate to lie flat on the XZ plane
+	//
+	// const minimalEnvironment = new THREE.GridHelper(50, 30, 0x0000ff, 0x888888);
+	// minimalEnvironment.add(floor)
+	// minimalEnvironment.name = 'MinimalEnv'
+	// floor.position.y = -0.5; // Position below the camera
 
 	// MARK: Model setup
 
@@ -411,24 +404,8 @@ function init() {
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 2, 1, 0.3, 1.5);
-	originalText = new TextPanel(
-		scene,
-		'Original',
-		originalPos.x,
-		originalPos.y + deskCoords.y + 0.3,
-		0.5,
-		0.1,
-		originalPos.z,
-	);
-	yourDrawingText = new TextPanel(
-		scene,
-		'Your Drawing',
-		yourDrawingPos.x - 0.2,
-		yourDrawingPos.y + deskCoords.y + 0.3,
-		0.5,
-		0.1,
-		yourDrawingPos.z,
-	);
+	originalText = new TextPanel(scene,'Original',	-1, 1.7, 0.5, 0.1, 1.5);
+	yourDrawingText = new TextPanel(scene, 'Your Drawing', 1, 1.7 , 0.5, 0.1, 1.5);
 
 	uiManager = new UiElementsManager(scene)
 
@@ -1135,9 +1112,26 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
-		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
+		taskTextPanel.setPosition({
+			x: deskCoords.x,
+			y: deskCoords.y + 0.6,
+			z: deskCoords.z + 1,
+		});
 		taskTextPanel.makeVisible();
 		uiManager.taskMode();
+		desk_manager.makeSurfaceInvisible();
+
+		originalSvgManager.clearSurface();
+		loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+
+		originalSvgManager.makeSurfaceVisible();
+		const original = originalSvgManager.getSurface();
+		scene.add(original);
+		originalSvgManager.setPosition({
+			x: deskCoords.x,
+			y: deskCoords.y + 0.2,
+			z: deskCoords.z - 0.5,
+		});
 
 	}
 
@@ -1146,6 +1140,9 @@ const PracticeMode = () => {
 // MARK: MODE: Task
 const TaskMode = () => {
 	if (shapeIndex < svgWithPositionsArray.length - 1) {
+		desk_manager.makeSurfaceVisible();
+		originalSvgManager.makeSurfaceInvisible();
+
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
@@ -1206,17 +1203,14 @@ const ShowResultsMode = () => {
 	});
 
 	// original svg
-	originalSvgManager.clearSurface();
-	originalSvgManager.makeSurfaceVisible();
-	const original = originalSvgManager.getSurface();
-	scene.add(original);
-	original.position.set(
-		deskCoords.x - 0.5,
-		deskCoords.y + 0.4,
-		deskCoords.z - 0.5,
-	);
+	originalSvgManager.setPosition({
+		x: deskCoords.x - 0.5,
+		y: deskCoords.y + 0.4,
+		z: deskCoords.z - 0.5,
+	});
 
-	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+	originalSvgManager.makeSurfaceVisible();
+
 	const taskRevealPos = {
 		x: deskCoords.x + 0.5,
 		y: deskCoords.y + 0.25,
@@ -1342,6 +1336,18 @@ const SetupNextTask = () => {
 	if (!mx_ink_connected) {
 		hideControllerModel(controller1)
 	}
+
+	originalSvgManager.clearSurface();
+	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+
+	originalSvgManager.makeSurfaceVisible();
+	const original = originalSvgManager.getSurface();
+	scene.add(original);
+	originalSvgManager.setPosition({
+		x: deskCoords.x,
+		y: deskCoords.y + 0.2,
+		z: deskCoords.z - 0.5,
+	});
 
 	switch (taskNum) {
 		case 1:
