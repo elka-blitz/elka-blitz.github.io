@@ -242,7 +242,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/updatedDeskRotatedComp.glb', (gltf) => {
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
 
