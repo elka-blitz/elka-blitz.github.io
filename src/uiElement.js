@@ -48,8 +48,8 @@ export default class UiElementsManager {
             width: 1.046,
         });
         const imageBlock2 = new ThreeMeshUI.Block({
-            height: 0.801,
-            width: 0.768,
+            width: controllerObj.instructionsDimensions[0],
+            height: controllerObj.instructionsDimensions[1],
         });
 
         this.container.add(imageBlock);
