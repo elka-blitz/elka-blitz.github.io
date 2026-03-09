@@ -714,7 +714,11 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				ShowResultsMode();
+				desk_manager.makeSurfaceInvisible();
+				taskTextPanel.makeInvisible();
+				uiManager.taskMode();
+
+				QuestionnaireMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -1370,7 +1374,8 @@ const FinishMode = () => {
 
 	// MARK: Export
 	// Export all data
-	event_logger.downloadAllData(); // Download stylus and task event data as text files
+	// event_logger.downloadAllData(); // Download stylus and task event data as text files
+	event_logger.downloadUnityData()
 
 	// Export Paintings
 	// TODO: Error handling for no paint mesh condition
