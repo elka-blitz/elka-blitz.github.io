@@ -40,14 +40,15 @@ const questionsObj = {
         "I was completely lost in thought",                                     // 10
     ],
     UEQ_S: [
+        // spacing adds an invisible difference between the strings to force updating for the bg colour
         "Rate the input device",         // 1
-        "Rate the input device",                    // 2
-        "Rate the input device",               // 3
-        "Rate the input device",                     // 4
-        "Rate the input device",                     // 5
-        "Rate the input device",         // 6
-        "Rate the input device",              // 7
-        "Rate the input device",              // 8
+        " Rate the input device",                    // 2
+        "  Rate the input device",               // 3
+        "   Rate the input device",                     // 4
+        "    Rate the input device",                     // 5
+        "     Rate the input device",         // 6
+        "      Rate the input device",              // 7
+        "       Rate the input device",              // 8
     ]
 }
 
@@ -183,10 +184,10 @@ export default class QuestionnaireManager {
     constructor(scene, objsToTest) {
         // MARK: Question Block
         let qNum = 0;
-        let overallQNum = 0;
-        const totalQNum = Object.values(questionsObj).flat().length
         this.answers = []
         this.nextTaskButton = undefined;
+        const grey = new THREE.Color('#757f87');
+        const black = new THREE.Color('#000000');
 
         const questionContainer  = new ThreeMeshUI.Block( {
             width: 1.3,
@@ -209,31 +210,6 @@ export default class QuestionnaireManager {
             fontSize: 0.055
         } )
 
-        const progressContainer = new ThreeMeshUI.Block( {
-            width: 1.3,
-            height: 0.1,
-            padding: 0.05,
-            paddingBottom: 0.07,
-            justifyContent: 'center',
-            textAlign: 'center',
-            fontFamily: FontJSON,
-            fontTexture: FontImage,
-            backgroundOpacity: 0
-        } );
-
-
-        const progressText = new ThreeMeshUI.Text({
-            content: `${overallQNum} / ${totalQNum}`,
-            fontSize: 0.045,
-            align: 'center',
-            justifyContent: 'center',
-        })
-
-        progressText.position.y += 0.1;
-
-
-        progressContainer.add(progressText);
-        questionContainer.add(progressContainer)
 
         questionContainer.add(questionText);
 
@@ -374,11 +350,9 @@ export default class QuestionnaireManager {
             state: 'selected',
             attributes: selectedAttributes,
             onSet: () => {
-                if (qNum > 0 && overallQNum > 0) {
-                    console.log('back')
+                if (qNum > 0 ) {
                     qNum -= 1;
-                    overallQNum -= 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
+                    this.questionContainer.backgroundColor = qNum % 2 ? grey : black
                     questionText.set({content: currentQuestionArray[qNum]});
                     this.answers.pop();
                     if (currentQuestionArray === questionsObj.UEQ_S) {
@@ -429,10 +403,8 @@ export default class QuestionnaireManager {
                     this.answers.push(7 - i)
                     this.backButtonContainer.visible = true;
 
-                    overallQNum += 1;
-                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
                     qNum += 1;
+                    this.questionContainer.backgroundColor = qNum % 2 ? grey : black
                     questionText.set({content: questionsObj.NASA_TLX[qNum]});
 
                     // MARK: End of survey
@@ -486,10 +458,9 @@ export default class QuestionnaireManager {
                         this.backButtonContainer.visible = true;
                     }
                     qNum += 1;
-                    if (qNum < questionsObj.SAMS.length){
+                    this.questionContainer.backgroundColor = qNum % 2 ? grey : black
 
-                        overallQNum += 1;
-                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
+                    if (qNum < questionsObj.SAMS.length){
                         questionText.set({content: questionsObj.SAMS[qNum]});
 
                         // replacing with next set of samsSVGs
@@ -565,9 +536,9 @@ export default class QuestionnaireManager {
 
                     }
                     qNum += 1;
+                    this.questionContainer.backgroundColor = qNum % 2 ? grey : black
+
                     if (qNum < questionsObj.Flow.length){
-                        overallQNum += 1;
-                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
                         questionText.set({content: questionsObj.Flow[qNum]});
                     }
@@ -623,10 +594,10 @@ export default class QuestionnaireManager {
 
                     }
                     qNum += 1;
+                    this.questionContainer.backgroundColor = qNum % 2 ? grey : black
+
                     if (qNum < questionsObj.UEQ_S.length ) {
 
-                        overallQNum += 1;
-                        progressText.set({content: `${overallQNum} / ${totalQNum}`});
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
                         this.ueq_sContainer1.visible = true;
                         this.ueq_sContainer2.visible = true;
