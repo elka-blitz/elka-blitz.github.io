@@ -1375,7 +1375,7 @@ const FinishMode = () => {
 
 	// Export Paintings
 	// TODO: Error handling for no paint mesh condition
-	paint_exporter_instance.downloadJSON();
+	paint_exporter_instance.downloadMesh();
 	
 	// Compressand download all files at once will crash the browser
 
