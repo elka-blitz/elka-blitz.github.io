@@ -43,7 +43,7 @@ import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import UiElementsManager from "./uiElement";
+import { StoryUI, UiElementsManager } from "./uiElement";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
@@ -74,7 +74,7 @@ let stylus = null;
 let stylusPos;
 let gamepad1;
 let gamepadInterface;
-let taskTextPanel, originalText, yourDrawingText, uiManager;
+let taskTextPanel, originalText, yourDrawingText, uiManager, storyUIManager;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -114,6 +114,7 @@ let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
 let wasSurveyButton = false;
+let isPreTask = true;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let taskNum = 1;
 let practiceShapeIndex = 0;
@@ -430,7 +431,8 @@ function init() {
 		yourDrawingPos.z,
 	);
 
-	uiManager = new UiElementsManager(scene)
+	uiManager = new UiElementsManager(scene);
+	storyUIManager = new StoryUI(scene);
 
 	// MARK: Buttons
 	red_button = new DeskButton(scene);
@@ -715,7 +717,7 @@ function onFrame(time, frame) {
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
 				desk_manager.makeSurfaceInvisible();
-				taskTextPanel.makeInvisible();
+				// taskTextPanel.makeInvisible();
 				uiManager.taskMode();
 
 				QuestionnaireMode();
@@ -1132,15 +1134,15 @@ const PracticeMode = () => {
 		isDrawingDisabled = true;
 		pracBox.visible = false;
 
-		desk_manager.clearSurface();
 		practicePaints.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
+		interface_text.updateText('Ready to begin the task?');
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Begin");
-		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
-		taskTextPanel.makeVisible();
+		// taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
+		// taskTextPanel.makeVisible();
 		uiManager.taskMode();
 
 	}
@@ -1149,7 +1151,17 @@ const PracticeMode = () => {
 
 // MARK: MODE: Task
 const TaskMode = () => {
-	if (shapeIndex < svgWithPositionsArray.length - 1) {
+	if (isPreTask) {
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
+		nextButton.updateLabel("Start");
+		storyUIManager.showTask(taskNum);
+		isPreTask = false
+	}
+	else if (shapeIndex < svgWithPositionsArray.length - 1) {
+		desk_manager.makeSurfaceVisible();
+		storyUIManager.makeInvisible();
+
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		desk_manager.clearSurface();
@@ -1322,6 +1334,7 @@ const QuestionnaireMode = () => {
 const SetupNextTask = () => {
 	isQuestionnaireMode = false;
 	vrControl.makeRayInvisible()
+	desk_manager.makeSurfaceInvisible();
 
 	// todo export, task check
 	console.log(questionnaire1.getAnswers())
@@ -1343,6 +1356,8 @@ const SetupNextTask = () => {
 	nextButton.makeVisible();
 	taskTextPanel.makeVisible();
 
+	isPreTask = true;
+
 	if (!mx_ink_connected) {
 		hideControllerModel(controller1)
 	}
@@ -1352,12 +1367,12 @@ const SetupNextTask = () => {
 			break;
 		case 2:
 			event_logger.logEventData(questionnaire1.getAnswers())
-			taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
+			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			event_logger.logEventData(questionnaire2.getAnswers())
-			taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
+			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;
 
