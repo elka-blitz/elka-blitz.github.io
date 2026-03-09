@@ -247,7 +247,7 @@ function init() {
 	});
 
 	gltfLoader.load(
-		'./assets/msw_env.glb',
+		'./assets/updatedSceneRotatedComp.glb',
 		function (gltf) {
 			environmentModel.add(gltf.scene);
 		},
