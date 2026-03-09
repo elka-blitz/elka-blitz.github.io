@@ -53,6 +53,7 @@ import { gsap } from 'gsap';
 import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import accuracyHelper from "./accuracyScore.js";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -192,6 +193,8 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+let accuracy_helper
+let svg_points = []
 
 init();
 
@@ -431,6 +434,8 @@ function init() {
 	);
 
 	uiManager = new UiElementsManager(scene)
+
+	accuracy_helper = new accuracyHelper
 
 	// MARK: Buttons
 	red_button = new DeskButton(scene);
@@ -767,6 +772,13 @@ function animate(time, frame) {
 		accumulatedTime -= logInterval;
 		
 		event_logger.logStylusData(stylus)
+
+		// Calculate accuracy
+		svg_points = desk_manager.getDashPoints()
+		// console.log('svp', svg_points)
+		accuracy_helper.setSvgPoints(svg_points)
+		accuracy_helper.getClosestPointOnSvg(stylus.position)
+		accuracy_helper.calculateAccuracy() // Conditional embedded
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
