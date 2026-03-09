@@ -195,6 +195,7 @@ const speed_meter = new speedMeter()
 
 let accuracy_helper
 let svg_points = []
+let running_mean
 
 init();
 
@@ -435,7 +436,7 @@ function init() {
 
 	uiManager = new UiElementsManager(scene)
 
-	accuracy_helper = new accuracyHelper
+	accuracy_helper = new accuracyHelper()
 
 	// MARK: Buttons
 	red_button = new DeskButton(scene);
@@ -1153,6 +1154,7 @@ const PracticeMode = () => {
 		taskTextPanel.makeVisible();
 		uiManager.taskMode();
 
+		accuracy_helper.startAccuracyTracking()
 	}
 
 }
@@ -1173,6 +1175,8 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 
+		accuracy_helper.startAccuracyTracking()
+
 		svgPaintsArray[shapeIndex].mesh.visible = true;
 	}
 	// end of task
@@ -1185,9 +1189,17 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
+
 		taskTextPanel.updateText(
-			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+			`Task ${taskNum} complete` + `Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`+ '\nAre you ready to see your drawing?',
 		)
+
+		event_logger.logEventData()
+
+		accuracy_helper.stopAccuracyTracking()
+		running_mean = accuracy_helper.getMeanAccuracy()
+		event_logger.logEventData(`mean_task#${taskNum}=${running_mean}`)
+		running_mean = 0
 
 		event_logger.logEventData(`task${taskNum}_complete`);
 		if (!mx_ink_connected) {
