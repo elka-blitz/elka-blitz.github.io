@@ -202,8 +202,10 @@ export default class QuestionnaireManager {
         questionContainer.position.set( 0, 1.8, -1.8 );
         scene.add( questionContainer );
 
+        let currentQuestionArray = questionsObj.NASA_TLX;
+
         const questionText = new ThreeMeshUI.Text( {
-            content: questionsObj.NASA_TLX[qNum],
+            content: currentQuestionArray[qNum],
             fontSize: 0.055
         } )
 
@@ -347,6 +349,53 @@ export default class QuestionnaireManager {
 
         this.answerContainer4.position.set( 0, 1.5, -1.2 );
 
+        this.backButtonContainer = new ThreeMeshUI.Block( {
+            justifyContent: 'center',
+            contentDirection: 'row-reverse',
+            fontFamily: FontJSON,
+            fontTexture: FontImage,
+            fontSize: 0.07,
+            padding: 0.02,
+            borderRadius: 0.11,
+            backgroundOpacity: 1,
+        } );
+
+        this.backButtonContainer.position.set( -1, 1.8, -1.8 );
+        const backButton = new ThreeMeshUI.Block( buttonOptions )
+        scene.add(this.backButtonContainer)
+
+        this.backButtonContainer.add(backButton)
+        backButton.add(
+            new ThreeMeshUI.Text( { content: `Back` } )
+        );
+        this.objsToTest.push(backButton);
+
+        backButton.setupState( {
+            state: 'selected',
+            attributes: selectedAttributes,
+            onSet: () => {
+                if (qNum > 0 && overallQNum > 0) {
+                    console.log('back')
+                    qNum -= 1;
+                    overallQNum -= 1;
+                    progressText.set({content: `${overallQNum} / ${totalQNum}`});
+                    questionText.set({content: currentQuestionArray[qNum]});
+                    this.answers.pop();
+                    if (currentQuestionArray === questionsObj.UEQ_S) {
+                        ueq_sText1.set({content: `${ueq_sWords[qNum].first}`})
+                        ueq_sText2.set({content: `${ueq_sWords[qNum].second}`})
+                    }
+                    if (qNum === 0) {
+                        this.backButtonContainer.visible = false;
+                    }
+                }
+            }
+        } )
+        backButton.setupState( hoveredStateAttributes );
+        backButton.setupState( idleStateAttributes );
+
+        this.backButtonContainer.visible = false;
+
 
         // MARK: NASA-TLX
 
@@ -359,6 +408,11 @@ export default class QuestionnaireManager {
             new ThreeMeshUI.Block( buttonOptions ),
             new ThreeMeshUI.Block( buttonOptions ),
         ]
+
+        this.ueq_sContainer1.visible = true;
+        this.ueq_sContainer2.visible = true;
+        ueq_sText1.set({content: `Not At All`})
+        ueq_sText2.set({content: `Very Much`})
 
 
         buttonArray.forEach((button, i) => {
@@ -373,6 +427,8 @@ export default class QuestionnaireManager {
                 attributes: selectedAttributes,
                 onSet: () => {
                     this.answers.push(7 - i)
+                    this.backButtonContainer.visible = true;
+
                     overallQNum += 1;
                     progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
@@ -387,9 +443,14 @@ export default class QuestionnaireManager {
                         // questionText.set({content: questionsObj.SAMS[qNum]});
 
                         this.objsToTest.length = 0; // clear array
+                        this.objsToTest.push(backButton);
 
                         samsButtonArray.map(x => this.objsToTest.push(x))
+                        currentQuestionArray = questionsObj.SAMS;
                         rect.visible = true;
+                        this.ueq_sContainer1.visible = false;
+                        this.ueq_sContainer2.visible = false;
+                        this.backButtonContainer.visible = false;
                     }
 
                 }
@@ -420,12 +481,15 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(5 - i)
+                        this.backButtonContainer.visible = true;
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.SAMS.length){
 
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
-                        this.answers.push(5 - i)
                         questionText.set({content: questionsObj.SAMS[qNum]});
 
                         // replacing with next set of samsSVGs
@@ -440,12 +504,15 @@ export default class QuestionnaireManager {
                         scene.remove(this.answerContainer2)
                         scene.add(this.answerContainer3)
                         qNum = -1;
-                        // questionText.set({content: questionsObj.Flow[qNum]});
+                        currentQuestionArray = questionsObj.Flow;
 
                         this.objsToTest.length = 0; // clear array
+                        this.objsToTest.push(backButton);
 
                         flowButtonArray.map(x => this.objsToTest.push(x))
                         rect.visible = false;
+                        this.backButtonContainer.visible = false;
+
                     }
 
                 }
@@ -468,10 +535,23 @@ export default class QuestionnaireManager {
             new ThreeMeshUI.Block( buttonOptions ),
             new ThreeMeshUI.Block( buttonOptions ),
         ]
+
+        const likertLabels = [
+            "Strongly Agree",
+            "Agree",
+            "Somewhat Agree",
+            "Somewhat Disagree",
+            "Neither Agree nor Disagree",
+            "Disagree",
+            "Strongly Disagree",
+        ]
         flowButtonArray.forEach((flowButton, i) => {
 
             flowButton.add(
-                new ThreeMeshUI.Text( { content: `${7 - i}` } )
+                new ThreeMeshUI.Text( {
+                    content: `${likertLabels[i]}`,
+                    fontSize: 0.03
+                })
             );
 
             // MARK: Button press
@@ -479,12 +559,16 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(7 - i)
+                        this.backButtonContainer.visible = true;
+
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.Flow.length){
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
 
-                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.Flow[qNum]});
                     }
                     // MARK: End of survey
@@ -492,8 +576,13 @@ export default class QuestionnaireManager {
                         scene.remove(this.answerContainer3)
                         scene.add(this.answerContainer4)
                         qNum = -1;
+                        currentQuestionArray = questionsObj.UEQ_S;
+
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
                         this.objsToTest.length = 0; // clear array
+                        this.objsToTest.push(backButton);
+                        this.backButtonContainer.visible = false;
+
                         ueqButtonsArray.map(x => this.objsToTest.push(x))
                     }
 
@@ -528,13 +617,16 @@ export default class QuestionnaireManager {
                 state: 'selected',
                 attributes: selectedAttributes,
                 onSet: () => {
+                    if (qNum !== -1) {
+                        this.answers.push(7 - i)
+                        this.backButtonContainer.visible = true;
+
+                    }
                     qNum += 1;
                     if (qNum < questionsObj.UEQ_S.length ) {
 
                         overallQNum += 1;
                         progressText.set({content: `${overallQNum} / ${totalQNum}`});
-
-                        this.answers.push(7-i)
                         questionText.set({content: questionsObj.UEQ_S[qNum]});
                         this.ueq_sContainer1.visible = true;
                         this.ueq_sContainer2.visible = true;
@@ -544,7 +636,7 @@ export default class QuestionnaireManager {
                     // MARK: End of survey
                     else {
                         console.log("Survey complete", this.answers)
-                        scene.remove(questionContainer, this.answerContainer4, this.ueq_sContainer1, this.ueq_sContainer2)
+                        scene.remove(questionContainer, this.answerContainer4, this.ueq_sContainer1, this.ueq_sContainer2, this.backButtonContainer )
                         this.objsToTest.length = 0; // clear array
                         this.nextTaskButton && this.nextTaskButton.makeVisible();
 
@@ -592,6 +684,11 @@ export default class QuestionnaireManager {
             position.y + 0.8,
             -1.4
         )
+        this.backButtonContainer.position.set(
+            position.x - 1,
+            position.y + 0.8,
+            -1.4
+        )
         this.containerArray.forEach((c) => {
             c.position.set(
                 position.x,
@@ -603,12 +700,12 @@ export default class QuestionnaireManager {
         this.ueq_sContainer1.position.set(
             position.x - 1,
             position.y + 0.3,
-            -1.2
+            -1.21
         )
         this.ueq_sContainer2.position.set(
             position.x + 1,
             position.y + 0.3,
-            -1.2
+            -1.21
         )
 
     }
