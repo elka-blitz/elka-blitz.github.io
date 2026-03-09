@@ -690,7 +690,6 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
-				/*
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -699,8 +698,6 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
-				*/
-				TaskMode();
 
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
@@ -1152,6 +1149,7 @@ const TaskMode = () => {
 	if (shapeIndex < svgWithPositionsArray.length - 1) {
 		isDrawingDisabled = false;
 		shapeIndex += 1;
+		event_logger.logEventData(`${taskOrder[taskNum -1].name}_#${shapeIndex}_begin`)
 		desk_manager.clearSurface();
 		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		nextButton.updateLabel(
@@ -1176,9 +1174,9 @@ const TaskMode = () => {
 		});
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+		)
 
-		event_logger.logEventData('task1_complete')
-		);
+		event_logger.logEventData(`task${taskNum}_complete`);
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
@@ -1229,7 +1227,6 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			event_logger.logEventData('task1_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical(
@@ -1239,7 +1236,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 2:
-			event_logger.logEventData('task2_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1248,7 +1244,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 3:
-			event_logger.logEventData('task3_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1323,8 +1318,6 @@ const SetupNextTask = () => {
 	isQuestionnaireMode = false;
 	vrControl.makeRayInvisible()
 
-	// todo export, task check
-	console.log(questionnaire1.getAnswers())
 	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
