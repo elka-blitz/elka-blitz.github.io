@@ -1370,7 +1370,8 @@ const FinishMode = () => {
 
 	// MARK: Export
 	// Export all data
-	event_logger.downloadAllData(); // Download stylus and task event data as text files
+	// event_logger.downloadAllData(); // Download stylus and task event data as text files
+	event_logger.downloadUnityData() // Combine and download stylus + task data
 
 	// Export Paintings
 	// TODO: Error handling for no paint mesh condition
