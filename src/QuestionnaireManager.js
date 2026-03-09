@@ -286,9 +286,6 @@ export default class QuestionnaireManager {
         this.ueq_sContainer1.visible = false;
         this.ueq_sContainer2.visible = false;
 
-        this.ueq_sContainer1.position.z -= 0.5;
-        this.ueq_sContainer2.position.z -= 0.5;
-
 
         // MARK: Answers
         this.objsToTest = objsToTest;
@@ -363,7 +360,7 @@ export default class QuestionnaireManager {
             backgroundOpacity: 1,
         } );
 
-        this.backButtonContainer.position.set( -1, 1.5, -1 );
+        this.backButtonContainer.position.set( -1, 1.8, -1.8 );
         const backButton = new ThreeMeshUI.Block( buttonOptions )
         scene.add(this.backButtonContainer)
 
@@ -687,6 +684,11 @@ export default class QuestionnaireManager {
             position.y + 0.8,
             -1.4
         )
+        this.backButtonContainer.position.set(
+            position.x - 1,
+            position.y + 0.8,
+            -1.4
+        )
         this.containerArray.forEach((c) => {
             c.position.set(
                 position.x,
@@ -698,12 +700,12 @@ export default class QuestionnaireManager {
         this.ueq_sContainer1.position.set(
             position.x - 1,
             position.y + 0.3,
-            -1.2
+            -1.19
         )
         this.ueq_sContainer2.position.set(
             position.x + 1,
             position.y + 0.3,
-            -1.2
+            -1.19
         )
 
     }
