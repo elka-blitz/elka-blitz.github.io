@@ -242,12 +242,12 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+	gltfLoader.load('./assets/updatedDeskComp.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
 
 	gltfLoader.load(
-		'./assets/msw_env.glb',
+		'./assets/updatedSceneComp.glb',
 		function (gltf) {
 			environmentModel.add(gltf.scene);
 		},
@@ -1375,7 +1375,7 @@ const FinishMode = () => {
 
 	// Export Paintings
 	// TODO: Error handling for no paint mesh condition
-	paint_exporter_instance.downloadMesh();
+	// paint_exporter_instance.downloadMesh();
 	
 	// Compressand download all files at once will crash the browser
 
