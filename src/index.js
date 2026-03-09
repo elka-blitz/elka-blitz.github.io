@@ -1190,6 +1190,7 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		
+		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
 		taskTextPanel.updateText(
