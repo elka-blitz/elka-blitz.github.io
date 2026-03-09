@@ -692,7 +692,7 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
-				/*
+
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -701,8 +701,6 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
-				*/
-				TaskMode();
 
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
@@ -1140,10 +1138,13 @@ const PracticeMode = () => {
 		interface_text.updateText('Ready to begin the task?');
 
 		nextButton.changeColor('#359743');
-		nextButton.updateLabel("Begin");
+		nextButton.updateLabel("Tasks");
 		// taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
 		// taskTextPanel.makeVisible();
 		uiManager.taskMode();
+		desk_manager.makeSurfaceInvisible();
+		storyUIManager.practicePromptVisible();
+
 
 	}
 
@@ -1157,6 +1158,9 @@ const TaskMode = () => {
 		nextButton.updateLabel("Start");
 		storyUIManager.showTask(taskNum);
 		isPreTask = false
+		storyUIManager.practicePromptInvisible();
+
+
 	}
 	else if (shapeIndex < svgWithPositionsArray.length - 1) {
 		desk_manager.makeSurfaceVisible();
@@ -1186,6 +1190,7 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
+		taskTextPanel.makeVisible();
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 
@@ -1354,7 +1359,7 @@ const SetupNextTask = () => {
 
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
-	taskTextPanel.makeVisible();
+	taskTextPanel.makeInvisible();
 
 	isPreTask = true;
 

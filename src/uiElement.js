@@ -13,7 +13,7 @@ export class UiElementsManager {
             backgroundOpacity: 0,
         });
 
-        this.calibrationContainer.position.set(0, 1,  - 0.8);
+        this.calibrationContainer.position.set(0, 1.3,  - 0.8);
         scene.add(this.calibrationContainer);
 
         const imgBlock = new ThreeMeshUI.Block({
@@ -90,6 +90,7 @@ export class UiElementsManager {
 export class StoryUI {
     constructor(scene) {
         this.textureLoader = new THREE.TextureLoader();
+        this.scene = scene;
 
         this.container = new ThreeMeshUI.Block({
             height: 2,
@@ -108,7 +109,7 @@ export class StoryUI {
 
         // this.questionText.position.y += 0.8;
 
-        this.container.position.set(0, 1.6,  -1);
+        this.container.position.set(0, 1.2,  -1);
         scene.add(this.container);
 
         this.textureLoader.load(taskOrder[0].frame, (texture) => {
@@ -121,15 +122,42 @@ export class StoryUI {
         this.container.add(this.questionText, this.imgBlock )
         this.container.visible = false;
 
+        this.practiceContainer = new ThreeMeshUI.Block({
+            width: 1,
+            height: 0.3,
+            backgroundOpacity: 0,
+        });
+        this.practicePrompt = new ThreeMeshUI.Block({
+            width: 0.849,
+            height: 0.263,
+        });
+
+        scene.add(this.practiceContainer);
+        this.practiceContainer.position.set(0, 1.5,  -1)
+        this.practiceContainer.add(this.practicePrompt)
+
+        this.textureLoader.load("assets/practicePrompt.png", (texture) => {
+            this.practicePrompt.set({ backgroundTexture: texture });
+        });
+        this.practiceContainer.visible = false;
+
 
     }
 
+    practicePromptVisible() {
+        this.practiceContainer.visible = true;
+    }
+    practicePromptInvisible() {
+        this.practiceContainer.visible = false;
+    }
     makeInvisible() {
         this.container.visible = false;
     }
+
     makeVisible() {
         this.container.visible = true;
     }
+
 
     showTask(taskNum){
         this.container.visible = true;
