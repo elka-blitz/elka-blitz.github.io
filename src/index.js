@@ -1189,6 +1189,8 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
+		
+		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + `Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`+ '\nAre you ready to see your drawing?',

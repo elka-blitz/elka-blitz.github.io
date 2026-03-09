@@ -38,14 +38,12 @@ export default class accuracyHelper {
                 }
         }
         this.shortest_distance = this.min_distance
-        console.log(this.shortest_distance)
         return this.closest_point
     }
 
     calculateAccuracy() {
         if (this.track_accuracy && this.shortest_distance <= 0.1) { // Conditional
             this.realtime_accuracy_percentage = (0.1 - this.shortest_distance)  * 10
-            console.log('accuracy calculated: ', this.realtime_accuracy_percentage)
 
             if (!this.mean_accuracy_percentage) {
                 this.mean_accuracy_percentage = this.realtime_accuracy_percentage
@@ -54,11 +52,10 @@ export default class accuracyHelper {
             this.mean_accuracy_percentage = (this.realtime_accuracy_percentage + this.mean_accuracy_percentage) / this.sample_no
             this.sample_no += 1
         }
-        console.log('rtap', this.realtime_accuracy_percentage)
     }
 
     getMeanAccuracy() {
-        return this.mean_accuracy_percentage
+        return Math.round(this.mean_accuracy_percentage * 10000)
     }
 
     resetMeanAccuracy() {
