@@ -783,6 +783,7 @@ function animate(time, frame) {
 			isDrawing = gamepad1.buttons[5].value > 0;
 
 			if (isDrawing && !prevIsDrawing) {
+				event_logger.logEventData('press_front_button');
 				const painter = stylus?.userData.painter;
 				painter.moveTo(stylusPos);
 			}
