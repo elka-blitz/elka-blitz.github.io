@@ -700,12 +700,12 @@ export default class QuestionnaireManager {
         this.ueq_sContainer1.position.set(
             position.x - 1,
             position.y + 0.3,
-            -1.19
+            -1.21
         )
         this.ueq_sContainer2.position.set(
             position.x + 1,
             position.y + 0.3,
-            -1.19
+            -1.21
         )
 
     }
