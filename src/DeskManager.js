@@ -99,10 +99,10 @@ export default class DeskManager {
 		camera.matrixWorld.decompose(position, rotation, scale);
 
 		// Need to rotate glb model 90deg
-		// const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
-		// 	new THREE.Vector3(0, 1, 0),
-		// 	Math.PI / 2, // 90 degrees in radians
-		// );
+		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+			new THREE.Vector3(0, 1, 0),
+			Math.PI / 2, // 90 degrees in radians
+		);
 
 		// Quaternion modify according to hmd position
 		const quaternion_mod = new THREE.Quaternion();
@@ -117,7 +117,7 @@ export default class DeskManager {
 		euler.z = 0;
 
 		yOnlyQuaternion.setFromEuler(euler);
-		// yOnlyQuaternion.multiply(offsetQuaternion);
+		yOnlyQuaternion.multiply(offsetQuaternion);
 
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
@@ -144,10 +144,10 @@ export default class DeskManager {
 		camera.matrixWorld.decompose(position, rotation, scale);
 
 		// Need to rotate glb model 90deg
-		// const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
-		// 	new THREE.Vector3(0, 1, 0),
-		// 	Math.PI / 2, // 90 degrees in radians
-		// );
+		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+			new THREE.Vector3(0, 1, 0),
+			Math.PI / 2, // 90 degrees in radians
+		);
 
 		// Quaternion modify according to hmd position
 		const quaternion_mod = new THREE.Quaternion();
@@ -162,7 +162,7 @@ export default class DeskManager {
 		euler.z = 0;
 
 		yOnlyQuaternion.setFromEuler(euler);
-		// yOnlyQuaternion.multiply(offsetQuaternion);
+		yOnlyQuaternion.multiply(offsetQuaternion);
 
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
