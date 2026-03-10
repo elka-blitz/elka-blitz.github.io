@@ -660,6 +660,8 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 				isPracticeMode = true;
+				isDrawingDisabled = false;
+
 				practiceShapeIndex = -1;
 				desk_manager.spawnDrawingSurface();
 				uiManager.practiceMode(deskCoords);
