@@ -141,7 +141,6 @@ export default class DeskButton {
 		// Call onframe
 		if (!this.cylinder_bb.containsPoint(stylus_position)) {
 			this.cylinder.position.y = this.inititial_height
-			console.log('forced button up')
 		}
 	}
 

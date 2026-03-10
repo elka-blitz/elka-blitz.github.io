@@ -189,18 +189,18 @@ export class ResultsUI {
     constructor() {
         this.containerLow = new ThreeMeshUI.Block({
             width: 1.3,
-            height: 0.22,
+            height: 0.3,
             backgroundOpacity: 0,
         });
         this.containerMedium = new ThreeMeshUI.Block({
             width: 1.3,
-            height: 0.22,
+            height: 0.3,
             backgroundOpacity: 0,
         });
         this.containerHigh = new ThreeMeshUI.Block({
             width: 1.3,
-            height: 0.22,
-            backgroundOpacity: 1,
+            height: 0.3,
+            backgroundOpacity: 0,
         });
 
         this.textContainerLow = new ThreeMeshUI.Block({
@@ -256,10 +256,14 @@ export class ResultsUI {
     }
     mediumAccuracy() {
         this.containerMedium.visible = true;
+        this.containerMedium.position.z = 0.09 // center
+
     }
 
     lowAccuracy() {
-        this.containerMedium.visible = true;
+        this.containerLow.visible = true;
+        this.containerLow.position.z = 0.09 // center
+
     }
 
     addMeshesToDesk(desk) {

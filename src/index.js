@@ -131,7 +131,7 @@ let tableGroup = new THREE.Group()
 let backPushed = false
 let prevBackPushed = false
 let desk_manager, svgManager, originalSvgManager;
-let green = new THREE.Color('#80ed99');
+
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
@@ -348,7 +348,6 @@ function init() {
 				// environment_switcher.loadNextEnvironmentCondition()
 				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
-				scene.background = green;
 				
 				// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -1124,7 +1123,6 @@ const Calibrate = () => {
 	desk_manager.lock();
 	isPracticeMode = true;
 	desk_manager.spawnDrawingSurface();
-	scene.background = green;
 	
 	// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -1254,18 +1252,14 @@ const ShowResultsMode = () => {
 
 	desk_manager.clearSurface();
 	desk_manager.makeSurfaceInvisible();
-	// taskTextPanel.makeInvisible();
-
-	taskTextPanel.updateText(
-		`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()}`,
-	);
+	taskTextPanel.makeInvisible();
 
 	if (currentAccuracy > 84) {
 		resultsUIManager.highAccuracy()
 	} else if  (currentAccuracy < 51) {
 		resultsUIManager.lowAccuracy()
 	} else {
-		resultsUIManager.highAccuracy()
+		resultsUIManager.mediumAccuracy()
 	}
 
 	// original svg
