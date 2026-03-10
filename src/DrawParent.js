@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {degreesObj, taskOrder} from "./experimentConfig";
+import {degreesObj, taskOrder, isHorizontalSurface} from "./experimentConfig";
 
 export default class DrawParent {
 	constructor(surfaceDimensions) {
@@ -33,12 +33,18 @@ export default class DrawParent {
 
 	makeVertical(x, y, z) {
 		this.drawingBox.material.visible = true;
-		degreesObj.isHorizontal
-			? this.drawingBox.rotateX(-degreesObj.horizontal)
-			: this.drawingBox.rotateX(-degreesObj.vertical)
-
-		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 		this.drawingBox.position.set(x, y, z)
+
+		if (isHorizontalSurface) {
+			this.drawingBox.rotateY(THREE.MathUtils.degToRad(180))
+			// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+
+			this.drawingBox.rotateX(-degreesObj.horizontal)
+		} else {
+			this.drawingBox.rotateX(-degreesObj.vertical)
+			this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+
+		}
 	}
 
 	makeInvisible() {

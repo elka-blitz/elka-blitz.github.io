@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {controllerObj, degreesObj, taskOrder} from "./experimentConfig";
 import ThreeMeshUI from "three-mesh-ui";
 
-export default class UiElementsManager {
+
+export class UiElementsManager {
     constructor(scene) {
         const textureLoader = new THREE.TextureLoader();
 
@@ -13,7 +14,7 @@ export default class UiElementsManager {
             backgroundOpacity: 0,
         });
 
-        this.calibrationContainer.position.set(0, 1,  - 0.8);
+        this.calibrationContainer.position.set(0, 1.3,  - 0.8);
         scene.add(this.calibrationContainer);
 
         const imgBlock = new ThreeMeshUI.Block({
@@ -83,6 +84,192 @@ export default class UiElementsManager {
         this.container.visible = false;
         this.container2.visible = false;
 
+    }
+
+}
+
+export class StoryUI {
+    constructor(scene) {
+        this.textureLoader = new THREE.TextureLoader();
+        this.scene = scene;
+
+        this.container = new ThreeMeshUI.Block({
+            height: 2,
+            width: 1.2,
+            backgroundOpacity: 0,
+        });
+        this.imgBlock = new ThreeMeshUI.Block({
+            width: 0.663,
+            height: 0.714,
+        });
+
+        this.questionText = new ThreeMeshUI.Block({
+            width: 1.103,
+            height: 0.218,
+        });
+
+        // this.questionText.position.y += 0.8;
+
+        this.container.position.set(0, 1.2,  -1);
+        scene.add(this.container);
+
+        this.textureLoader.load(taskOrder[0].frame, (texture) => {
+            this.imgBlock.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/task1Text.png", (texture) => {
+            this.questionText.set({ backgroundTexture: texture });
+        });
+
+        this.container.add(this.questionText, this.imgBlock )
+        this.container.visible = false;
+
+        this.practiceContainer = new ThreeMeshUI.Block({
+            width: 1,
+            height: 0.3,
+            backgroundOpacity: 0,
+        });
+        this.practicePrompt = new ThreeMeshUI.Block({
+            width: 0.849,
+            height: 0.263,
+        });
+
+        scene.add(this.practiceContainer);
+        this.practiceContainer.position.set(0, 1.5,  -1)
+        this.practiceContainer.add(this.practicePrompt)
+
+        this.textureLoader.load("assets/practicePrompt.png", (texture) => {
+            this.practicePrompt.set({ backgroundTexture: texture });
+        });
+        this.practiceContainer.visible = false;
+
+
+    }
+
+    practicePromptVisible() {
+        this.practiceContainer.visible = true;
+    }
+    practicePromptInvisible() {
+        this.practiceContainer.visible = false;
+    }
+    makeInvisible() {
+        this.container.visible = false;
+    }
+
+    makeVisible() {
+        this.container.visible = true;
+    }
+
+
+    showTask(taskNum){
+        this.container.visible = true;
+        switch (taskNum){
+            case 1:
+                break;
+            case 2:
+                this.textureLoader.load(taskOrder[1].frame, (texture) => {
+                    this.imgBlock.set({ backgroundTexture: texture });
+                });
+                this.textureLoader.load("assets/task2Text.png", (texture) => {
+                    this.questionText.set({ backgroundTexture: texture });
+                });
+                break;
+            case 3:
+                this.textureLoader.load(taskOrder[2].frame, (texture) => {
+                    this.imgBlock.set({ backgroundTexture: texture });
+                });
+                this.textureLoader.load("assets/task3Text.png", (texture) => {
+                    this.questionText.set({ backgroundTexture: texture });
+                });
+                break;
+        }
+    }
+}
+
+export class ResultsUI {
+    constructor() {
+        this.containerLow = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 0,
+        });
+        this.containerMedium = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 0,
+        });
+        this.containerHigh = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 1,
+        });
+
+        this.textContainerLow = new ThreeMeshUI.Block({
+            width: 1.1077,
+            height: 0.218,
+        });
+        this.textContainerMedium = new ThreeMeshUI.Block({
+            width: 1.084,
+            height: 0.218,
+        });
+        this.textContainerHigh= new ThreeMeshUI.Block({
+            width: 1.394,
+            height: 0.218,
+        });
+
+        this.containerHigh.add(this.textContainerHigh);
+        this.containerMedium.add(this.textContainerMedium);
+        this.containerLow.add(this.textContainerLow);
+
+        this.containerArray = [
+            this.containerHigh,
+            this.containerMedium,
+            this.containerLow
+        ];
+
+        this.containerArray.forEach((container) => {
+            container.position.set(0, 1.3, -1);
+            container.visible = false;
+        })
+
+        this.textureLoader = new THREE.TextureLoader();
+
+        this.textureLoader.load("assets/accuracyHigh.png", (texture) => {
+            this.textContainerHigh.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/accuracyMedium.png", (texture) => {
+            this.textContainerMedium.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/accuracyLow.png", (texture) => {
+            this.textContainerLow.set({ backgroundTexture: texture });
+        });
+    }
+
+    makeInvisible() {
+        this.containerArray.forEach((container) => {
+            container.visible = false;
+        })
+    }
+
+    highAccuracy() {
+        this.containerHigh.visible = true;
+        this.containerHigh.position.z = 0.09 // center
+    }
+    mediumAccuracy() {
+        this.containerMedium.visible = true;
+    }
+
+    lowAccuracy() {
+        this.containerMedium.visible = true;
+    }
+
+    addMeshesToDesk(desk) {
+        this.containerArray.forEach((container) => {
+            desk.add(container);
+            container.rotateY(-Math.PI/2) // because desk orients weird
+            container.position.x = 0.3; // move further back
+            container.position.y = 0.9; // move up
+
+        })
     }
 
 }
