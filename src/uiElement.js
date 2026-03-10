@@ -186,7 +186,7 @@ export class StoryUI {
 }
 
 export class ResultsUI {
-    constructor() {
+    constructor(scene) {
         this.containerLow = new ThreeMeshUI.Block({
             width: 1.3,
             height: 0.3,
@@ -216,6 +216,7 @@ export class ResultsUI {
             height: 0.218,
         });
 
+
         this.containerHigh.add(this.textContainerHigh);
         this.containerMedium.add(this.textContainerMedium);
         this.containerLow.add(this.textContainerLow);
@@ -229,6 +230,7 @@ export class ResultsUI {
         this.containerArray.forEach((container) => {
             container.position.set(0, 1.3, -1);
             container.visible = false;
+            scene.add(container);
         })
 
         this.textureLoader = new THREE.TextureLoader();
@@ -252,28 +254,16 @@ export class ResultsUI {
 
     highAccuracy() {
         this.containerHigh.visible = true;
-        this.containerHigh.position.z = 0.09 // center
+
     }
     mediumAccuracy() {
         this.containerMedium.visible = true;
-        this.containerMedium.position.z = 0.09 // center
 
     }
 
     lowAccuracy() {
         this.containerLow.visible = true;
-        this.containerLow.position.z = 0.09 // center
 
-    }
-
-    addMeshesToDesk(desk) {
-        this.containerArray.forEach((container) => {
-            desk.add(container);
-            container.rotateY(-Math.PI/2) // because desk orients weird
-            container.position.x = 0.3; // move further back
-            container.position.y = 0.9; // move up
-
-        })
     }
 
 }

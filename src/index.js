@@ -411,7 +411,7 @@ function init() {
 
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
-	resultsUIManager = new ResultsUI();
+	resultsUIManager = new ResultsUI(scene);
 
 	accuracy_helper = new accuracyHelper()
 
@@ -501,7 +501,7 @@ function init() {
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
-	resultsUIManager.addMeshesToDesk(desk_manager.getDesk())
+
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
