@@ -661,6 +661,8 @@ function onFrame(time, frame) {
 				buttonFeedback();
 				isPracticeMode = true;
 				isDrawingDisabled = false;
+				storyUIManager.practicePromptInvisible();
+
 
 				practiceShapeIndex = -1;
 				desk_manager.spawnDrawingSurface();
