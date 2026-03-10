@@ -35,10 +35,13 @@ export default class DrawParent {
 		this.drawingBox.material.visible = true;
 		this.drawingBox.position.set(x, y, z)
 
-		degreesObj.isHorizontal
-			? this.drawingBox.rotateX(-degreesObj.horizontal)
-			: this.drawingBox.rotateX(-degreesObj.vertical)
+		if (degreesObj.isHorizontal) {
+			this.drawingBox.rotateX(-degreesObj.horizontal)
+			this.drawingBox.rotateY(Math.PI)
+		} else {
+			this.drawingBox.rotateX(-degreesObj.vertical)
 
+		}
 		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 	}
 

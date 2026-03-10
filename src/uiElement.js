@@ -187,17 +187,17 @@ export class StoryUI {
 
 export class ResultsUI {
     constructor() {
-        const containerLow = new ThreeMeshUI.Block({
+        this.containerLow = new ThreeMeshUI.Block({
             width: 1.3,
             height: 0.22,
             backgroundOpacity: 0,
         });
-        const containerMedium = new ThreeMeshUI.Block({
+        this.containerMedium = new ThreeMeshUI.Block({
             width: 1.3,
             height: 0.22,
             backgroundOpacity: 0,
         });
-        const containerHigh = new ThreeMeshUI.Block({
+        this.containerHigh = new ThreeMeshUI.Block({
             width: 1.3,
             height: 0.22,
             backgroundOpacity: 0,
@@ -216,14 +216,14 @@ export class ResultsUI {
             height: 0.218,
         });
 
-        containerHigh.add(this.textContainerHigh);
-        containerMedium.add(this.textContainerMedium);
-        containerLow.add(this.textContainerLow);
+        this.containerHigh.add(this.textContainerHigh);
+        this.containerMedium.add(this.textContainerMedium);
+        this.containerLow.add(this.textContainerLow);
 
         this.containerArray = [
-            containerHigh,
-            containerMedium,
-            containerLow
+            this.containerHigh,
+            this.containerMedium,
+            this.containerLow
         ];
 
         this.containerArray.forEach((container) => {
@@ -251,15 +251,15 @@ export class ResultsUI {
     }
 
     highAccuracy() {
-        this.textContainerHigh.visible = true;
-        this.textContainerHigh.position.z += 1 // center
+        this.containerHigh.visible = true;
+        this.containerHigh.position.z += 1 // center
     }
     mediumAccuracy() {
-        this.textContainerMedium.visible = true;
+        this.containerMedium.visible = true;
     }
 
     lowAccuracy() {
-        this.textContainerLow.visible = true;
+        this.containerMedium.visible = true;
     }
 
     addMeshesToDesk(desk) {
