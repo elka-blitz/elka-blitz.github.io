@@ -53,7 +53,6 @@ import { gsap } from 'gsap';
 import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
-import accuracyHelper from "./accuracyScore.js";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -194,9 +193,6 @@ let envMap
 
 const speed_meter = new speedMeter()
 
-let accuracy_helper
-let svg_points = []
-let running_mean
 
 init();
 
@@ -757,7 +753,6 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
-
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -766,6 +761,7 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
+				TaskMode();
 
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
@@ -836,13 +832,6 @@ function animate(time, frame) {
 		
 		event_logger.logStylusData(stylus)
 
-		// Calculate accuracy
-		svg_points = desk_manager.getDashPoints()
-		// console.log('svp', svg_points)
-		accuracy_helper.setSvgPoints(svg_points)
-		accuracy_helper.getClosestPointOnSvg(stylus.position)
-		accuracy_helper.calculateAccuracy() // Conditional embedded
-
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
 		// (╯°□°）╯︵ ┻━┻
@@ -855,7 +844,6 @@ function animate(time, frame) {
 			isDrawing = gamepad1.buttons[5].value > 0;
 
 			if (isDrawing && !prevIsDrawing) {
-				event_logger.logEventData('front_button_pressed')
 				const painter = stylus?.userData.painter;
 				painter.moveTo(stylusPos);
 			}
@@ -1220,9 +1208,6 @@ const PracticeMode = () => {
 		repeatPracticeButton.updateLabel("Repeat");
 
 		uiManager.taskMode();
-		desk_manager.makeSurfaceInvisible();
-		storyUIManager.practicePromptVisible();
-
 
 		accuracy_helper.startAccuracyTracking()
 	}
@@ -1249,7 +1234,6 @@ const TaskMode = () => {
 
 		isDrawingDisabled = false;
 		shapeIndex += 1;
-		event_logger.logEventData(`${taskOrder[taskNum -1].name}_#${shapeIndex}_begin`)
 		desk_manager.clearSurface();
 		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		nextButton.updateLabel(
@@ -1259,8 +1243,6 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-
-		accuracy_helper.startAccuracyTracking()
 
 		svgPaintsArray[shapeIndex].mesh.visible = true;
 	}
@@ -1274,24 +1256,15 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-
+		
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
-        taskTextPanel.makeVisible();
-
 		taskTextPanel.updateText(
-			`Task ${taskNum} complete` + `Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`+ '\nAre you ready to see your drawing?',
-		)
+			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 
-		event_logger.logEventData()
-
-		accuracy_helper.stopAccuracyTracking()
-		running_mean = accuracy_helper.getMeanAccuracy()
-		event_logger.logEventData(`mean_task#${taskNum}=${running_mean}`)
-		running_mean = 0
-
-		event_logger.logEventData(`task${taskNum}_complete`);
+		event_logger.logEventData('task1_complete')
+		);
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
@@ -1342,6 +1315,7 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
+			event_logger.logEventData('task1_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			original.rotateY(Math.PI); // flip it only the first time
 			task1ParentManager.makeVertical(
@@ -1351,6 +1325,7 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 2:
+			event_logger.logEventData('task2_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1359,6 +1334,7 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 3:
+			event_logger.logEventData('task3_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1434,6 +1410,8 @@ const SetupNextTask = () => {
 	vrControl.makeRayInvisible()
 	desk_manager.makeSurfaceInvisible();
 
+	// todo export, task check
+	console.log(questionnaire1.getAnswers())
 	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
@@ -1523,3 +1501,4 @@ const FinishMode = () => {
 		}
 	})
 }
+
