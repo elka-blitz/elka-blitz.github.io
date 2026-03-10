@@ -660,7 +660,21 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 				isPracticeMode = true;
-				Calibrate();
+				practiceShapeIndex = 0;
+				loadSVG(practiceSvgArray[0], CENTER_POSITION);
+				stylus.userData.painter = practicePaints[0];
+				repeatPracticeButton.makeInvisible();
+
+				practicePaints.forEach((paint, i) => {
+					practicePaints[i] = new TubePainter();
+					practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
+						color: inkColor,
+						linewidth: 4,
+					});
+					practicePaints[i].setSize(0.2);
+					pracBox.add(practicePaints[i].mesh);
+				});
+
 				PracticeMode();
 			}
 		}
