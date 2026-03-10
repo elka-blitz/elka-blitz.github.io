@@ -1425,7 +1425,9 @@ const FinishMode = () => {
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
-	taskTextPanel.makeVisible();
+
+	storyUIManager.finishVisible();
+
 
 	// MARK: Export
 	// Export all data
