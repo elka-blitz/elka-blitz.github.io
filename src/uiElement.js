@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {controllerObj, degreesObj, taskOrder} from "./experimentConfig";
 import ThreeMeshUI from "three-mesh-ui";
 
-export default class UiElementsManager {
+export class UiElementsManager {
     constructor(scene) {
         const textureLoader = new THREE.TextureLoader();
 
@@ -13,7 +13,7 @@ export default class UiElementsManager {
             backgroundOpacity: 0,
         });
 
-        this.calibrationContainer.position.set(0, 1,  - 0.8);
+        this.calibrationContainer.position.set(0, 1.3,  - 0.8);
         scene.add(this.calibrationContainer);
 
         const imgBlock = new ThreeMeshUI.Block({
@@ -85,4 +85,103 @@ export default class UiElementsManager {
 
     }
 
+}
+
+export class StoryUI {
+    constructor(scene) {
+        this.textureLoader = new THREE.TextureLoader();
+        this.scene = scene;
+
+        this.container = new ThreeMeshUI.Block({
+            height: 2,
+            width: 1.2,
+            backgroundOpacity: 0,
+        });
+        this.imgBlock = new ThreeMeshUI.Block({
+            width: 0.663,
+            height: 0.714,
+        });
+
+        this.questionText = new ThreeMeshUI.Block({
+            width: 1.103,
+            height: 0.218,
+        });
+
+        // this.questionText.position.y += 0.8;
+
+        this.container.position.set(0, 1.2,  -1);
+        scene.add(this.container);
+
+        this.textureLoader.load(taskOrder[0].frame, (texture) => {
+            this.imgBlock.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/task1Text.png", (texture) => {
+            this.questionText.set({ backgroundTexture: texture });
+        });
+
+        this.container.add(this.questionText, this.imgBlock )
+        this.container.visible = false;
+
+        this.practiceContainer = new ThreeMeshUI.Block({
+            width: 1,
+            height: 0.3,
+            backgroundOpacity: 0,
+        });
+        this.practicePrompt = new ThreeMeshUI.Block({
+            width: 0.849,
+            height: 0.263,
+        });
+
+        scene.add(this.practiceContainer);
+        this.practiceContainer.position.set(0, 1.5,  -1)
+        this.practiceContainer.add(this.practicePrompt)
+
+        this.textureLoader.load("assets/practicePrompt.png", (texture) => {
+            this.practicePrompt.set({ backgroundTexture: texture });
+        });
+        this.practiceContainer.visible = false;
+
+
+    }
+
+    practicePromptVisible() {
+        this.practiceContainer.visible = true;
+    }
+    practicePromptInvisible() {
+        this.practiceContainer.visible = false;
+    }
+    makeInvisible() {
+        this.container.visible = false;
+    }
+
+    makeVisible() {
+        this.container.visible = true;
+    }
+
+
+    showTask(taskNum){
+        this.container.visible = true;
+        switch (taskNum){
+            case 1:
+                break;
+            case 2:
+                this.textureLoader.load(taskOrder[1].frame, (texture) => {
+                    this.imgBlock.set({ backgroundTexture: texture });
+                });
+                this.textureLoader.load("assets/task2Text.png", (texture) => {
+                    this.questionText.set({ backgroundTexture: texture });
+                });
+                break;
+            case 3:
+                this.textureLoader.load(taskOrder[2].frame, (texture) => {
+                    this.imgBlock.set({ backgroundTexture: texture });
+                });
+                this.textureLoader.load("assets/task3Text.png", (texture) => {
+                    this.questionText.set({ backgroundTexture: texture });
+                });
+                break;
+        }
+
+
+    }
 }

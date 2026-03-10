@@ -43,7 +43,7 @@ import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import UiElementsManager from "./uiElement";
+import { StoryUI, UiElementsManager } from "./uiElement";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
@@ -75,7 +75,7 @@ let stylus = null;
 let stylusPos;
 let gamepad1;
 let gamepadInterface;
-let taskTextPanel, originalText, yourDrawingText, uiManager;
+let taskTextPanel, originalText, yourDrawingText, uiManager, storyUIManager;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -115,6 +115,7 @@ let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
 let wasSurveyButton = false;
+let isPreTask = true;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let taskNum = 1;
 let practiceShapeIndex = 0;
@@ -141,7 +142,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton, surveyButton;
+let red_button, nextButton, resultButton, nextTaskButton, surveyButton, repeatPracticeButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -434,7 +435,8 @@ function init() {
 		yourDrawingPos.z,
 	);
 
-	uiManager = new UiElementsManager(scene)
+	uiManager = new UiElementsManager(scene);
+	storyUIManager = new StoryUI(scene);
 
 	accuracy_helper = new accuracyHelper()
 
@@ -451,6 +453,15 @@ function init() {
 		0.07,
 	);
 	nextButton.makeInvisible();
+
+	repeatPracticeButton = new DeskButton(scene);
+	repeatPracticeButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#ff7300',
+		'Practice',
+		0.07,
+	);
+	repeatPracticeButton.makeInvisible();
 
 	resultButton = new DeskButton(scene);
 	resultButton.createButton(
@@ -549,6 +560,13 @@ function onFrame(time, frame) {
 				0.3,
 				0.2,
 			);
+			repeatPracticeButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+				-0.3,
+				0.2,
+			);
 			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
 				0,0.3);
@@ -639,6 +657,49 @@ function onFrame(time, frame) {
 			);
 		}
 
+		// MARK: Repeat Practice
+		if (repeatPracticeButton.returnExists() === true) {
+			if (
+				repeatPracticeButton.pressCheck(stylus.position, scene, 'white') ===
+					true &&
+				!wasChangeButton
+			) {
+				buttonFeedback();
+				isPracticeMode = true;
+				isDrawingDisabled = false;
+				storyUIManager.practicePromptInvisible();
+
+
+				practiceShapeIndex = -1;
+				desk_manager.spawnDrawingSurface();
+				uiManager.practiceMode(deskCoords);
+
+				// loadSVG(practiceSvgArray[0], CENTER_POSITION);
+				repeatPracticeButton.makeInvisible();
+
+				const pracParent = new DrawParent(surfaceDimensions);
+				pracBox = pracParent.getParent();
+				pracBox.visible = true;
+				desk_manager.addMesh(pracBox);
+				pracBox.position.y = 0.82;
+
+
+
+				practicePaints.forEach((paint, i) => {
+					practicePaints[i] = new TubePainter();
+					practicePaints[i].mesh.material = new THREE.LineBasicMaterial({
+						color: inkColor,
+						linewidth: 4,
+					});
+					practicePaints[i].setSize(0.2);
+					pracBox.add(practicePaints[i].mesh);
+				});
+				stylus.userData.painter = practicePaints[0];
+
+				PracticeMode();
+			}
+		}
+
 		// MARK: Show result button
 		if (resultButton.returnExists() === true) {
 			if (
@@ -696,6 +757,7 @@ function onFrame(time, frame) {
 		if (BROWSER_TESTING) {
 			// remove this block
 			if (gamepad1.buttons[4].pressed && !BROWSER_buttonPressed) {
+
 				// x
 				if (isPracticeMode) {
 					PracticeMode();
@@ -718,7 +780,7 @@ function onFrame(time, frame) {
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
 				desk_manager.makeSurfaceInvisible();
-				taskTextPanel.makeInvisible();
+				// taskTextPanel.makeInvisible();
 				uiManager.taskMode();
 
 				QuestionnaireMode();
@@ -1005,10 +1067,14 @@ function buttonFeedback() {
 	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 	clickSound.play(); // Sound effect for button press
 
-	// checks if gamepad has haptics (breaks on hand)
-	const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
-	if (actuator && typeof actuator.pulse === 'function') {
-		actuator.pulse(1.0, 200);
+	try {
+		// checks if gamepad has haptics (breaks on hand)
+		const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
+		if (actuator && typeof actuator.pulse === 'function') {
+			actuator.pulse(1.0, 200);
+		}
+	} catch (e) {
+		console.error(e)
 	}
 }
 
@@ -1143,16 +1209,20 @@ const PracticeMode = () => {
 		isDrawingDisabled = true;
 		pracBox.visible = false;
 
-		desk_manager.clearSurface();
 		practicePaints.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
+		interface_text.updateText('Ready to begin the task?');
 
 		nextButton.changeColor('#359743');
-		nextButton.updateLabel("Begin");
-		taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
-		taskTextPanel.makeVisible();
+		nextButton.updateLabel("Tasks");
+		repeatPracticeButton.makeVisible();
+		repeatPracticeButton.updateLabel("Repeat");
+
 		uiManager.taskMode();
+		desk_manager.makeSurfaceInvisible();
+		storyUIManager.practicePromptVisible();
+
 
 		accuracy_helper.startAccuracyTracking()
 	}
@@ -1161,7 +1231,22 @@ const PracticeMode = () => {
 
 // MARK: MODE: Task
 const TaskMode = () => {
-	if (shapeIndex < svgWithPositionsArray.length - 1) {
+	if (isPreTask) {
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
+		repeatPracticeButton.makeInvisible();
+
+		nextButton.updateLabel("Start");
+		storyUIManager.showTask(taskNum);
+		isPreTask = false
+		storyUIManager.practicePromptInvisible();
+
+
+	}
+	else if (shapeIndex < svgWithPositionsArray.length - 1) {
+		desk_manager.makeSurfaceVisible();
+		storyUIManager.makeInvisible();
+
 		isDrawingDisabled = false;
 		shapeIndex += 1;
 		event_logger.logEventData(`${taskOrder[taskNum -1].name}_#${shapeIndex}_begin`)
@@ -1189,9 +1274,11 @@ const TaskMode = () => {
 		svgPaintsArray.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-		
+
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
+
+        taskTextPanel.makeVisible();
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + `Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`+ '\nAre you ready to see your drawing?',
@@ -1345,6 +1432,7 @@ const QuestionnaireMode = () => {
 const SetupNextTask = () => {
 	isQuestionnaireMode = false;
 	vrControl.makeRayInvisible()
+	desk_manager.makeSurfaceInvisible();
 
 	surveyButton.makeInvisible();
 	
@@ -1362,7 +1450,9 @@ const SetupNextTask = () => {
 
 	desk_manager.makeSurfaceVisible();
 	nextButton.makeVisible();
-	taskTextPanel.makeVisible();
+	taskTextPanel.makeInvisible();
+
+	isPreTask = true;
 
 	if (!mx_ink_connected) {
 		hideControllerModel(controller1)
@@ -1373,12 +1463,12 @@ const SetupNextTask = () => {
 			break;
 		case 2:
 			event_logger.logEventData(questionnaire1.getAnswers())
-			taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
+			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			event_logger.logEventData(questionnaire2.getAnswers())
-			taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
+			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;
 
