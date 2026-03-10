@@ -903,6 +903,7 @@ function onSelectStart(e) {
 	this.userData.isSelecting = true;
 
 	accuracy_helper.startAccuracyTracking()
+	event_logger.logEventData('stylus_draw_button_pressed')
 }
 
 // MARK: Front Button Release
@@ -917,6 +918,8 @@ function onSelectEnd() {
 		console.error("Error saving painting array:", error);
 	}
 	accuracy_helper.stopAccuracyTracking()
+
+	event_logger.logEventData('stylus_draw_button_released')
 }
 
 // MARK: HandleDrawing
