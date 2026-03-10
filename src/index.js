@@ -43,7 +43,7 @@ import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import SvgManager from './SvgManager';
 import ThreeMeshUI from 'three-mesh-ui';
 import { TubePainter } from "three/examples/jsm/misc/TubePainter.js";
-import { StoryUI, UiElementsManager } from "./uiElement";
+import {ResultsUI, StoryUI, UiElementsManager } from "./uiElement";
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import VRControllerManager from "./VRControllerManager";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
@@ -75,7 +75,7 @@ let stylus = null;
 let stylusPos;
 let gamepad1;
 let gamepadInterface;
-let taskTextPanel, originalText, yourDrawingText, uiManager, storyUIManager;
+let taskTextPanel,  uiManager, storyUIManager, resultsUIManager;
 const cursor = new THREE.Vector3();
 const sizes = {
 	width: window.innerWidth,
@@ -417,27 +417,10 @@ function init() {
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
 	taskTextPanel = new TextPanel(scene, taskTextPanelStr, 0, 2, 1, 0.3, 1.5);
-	originalText = new TextPanel(
-		scene,
-		'Original',
-		originalPos.x,
-		originalPos.y + deskCoords.y + 0.3,
-		0.5,
-		0.1,
-		originalPos.z,
-	);
-	yourDrawingText = new TextPanel(
-		scene,
-		'Your Drawing',
-		yourDrawingPos.x - 0.2,
-		yourDrawingPos.y + deskCoords.y + 0.3,
-		0.5,
-		0.1,
-		yourDrawingPos.z,
-	);
 
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
+	resultsUIManager = new ResultsUI();
 
 	accuracy_helper = new accuracyHelper()
 
@@ -527,6 +510,7 @@ function init() {
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
+	resultsUIManager.addMeshesToDesk(desk_manager.getDesk())
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
@@ -766,8 +750,6 @@ function onFrame(time, frame) {
 				else {
 					TaskMode();
 				}
-				TaskMode();
-
 			}
 			if (gamepad1.buttons[5].pressed && !BROWSER_buttonPressed2) {
 				// y
@@ -780,11 +762,7 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				desk_manager.makeSurfaceInvisible();
-				// taskTextPanel.makeInvisible();
-				uiManager.taskMode();
-
-				QuestionnaireMode();
+				ShowResultsMode();
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -913,7 +891,7 @@ function onControllerConnected(e) {
 			0.3,
 			0.2,
 		);
-		deskCoords = {x: 0, y: 1.6, z: -0.5}
+		deskCoords = {x: 0, y: 1, z: -0.5}
 		Calibrate();
 	}
 
@@ -1285,44 +1263,32 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
-	// text
-	originalText.makeVisible();
-	originalText.setPosition({
-		x: deskCoords.x - 0.5,
-		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1,
-	});
-
-	yourDrawingText.makeVisible();
-	yourDrawingText.setPosition({
-		x: deskCoords.x + 0.5,
-		y: deskCoords.y + 0.6,
-		z: deskCoords.z + 1,
-	});
+	resultsUIManager.highAccuracy()
 
 	// original svg
 	originalSvgManager.clearSurface();
 	originalSvgManager.makeSurfaceVisible();
 	const original = originalSvgManager.getSurface();
-	scene.add(original);
+	desk_manager.addMesh(original);
 	original.position.set(
-		deskCoords.x - 0.5,
-		deskCoords.y + 0.4,
-		deskCoords.z - 0.5,
+		deskCoords.x + 0.5, // on desk, this is basically z
+		deskCoords.y +0.2 ,
+		deskCoords.z + 0.1 , // x
 	);
 
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
+
 	const taskRevealPos = {
-		x: deskCoords.x + 0.5,
-		y: deskCoords.y + 0.25,
-		z: deskCoords.z + 0.8,
+		x: deskCoords.x + 0.5, // on desk, this is basically z
+		y: deskCoords.y +0.2,
+		z: deskCoords.z + 0.8, // x
 	}
 
 	switch (taskNum) {
 		case 1:
 			event_logger.logEventData('task1_loaded')
-			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			original.rotateY(Math.PI); // flip it only the first time
+
+			original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1331,7 +1297,6 @@ const ShowResultsMode = () => {
 			break;
 		case 2:
 			event_logger.logEventData('task2_loaded')
-			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1350,9 +1315,9 @@ const ShowResultsMode = () => {
 	}
 
 	svgWithPositionsArray.forEach((obj, i) => {
-		svgPaintsArray[i].mesh.position.y = isHorizontalSurface ? obj.position.y : obj.position.y + 0.3;
+		svgPaintsArray[i].mesh.position.y =  isHorizontalSurface ? obj.position.y : obj.position.y + 0.3;
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.z -= 0.02;
+		svgPaintsArray[i].mesh.position.z -=  isHorizontalSurface ? 0.1 : 0.02;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
 		svgPaintsArray[i].mesh.visible = true;
@@ -1370,9 +1335,10 @@ const QuestionnaireMode = () => {
 	// make ray and point visible for active controller
 	vrControl.makeRayVisible();
 
-	originalText.makeInvisible();
+	resultsUIManager.makeInvisible()
+
 	originalSvgManager.makeSurfaceInvisible();
-	yourDrawingText.makeInvisible();
+
 	scene.remove(svgManager.getSurface());
 
 	svgWithPositionsArray.forEach((obj, i) => {
@@ -1415,8 +1381,6 @@ const SetupNextTask = () => {
 	vrControl.makeRayInvisible()
 	desk_manager.makeSurfaceInvisible();
 
-	// todo export, task check
-	console.log(questionnaire1.getAnswers())
 	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
@@ -1479,10 +1443,12 @@ const FinishMode = () => {
 
 	// paint_exporter_instance.compressAndDownload()
 
-	originalText.makeInvisible();
+
+	resultsUIManager.makeInvisible()
+
 	originalSvgManager.makeSurfaceInvisible();
 	svgManager.makeAllPaintsVisible();
-	yourDrawingText.makeInvisible();
+
 	scene.remove(svgManager.getSurface());
 
 	const parentArray = [

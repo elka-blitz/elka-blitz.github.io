@@ -80,7 +80,7 @@ export default class DeskManager {
 	getDeskCoordinates() {
 		return {
 			x:  this.desk_asset_instance.position.x,
-			y:  this.desk_asset_instance.position.y + 0.75,
+			y:  this.desk_asset_instance.position.y + 0.75, // todo make sure this is right
 			z:  this.desk_asset_instance.position.z,
 		};
 	}
