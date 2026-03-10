@@ -53,6 +53,7 @@ import { gsap } from 'gsap';
 import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import accuracyHelper from "./accuracyHelper.js";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -192,6 +193,10 @@ let environment_switcher;
 let envMap
 
 const speed_meter = new speedMeter()
+
+let accuracy_helper
+let svg_points = []
+let running_mean
 
 
 init();
@@ -434,7 +439,7 @@ function init() {
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
 
-	// accuracy_helper = new accuracyHelper()
+	accuracy_helper = new accuracyHelper()
 
 	// MARK: Buttons
 	red_button = new DeskButton(scene);
@@ -1209,7 +1214,7 @@ const PracticeMode = () => {
 
 		uiManager.taskMode();
 
-		// accuracy_helper.startAccuracyTracking()
+		accuracy_helper.startAccuracyTracking()
 	}
 
 }
@@ -1258,7 +1263,7 @@ const TaskMode = () => {
 		});
 		
 		// TODO: Please find enclosed the accuracy percentage:
-		// console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
+		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
