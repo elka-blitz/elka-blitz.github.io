@@ -54,7 +54,16 @@ export default class accuracyHelper {
     }
 
     getMeanAccuracy() {
-        return Math.round(this.mean_accuracy_percentage * 10000)
+        // Should only be called once per round
+        // It resets the running mean on return
+
+        let mean_percentage = Math.round(this.mean_accuracy_percentage * 10000)
+        // let adjusted_percentage = 100 - (mean_percentage - 10)
+        this.mean_accuracy_percentage = 0
+        this.realtime_accuracy_percentage = 0
+        this.sample_no = 0
+
+        return mean_percentage
     }
 
     resetMeanAccuracy() {

@@ -19,9 +19,6 @@ window.addEventListener('resize', () => {
 	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	interface_text.updateText(
-		'Resized window to: ' + sizes.width + 'x' + sizes.height,
-	);
 });
 
 import * as THREE from "three";
@@ -125,8 +122,6 @@ let deskCoords = CENTER_POSITION;
 let isPracticeMode = false;
 let isQuestionnaireMode = false;
 
-// Debugging stuff
-let interface_text;
 
 // Desk declarations
 let isMovingDesk = false;
@@ -136,7 +131,7 @@ let tableGroup = new THREE.Group()
 let backPushed = false
 let prevBackPushed = false
 let desk_manager, svgManager, originalSvgManager;
-let green = new THREE.Color('#80ed99');
+
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
@@ -194,9 +189,10 @@ let envMap
 
 const speed_meter = new speedMeter()
 
-let accuracy_helper
+let accuracy_helper, currentAccuracy;
 let svg_points = []
 let running_mean
+let user_is_drawing_track_accuracy_now = false
 
 
 init();
@@ -353,7 +349,6 @@ function init() {
 				// environment_switcher.loadNextEnvironmentCondition()
 				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
-				scene.background = green;
 				
 				// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -410,9 +405,6 @@ function init() {
 	right_hand_container.add(hand2);
 	scene.add(right_hand_container);
 
-	// MARK: UI Elements
-	interface_text = new UIText(scene);
-
 
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
@@ -420,7 +412,7 @@ function init() {
 
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
-	resultsUIManager = new ResultsUI();
+	resultsUIManager = new ResultsUI(scene);
 
 	accuracy_helper = new accuracyHelper()
 
@@ -510,7 +502,7 @@ function init() {
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
-	resultsUIManager.addMeshesToDesk(desk_manager.getDesk())
+
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
@@ -556,8 +548,6 @@ function onFrame(time, frame) {
 			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
 				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
-			interface_text.animateTextToCamera(camera);
-			// question_panel.spawnBoundingBoxes()
 		}
 	}
 
@@ -583,20 +573,14 @@ function onFrame(time, frame) {
 	desk_locked = desk_manager.getLock(); // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		// interface_text.updateText('Tap desk with stylus to lock')
-		interface_text.animateTextToCamera(camera);
 	} else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
 		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
-		interface_text.updateText('');
 
-		// Locate text permanently above desk for remainder of session
-		interface_text.positionTextRelativeToDesk(desk_manager.getDesk());
 	}
 
 	prev_desk_locked = desk_locked; // Framediff for desk lock check
 
-	interface_text.sync();
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
@@ -608,7 +592,6 @@ function onFrame(time, frame) {
 		*/
 
 		// let speed = speed_meter.getSpeed(stylusPos)
-		// interface_text.updateText('▮'.repeat(speed))
 
 		// MARK: Desk Moving button
 		if (!desk_set) {
@@ -774,7 +757,6 @@ function onFrame(time, frame) {
 			// Back button on controller
 			// TODO: Add commented framediff for every button on controller
 			clickSound.play();
-			interface_text.flashText('#ff0000', 100);
 
 			// Generate CSV and trigger download
 			// This is currently done on controller button press, but can be triggered prgrammattically
@@ -814,6 +796,12 @@ function animate(time, frame) {
 
 		try {
 			nextButton.forceButtonUp(stylus.position)
+		} catch {
+
+		}
+
+		try {
+			accuracy_helper.calculateAccuracy()
 		} catch {
 
 		}
@@ -913,6 +901,8 @@ function onSelectStart(e) {
 	const painter = stylus.userData.painter;
 	painter.moveTo(stylusPos);
 	this.userData.isSelecting = true;
+
+	accuracy_helper.startAccuracyTracking()
 }
 
 // MARK: Front Button Release
@@ -926,6 +916,7 @@ function onSelectEnd() {
 	catch (error) {
 		console.error("Error saving painting array:", error);
 	}
+	accuracy_helper.stopAccuracyTracking()
 }
 
 // MARK: HandleDrawing
@@ -1043,7 +1034,6 @@ function updateButtons() {
 
 // MARK: Button Feedback
 function buttonFeedback() {
-	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 	clickSound.play(); // Sound effect for button press
 
 	try {
@@ -1143,7 +1133,6 @@ const Calibrate = () => {
 	desk_manager.lock();
 	isPracticeMode = true;
 	desk_manager.spawnDrawingSurface();
-	scene.background = green;
 	
 	// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -1154,7 +1143,6 @@ const Calibrate = () => {
 	red_button.makeInvisible();
 	nextButton.makeVisible();
 	desk_set = true;
-	interface_text.updateText('Draw on the outline!');
 
 	uiManager.practiceMode(deskCoords);
 	loadSVG(practiceSvgArray[0], CENTER_POSITION);
@@ -1191,7 +1179,9 @@ const PracticeMode = () => {
 		practicePaints.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-		interface_text.updateText('Ready to begin the task?');
+		storyUIManager.practicePromptVisible();
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Tasks");
@@ -1200,7 +1190,6 @@ const PracticeMode = () => {
 
 		uiManager.taskMode();
 
-		accuracy_helper.startAccuracyTracking()
 	}
 
 }
@@ -1251,11 +1240,15 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		
+		currentAccuracy = accuracy_helper.getMeanAccuracy();
+
 		// TODO: Please find enclosed the accuracy percentage:
-		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
+		console.log(`Accuracy: ${currentAccuracy.toString()} %`)
+
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+		);
 
 		);
 
@@ -1275,7 +1268,13 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
-	resultsUIManager.highAccuracy()
+	if (currentAccuracy > 84) {
+		resultsUIManager.highAccuracy()
+	} else if  (currentAccuracy < 51) {
+		resultsUIManager.lowAccuracy()
+	} else {
+		resultsUIManager.mediumAccuracy()
+	}
 
 	// original svg
 	originalSvgManager.clearSurface();
