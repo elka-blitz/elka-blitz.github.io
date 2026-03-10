@@ -745,7 +745,8 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				ShowResultsMode();
+				storyUIManager.finishVisible();
+
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
 			BROWSER_buttonPressed2 = gamepad1.buttons[5].pressed;
@@ -1271,6 +1272,7 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
+	currentAccuracy = 55;
 	if (currentAccuracy > 84) {
 		resultsUIManager.highAccuracy()
 	} else if  (currentAccuracy < 51) {
@@ -1437,8 +1439,9 @@ const FinishMode = () => {
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
-	taskTextPanel.makeVisible();
-	taskTextPanel.updateText('All Done! Behold!');
+
+	storyUIManager.finishVisible();
+
 
 	// MARK: Export
 	// Export all data
@@ -1452,7 +1455,6 @@ const FinishMode = () => {
 	// Compressand download all files at once will crash the browser
 
 	// paint_exporter_instance.compressAndDownload()
-
 
 	resultsUIManager.makeInvisible()
 
@@ -1471,10 +1473,10 @@ const FinishMode = () => {
 		p.material.visible = true;
 		switch (i) {
 			case 0:
-				p.position.z -= 1.5;
+				p.position.z -= 1;
 				break;
 			case 1:
-				p.position.z -= 1;
+				p.position.z -= 0.5;
 				break;
 
 			case 2:
