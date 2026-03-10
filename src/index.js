@@ -799,6 +799,12 @@ function animate(time, frame) {
 
 		}
 
+		try {
+			accuracy_helper.calculateAccuracy()
+		} catch {
+
+		}
+
 
 		accumulatedTime -= logInterval;
 		
