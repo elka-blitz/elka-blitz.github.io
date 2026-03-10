@@ -131,7 +131,7 @@ let tableGroup = new THREE.Group()
 let backPushed = false
 let prevBackPushed = false
 let desk_manager, svgManager, originalSvgManager;
-let green = new THREE.Color('#80ed99');
+
 let desk_locked = false // Global main process variable, so desklock check method is only run once
 let prev_desk_locked = false
 
@@ -189,7 +189,7 @@ let envMap
 
 const speed_meter = new speedMeter()
 
-let accuracy_helper
+let accuracy_helper, currentAccuracy;
 let svg_points = []
 let running_mean
 
@@ -348,7 +348,6 @@ function init() {
 				// environment_switcher.loadNextEnvironmentCondition()
 				// event_logger.logEventData('Environment Changed' + environment_switcher.loadNextEnvironmentCondition())
 
-				scene.background = green;
 				
 				// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -412,7 +411,7 @@ function init() {
 
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
-	resultsUIManager = new ResultsUI();
+	resultsUIManager = new ResultsUI(scene);
 
 	accuracy_helper = new accuracyHelper()
 
@@ -502,7 +501,7 @@ function init() {
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
-	resultsUIManager.addMeshesToDesk(desk_manager.getDesk())
+
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
@@ -1124,7 +1123,6 @@ const Calibrate = () => {
 	desk_manager.lock();
 	isPracticeMode = true;
 	desk_manager.spawnDrawingSurface();
-	scene.background = green;
 	
 	// Flash the sky by changing its color to the specified color and then back to white after the duration
 
@@ -1233,11 +1231,14 @@ const TaskMode = () => {
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
+		currentAccuracy = accuracy_helper.getMeanAccuracy();
+
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+		);
 
 		event_logger.logEventData('task1_complete')
-		);
+
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
@@ -1253,7 +1254,13 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
-	resultsUIManager.highAccuracy()
+	if (currentAccuracy > 84) {
+		resultsUIManager.highAccuracy()
+	} else if  (currentAccuracy < 51) {
+		resultsUIManager.lowAccuracy()
+	} else {
+		resultsUIManager.mediumAccuracy()
+	}
 
 	// original svg
 	originalSvgManager.clearSurface();
