@@ -55,7 +55,7 @@ import speedMeter from "./speedMeter.js";
 import {taskOrder} from "./experimentConfig";
 
 // MARK: Conditions
-const BROWSER_TESTING = true; // todo remove before deployment
+const BROWSER_TESTING = false; // todo remove before deployment
 
 let BROWSER_buttonPressed = false;
 let BROWSER_buttonPressed2 = false;
