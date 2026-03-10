@@ -200,7 +200,7 @@ export class ResultsUI {
         this.containerHigh = new ThreeMeshUI.Block({
             width: 1.3,
             height: 0.22,
-            backgroundOpacity: 0,
+            backgroundOpacity: 1,
         });
 
         this.textContainerLow = new ThreeMeshUI.Block({
@@ -267,7 +267,7 @@ export class ResultsUI {
             desk.add(container);
             container.rotateY(-Math.PI/2) // because desk orients weird
             container.position.x = 0.3; // move further back
-            container.position.y = 0.90; // move up
+            container.position.y = 0.9; // move up
 
         })
     }
