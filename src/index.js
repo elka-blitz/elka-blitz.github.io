@@ -1225,6 +1225,9 @@ const TaskMode = () => {
 
 		isDrawingDisabled = false;
 		shapeIndex += 1;
+
+		event_logger.logEventData(`${taskOrder[taskNum -1].name}_#${shapeIndex}_begin`)
+
 		desk_manager.clearSurface();
 		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		nextButton.updateLabel(
