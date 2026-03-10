@@ -672,6 +672,8 @@ function onFrame(time, frame) {
 				const pracParent = new DrawParent(surfaceDimensions);
 				pracBox = pracParent.getParent();
 				pracBox.visible = true;
+				desk_manager.addMesh(pracBox);
+				pracBox.position.y = 0.82;
 
 
 
