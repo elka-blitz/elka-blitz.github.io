@@ -34,6 +34,7 @@ import  DeskButton  from "./DeskButtons.js";
 import  DeskManager  from './DeskManager.js';
 import DrawParent from './DrawParent';
 import EventLogger from "./eventLogger.js";
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { GamepadWrapper } from 'gamepad-wrapper';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -247,12 +248,26 @@ function init() {
 	gltfLoader.setDRACOLoader(dracoLoader);
 
 	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+		gltf.scene.traverse((child) => {
+			if (child.isMesh) {
+				child.castShadow = true;
+				child.receiveShadow = true;
+			}
+		});
+
 		tableGroup.add(gltf.scene);
 	});
 
 	gltfLoader.load(
 		'./assets/updatedSceneRotatedComp.glb',
 		function (gltf) {
+			gltf.scene.traverse((child) => {
+				if (child.isMesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				}
+			});
+
 			environmentModel.add(gltf.scene);
 		},
 		undefined,
@@ -286,11 +301,21 @@ function init() {
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup, surfaceDimensions);
 
+	// Lighting
+	const ambientLight = new THREE.AmbientLight(0xFFE7CE, 2);
+	scene.add(ambientLight);
 
-	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
-	const light = new THREE.DirectionalLight(0xffffff, 1.5);
-	light.position.set(0, 4, 0);
-	scene.add(light);
+	const directionalLight = new THREE.DirectionalLight(0xFFE7CE, 10);
+	directionalLight.position.set(1, 1.8, 1);
+	directionalLight.castShadow = true;
+	scene.add(directionalLight);
+	scene.add(directionalLight.target);
+
+	directionalLight.target.position.set(1.5, 1.8, -2);
+
+	directionalLight.shadow.mapSize.set(1024, 1024);
+	directionalLight.shadow.bias = -0.0001;
+
 
 	tableGroup.position.set(0, -3, 0);
 	// office_group.position.set(0, -0.3, 0);
@@ -301,16 +326,28 @@ function init() {
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.xr.enabled = true;
 
+	// HDRI
 	const pmrem = new THREE.PMREMGenerator(renderer);
+	pmrem.compileEquirectangularShader();
 
-	new RGBELoader().load("./assets/flow_bg.hdr", (hdrTex) => {
+	new EXRLoader().load('/assets/hdri.exr', (exrTex) => {
+		exrTex.mapping = THREE.EquirectangularReflectionMapping;
 
-		envMap = pmrem.fromEquirectangular(hdrTex).texture;
-		scene.background = envMap;
+		envMap = pmrem.fromEquirectangular(exrTex).texture;
 
-		hdrTex.dispose();
+		scene.environment = envMap;
+		scene.background = exrTex;
+
+		// rotate lighting and bg image
+		scene.environmentRotation.y = Math.PI / 2;
+		scene.backgroundRotation.y = Math.PI / 4;
+
+		renderer.toneMapping = THREE.ACESFilmicToneMapping;
+		renderer.toneMappingExposure = 0.35;
+
 		pmrem.dispose();
 	});
 
