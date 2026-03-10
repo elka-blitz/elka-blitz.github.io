@@ -53,6 +53,7 @@ import { gsap } from 'gsap';
 import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
+import activationZone from "./activationZoneHelper.js";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -193,6 +194,9 @@ let envMap
 
 const speed_meter = new speedMeter()
 
+let activation_zone
+let svg_points = []
+let running_mean
 
 init();
 
@@ -283,6 +287,7 @@ function init() {
 	// MARK: Desk
 	desk_manager = new DeskManager(scene, tableGroup, surfaceDimensions);
 
+	activation_zone = new activationZone(scene)
 
 	scene.add(new THREE.HemisphereLight(0x888877, 0x777788, 3));
 	const light = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -808,6 +813,7 @@ function onFrame(time, frame) {
 			// TODO: Error handling for no paint mesh condition
 			// paint_exporter_instance.downloadJSON();
 			// paint_exporter_instance.compressAndDownload()
+			// activation_zone.getStartEnd(desk_manager.getD)
 		}
 		prevBackPushed = backPushed;
 		backPushed = gamepad1.buttons[1].value > 0;

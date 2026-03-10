@@ -23,8 +23,6 @@ export default class activationZone {
     getStartEnd(svg_points) {
         this.start_position = svg_points[0]
         this.end_position = svg_points[svg_points.length - 1]
-
-
     }
 
     createActivationZones() {
@@ -45,8 +43,6 @@ export default class activationZone {
         // Check for stylus
         try {
             if (this.start_state && this.start_object_bb.containsPoint(stylus_position)) {
-                
-
             }
         } catch {
         console.log('')}
