@@ -793,6 +793,14 @@ function animate(time, frame) {
 	accumulatedTime += deltaTime
 
 	while (accumulatedTime >= logInterval && stylus != null) {
+
+		try {
+			nextButton.forceButtonUp(stylus.position)
+		} catch {
+
+		}
+
+
 		accumulatedTime -= logInterval;
 		
 		event_logger.logStylusData(stylus)
