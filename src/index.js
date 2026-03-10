@@ -660,12 +660,16 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 				isPracticeMode = true;
-				practiceShapeIndex = 0;
+				practiceShapeIndex = -1;
 				desk_manager.spawnDrawingSurface();
 				uiManager.practiceMode(deskCoords);
 
 				// loadSVG(practiceSvgArray[0], CENTER_POSITION);
 				repeatPracticeButton.makeInvisible();
+
+				const pracParent = new DrawParent(surfaceDimensions);
+				pracBox = pracParent.getParent();
+
 
 				practicePaints.forEach((paint, i) => {
 					practicePaints[i] = new TubePainter();
