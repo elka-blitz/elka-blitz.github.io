@@ -200,7 +200,7 @@ export default class QuestionnaireManager {
             backgroundOpacity: 1,
         } );
 
-        questionContainer.position.set( 0, 1.8, -1.8 );
+        questionContainer.position.set( 0, 1.8, -1.7 );
         scene.add( questionContainer );
 
         let currentQuestionArray = questionsObj.NASA_TLX;
@@ -653,12 +653,12 @@ export default class QuestionnaireManager {
         this.questionContainer.position.set(
             position.x,
             position.y + 0.8,
-            -1.4
+            -1.2
         )
         this.backButtonContainer.position.set(
             position.x - 1,
             position.y + 0.8,
-            -1.4
+            -1.2
         )
         this.containerArray.forEach((c) => {
             c.position.set(

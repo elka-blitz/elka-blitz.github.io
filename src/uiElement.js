@@ -181,7 +181,60 @@ export class StoryUI {
                 });
                 break;
         }
-
-
     }
+}
+
+export class ResultsUI {
+    constructor(scene) {
+        this.textContainerLow = new ThreeMeshUI.Block({
+            width: 1.1077,
+            height: 0.218,
+        });
+        this.textContainerMedium = new ThreeMeshUI.Block({
+            width: 1.084,
+            height: 0.218,
+        });
+        this.textContainerHigh= new ThreeMeshUI.Block({
+            width: 1.394,
+            height: 0.218,
+        });
+
+        this.containerArray = [this.textContainerLow, this.textContainerMedium, this.textContainerHigh];
+
+        this.containerArray.forEach((container) => {
+            scene.add(container);
+            container.position.set(0, 1.5, -1.2);
+            container.visible = false;
+        })
+
+        this.textureLoader = new THREE.TextureLoader();
+
+        this.textureLoader.load("assets/accuracyHigh.png", (texture) => {
+            this.textContainerHigh.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/accuracyMedium.png", (texture) => {
+            this.textContainerMedium.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/accuracyLow.png", (texture) => {
+            this.textContainerLow.set({ backgroundTexture: texture });
+        });
+    }
+
+    makeInvisible() {
+        this.containerArray.forEach((container) => {
+            container.visible = false;
+        })
+    }
+
+    highAccuracy() {
+        this.textContainerHigh.visible = true;
+    }
+    mediumAccuracy() {
+        this.textContainerMedium.visible = true;
+    }
+
+    lowAccuracy() {
+        this.textContainerLow.visible = true;
+    }
+
 }
