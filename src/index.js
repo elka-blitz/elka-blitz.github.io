@@ -660,6 +660,7 @@ function onFrame(time, frame) {
 			) {
 				buttonFeedback();
 				isPracticeMode = true;
+				Calibrate();
 				PracticeMode();
 			}
 		}
@@ -1189,6 +1190,8 @@ const TaskMode = () => {
 	if (isPreTask) {
 		desk_manager.clearSurface();
 		desk_manager.makeSurfaceInvisible();
+		repeatPracticeButton.makeInvisible();
+
 		nextButton.updateLabel("Start");
 		storyUIManager.showTask(taskNum);
 		isPreTask = false
