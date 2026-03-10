@@ -10,7 +10,7 @@ export default class DrawParent {
 				color: '#f0f0f0',
 				side: THREE.DoubleSide, // optional, shows both sides
 				transparent: true,
-				opacity: 0,
+				opacity: 1,
 				visible: false,
 			}),
 		);
@@ -33,12 +33,13 @@ export default class DrawParent {
 
 	makeVertical(x, y, z) {
 		this.drawingBox.material.visible = true;
+		this.drawingBox.position.set(x, y, z)
+
 		degreesObj.isHorizontal
 			? this.drawingBox.rotateX(-degreesObj.horizontal)
 			: this.drawingBox.rotateX(-degreesObj.vertical)
 
-		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-		this.drawingBox.position.set(x, y, z)
+		// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 	}
 
 	makeInvisible() {

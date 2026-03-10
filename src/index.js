@@ -415,7 +415,7 @@ function init() {
 
 	uiManager = new UiElementsManager(scene);
 	storyUIManager = new StoryUI(scene);
-	resultsUIManager = new ResultsUI(scene);
+	resultsUIManager = new ResultsUI();
 
 	// accuracy_helper = new accuracyHelper()
 
@@ -505,6 +505,7 @@ function init() {
 	desk_manager.addMesh(task2Box);
 	desk_manager.addMesh(task3Box);
 	desk_manager.addMesh(pracBox);
+	resultsUIManager.addMeshesToDesk(desk_manager.getDesk())
 	task1Box.position.y = 0.82;
 	task2Box.position.y = 0.82;
 	task3Box.position.y = 0.82;
@@ -885,7 +886,7 @@ function onControllerConnected(e) {
 			0.3,
 			0.2,
 		);
-		deskCoords = {x: 0, y: 1.6, z: -0.5}
+		deskCoords = {x: 0, y: 1, z: -0.5}
 		Calibrate();
 	}
 
@@ -1258,29 +1259,26 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
-
-
-
-
 	resultsUIManager.highAccuracy()
 
 	// original svg
 	originalSvgManager.clearSurface();
 	originalSvgManager.makeSurfaceVisible();
 	const original = originalSvgManager.getSurface();
-	scene.add(original);
+	desk_manager.addMesh(original);
+	original.rotateY(-Math.PI / 2) // rotating 90deg because added to table
 	original.position.set(
-		deskCoords.x - 0.5,
-		deskCoords.y + 0.5,
-		deskCoords.z - 0.5,
+		deskCoords.x + 0.5, // on desk, this is basically z
+		deskCoords.y +0.2 ,
+		deskCoords.z + 0.1 , // x
 	);
 
 	loadSVG(taskOrder[taskNum -1].url, CENTER_POSITION, true, "black");
 
 	const taskRevealPos = {
-		x: deskCoords.x + 0.5,
-		y: deskCoords.y - 0.1,
-		z: deskCoords.z + 0.8,
+		x: deskCoords.x + 0.5, // on desk, this is basically z
+		y: deskCoords.y +0.2,
+		z: deskCoords.z + 0.8, // x
 	}
 
 	switch (taskNum) {

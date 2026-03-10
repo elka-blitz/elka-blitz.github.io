@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {controllerObj, degreesObj, taskOrder} from "./experimentConfig";
 import ThreeMeshUI from "three-mesh-ui";
-import {getFilledRect} from "./shapeFunctions";
+
 
 export class UiElementsManager {
     constructor(scene) {
@@ -186,7 +186,7 @@ export class StoryUI {
 }
 
 export class ResultsUI {
-    constructor(scene) {
+    constructor() {
         this.textContainerLow = new ThreeMeshUI.Block({
             width: 1.1077,
             height: 0.218,
@@ -203,7 +203,6 @@ export class ResultsUI {
         this.containerArray = [this.textContainerLow, this.textContainerMedium, this.textContainerHigh];
 
         this.containerArray.forEach((container) => {
-            scene.add(container);
             container.position.set(0, 1.3, -1);
             container.visible = false;
         })
@@ -219,10 +218,6 @@ export class ResultsUI {
         this.textureLoader.load("assets/accuracyLow.png", (texture) => {
             this.textContainerLow.set({ backgroundTexture: texture });
         });
-
-        this.rect = getFilledRect(2.5, 0.3, '#ffffff');
-        scene.add(this.rect)
-        this.rect.position.set(0, 1.5, -1.3)
     }
 
     makeInvisible() {
@@ -233,6 +228,7 @@ export class ResultsUI {
 
     highAccuracy() {
         this.textContainerHigh.visible = true;
+        this.textContainerHigh.position.z += 1 // center
     }
     mediumAccuracy() {
         this.textContainerMedium.visible = true;
@@ -240,6 +236,16 @@ export class ResultsUI {
 
     lowAccuracy() {
         this.textContainerLow.visible = true;
+    }
+
+    addMeshesToDesk(desk) {
+        this.containerArray.forEach((container) => {
+            desk.add(container);
+            container.rotateY(-Math.PI/2) // because desk orients weird
+            container.position.x += 0.49; // move further back
+            container.position.y += 0.2; // move up
+
+        })
     }
 
 }
