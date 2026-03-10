@@ -1257,8 +1257,9 @@ const TaskMode = () => {
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 
-		event_logger.logEventData('task1_complete')
 		);
+
+		event_logger.logEventData(`task${taskNum}_complete`);
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
