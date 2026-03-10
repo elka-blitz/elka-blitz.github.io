@@ -141,7 +141,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton, surveyButton, repeatSurveyButton;
+let red_button, nextButton, resultButton, nextTaskButton, surveyButton, repeatPracticeButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -448,14 +448,14 @@ function init() {
 	);
 	nextButton.makeInvisible();
 
-	repeatSurveyButton = new DeskButton(scene);
-	repeatSurveyButton.createButton(
+	repeatPracticeButton = new DeskButton(scene);
+	repeatPracticeButton.createButton(
 		new THREE.Vector3(0, 0, 0),
 		'#ff7300',
-		'Practice 1/3',
+		'Practice',
 		0.07,
 	);
-	repeatSurveyButton.makeInvisible();
+	repeatPracticeButton.makeInvisible();
 
 	resultButton = new DeskButton(scene);
 	resultButton.createButton(
@@ -554,7 +554,7 @@ function onFrame(time, frame) {
 				0.3,
 				0.2,
 			);
-			repeatSurveyButton.hoverButtonByDesk(
+			repeatPracticeButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
 				scene,
@@ -652,9 +652,9 @@ function onFrame(time, frame) {
 		}
 
 		// MARK: Repeat Practice
-		if (repeatSurveyButton.returnExists() === true) {
+		if (repeatPracticeButton.returnExists() === true) {
 			if (
-				repeatSurveyButton.pressCheck(stylus.position, scene, 'white') ===
+				repeatPracticeButton.pressCheck(stylus.position, scene, 'white') ===
 					true &&
 				!wasChangeButton
 			) {
@@ -1172,8 +1172,8 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Tasks");
-		surveyButton.makeVisible();
-		surveyButton.updateLabel("Repeat");
+		repeatPracticeButton.makeVisible();
+		repeatPracticeButton.updateLabel("Repeat");
 
 		uiManager.taskMode();
 		desk_manager.makeSurfaceInvisible();
