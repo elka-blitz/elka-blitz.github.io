@@ -1,6 +1,6 @@
 // true: 5deg surface, false: 85 deg surface in air
 // MARK: Change surface type
-export const isHorizontalSurface = true;
+export const isHorizontalSurface = false;
 
 const controllerType = {
     stylus: {
