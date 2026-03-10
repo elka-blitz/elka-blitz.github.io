@@ -192,6 +192,7 @@ const speed_meter = new speedMeter()
 let accuracy_helper, currentAccuracy;
 let svg_points = []
 let running_mean
+let user_is_drawing_track_accuracy_now = false
 
 
 init();
@@ -799,6 +800,12 @@ function animate(time, frame) {
 
 		}
 
+		try {
+			accuracy_helper.calculateAccuracy()
+		} catch {
+
+		}
+
 
 		accumulatedTime -= logInterval;
 		
@@ -894,6 +901,8 @@ function onSelectStart(e) {
 	const painter = stylus.userData.painter;
 	painter.moveTo(stylusPos);
 	this.userData.isSelecting = true;
+
+	accuracy_helper.startAccuracyTracking()
 }
 
 // MARK: Front Button Release
@@ -907,6 +916,7 @@ function onSelectEnd() {
 	catch (error) {
 		console.error("Error saving painting array:", error);
 	}
+	accuracy_helper.stopAccuracyTracking()
 }
 
 // MARK: HandleDrawing
@@ -1180,7 +1190,6 @@ const PracticeMode = () => {
 
 		uiManager.taskMode();
 
-		accuracy_helper.startAccuracyTracking()
 	}
 
 }
@@ -1228,10 +1237,11 @@ const TaskMode = () => {
 			paint.mesh.visible = false;
 		});
 		
-		// TODO: Please find enclosed the accuracy percentage:
-		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
-
 		currentAccuracy = accuracy_helper.getMeanAccuracy();
+
+		// TODO: Please find enclosed the accuracy percentage:
+		console.log(`Accuracy: ${currentAccuracy.toString()} %`)
+
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
