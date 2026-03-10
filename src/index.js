@@ -54,6 +54,7 @@ import {isHorizontalSurface, taskOrder} from "./experimentConfig";
 import paintExporter from "./paintExporter.js";
 import speedMeter from "./speedMeter.js";
 import activationZone from "./activationZoneHelper.js";
+import accuracyHelper from "./accuracyHelper.js";
 
 // MARK: Conditions
 const BROWSER_TESTING = false; // todo remove before deployment
@@ -197,6 +198,12 @@ const speed_meter = new speedMeter()
 let accuracy_helper
 let svg_points = []
 let running_mean
+
+let activation_zone
+let box_hit = false
+let prev_box_hit = false
+let new_shape_cycle = false
+let prev_shape_cycle = false
 
 init();
 
@@ -642,24 +649,32 @@ function onFrame(time, frame) {
 		}
 
 		// MARK: Practice/Task
-		if (nextButton.returnExists() === true) {
-			if (
-				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
-					true &&
-				!wasChangeButton
-			) {
-				buttonFeedback();
+		if (activation_zone.returnExists()) { //nextButton.returnExists() === true) {
+			// console.log('actzone:', activation_zone.returnExists())
+			if (box_hit && !prev_box_hit) {	
 				isPracticeMode ? PracticeMode() : TaskMode();
 			}
-			wasChangeButton = nextButton.pressCheckReusable(
-				stylus.position,
-				scene,
-				'white',
-			);
+
+			prev_box_hit = box_hit
+
+			// if (
+			// 	nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
+			// 		true &&
+			// 	!wasChangeButton
+			// ) {
+			// 	buttonFeedback();
+			// 	isPracticeMode ? PracticeMode() : TaskMode();
+			// }
+			// wasChangeButton = nextButton.pressCheckReusable(
+			// 	stylus.position,
+			// 	scene,
+			// 	'white',
+			// );
 		}
 
 		// MARK: Repeat Practice
 		if (repeatPracticeButton.returnExists() === true) {
+			activation_zone.setInvisible()
 			if (
 				repeatPracticeButton.pressCheck(stylus.position, scene, 'white') ===
 					true &&
@@ -813,7 +828,9 @@ function onFrame(time, frame) {
 			// TODO: Error handling for no paint mesh condition
 			// paint_exporter_instance.downloadJSON();
 			// paint_exporter_instance.compressAndDownload()
-			// activation_zone.getStartEnd(desk_manager.getD)
+			console.log(desk_manager.getDashPositions())
+			activation_zone.getStartEnd(desk_manager.getDashPositions())
+			activation_zone.createActivationZones()
 		}
 		prevBackPushed = backPushed;
 		backPushed = gamepad1.buttons[1].value > 0;
@@ -837,6 +854,25 @@ function animate(time, frame) {
 		accumulatedTime -= logInterval;
 		
 		event_logger.logStylusData(stylus)
+
+		try {
+			if (new_shape_cycle && !prev_shape_cycle) {
+				activation_zone.getStartEnd(desk_manager.getDashPositions())
+				activation_zone.createActivationZones()
+			}
+			
+			prev_shape_cycle = new_shape_cycle
+			box_hit = activation_zone.update(stylus.position)
+			// console.log('boxhitdelta', box_hit)
+			if (box_hit !== true) {
+				box_hit == false
+			}
+
+			new_shape_cycle = activation_zone.getState()
+
+		} catch {
+			console.log('error')
+		}
 
 		// TODO: Prevent variable from storing too much and crashing the VRE
 		// Periodic export maybe?
@@ -1433,7 +1469,7 @@ const SetupNextTask = () => {
 	svgPaintsArray = svgManager.getPaintsArray(taskNum);
 
 	desk_manager.makeSurfaceVisible();
-	nextButton.makeVisible();
+	// nextButton.makeVisible();
 	taskTextPanel.makeInvisible();
 
 	isPreTask = true;

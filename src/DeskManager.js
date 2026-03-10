@@ -192,6 +192,8 @@ export default class DeskManager {
 	}
 
 	placeSVG(svgGroup, position) {
+		this.dash_positions = [] // Clear per shapeload
+		this.svgGroup = svgGroup
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
 
@@ -212,6 +214,61 @@ export default class DeskManager {
 
 		this.surface.add(svgGroup);
 
+		for (const dash in this.surface.children[0].children) {
+			// console.log(svgGroup.children[dash].castShadow)
+			let dash_details = this.surface.children[0].children[dash]
+			// console.log(dash_details.position)
+
+
+
+			// let worldPosition = new THREE.Vector3();
+			// dash_details.getWorldPosition(worldPosition);
+			// console.log(dash_details.uuid, worldPosition); // Outputs the global position (x, y, z)
+			this.scene.updateMatrixWorld(true)
+			// this.dash_details.computeBoundingBox()
+
+			const dashBoundingBox = new THREE.Box3().setFromObject(dash_details)
+			
+			// this.surface.add(dashBoundingBox)
+
+			// Make bounding box visible, add to desk/surface
+
+
+			const center_of_focus_dash = new THREE.Vector3()
+			dashBoundingBox.getCenter(center_of_focus_dash)
+		
+			let world_pos = new THREE.Vector3()
+			dash_details.getWorldPosition(world_pos)
+
+			// console.log(center_of_focus_dash)			// Create a BufferGeometry with a single point
+
+			// const dotGeometry = new THREE.BufferGeometry();
+			// dotGeometry.setAttribute('position', new THREE.BufferAttribute(
+			// 	new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
+			// 	3 // 3 components per vertex (x, y, z)
+			// ));
+
+			// // Set up a point material (adjust size and color as needed)
+			// const dotMaterial = new THREE.PointsMaterial({
+			// 	size: 0.5,
+			// 	color: 0xff0000, // Red color
+			// 	sizeAttenuation: false // Keeps size consistent regardless of distance
+			// });
+
+			// // Create the Points object and add it to the scene
+			// const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
+			// this.scene.add(debugPoint);
+
+			this.dash_positions.push(center_of_focus_dash)
+		}
+
+		// Remove last value, it is the overall centrepoint and not useful
+		this.dash_positions.pop()
+		this.dash_positions.pop()
+	}
+
+	getDashPositions() {
+		return this.dash_positions
 	}
 
 	clearSurface() {
