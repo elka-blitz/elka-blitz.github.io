@@ -1245,12 +1245,12 @@ const TaskMode = () => {
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${currentAccuracy.toString()} %`)
 
+		event_logger.logEventData(`Accuracy_task_${taskNum}:${currentAccuracy}%`)
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 		);
 
-		);
 
 		event_logger.logEventData(`task${taskNum}_complete`);
 		if (!mx_ink_connected) {
