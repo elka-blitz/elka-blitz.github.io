@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {controllerObj, degreesObj, taskOrder} from "./experimentConfig";
 import ThreeMeshUI from "three-mesh-ui";
+import {getFilledRect} from "./shapeFunctions";
 
 export class UiElementsManager {
     constructor(scene) {
@@ -203,7 +204,7 @@ export class ResultsUI {
 
         this.containerArray.forEach((container) => {
             scene.add(container);
-            container.position.set(0, 1.5, -1.2);
+            container.position.set(0, 1.3, -1);
             container.visible = false;
         })
 
@@ -218,6 +219,10 @@ export class ResultsUI {
         this.textureLoader.load("assets/accuracyLow.png", (texture) => {
             this.textContainerLow.set({ backgroundTexture: texture });
         });
+
+        this.rect = getFilledRect(2.5, 0.3, '#ffffff');
+        scene.add(this.rect)
+        this.rect.position.set(0, 1.5, -1.3)
     }
 
     makeInvisible() {

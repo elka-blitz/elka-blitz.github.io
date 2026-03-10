@@ -1271,7 +1271,7 @@ const ShowResultsMode = () => {
 	scene.add(original);
 	original.position.set(
 		deskCoords.x - 0.5,
-		deskCoords.y + 0.4,
+		deskCoords.y + 0.5,
 		deskCoords.z - 0.5,
 	);
 

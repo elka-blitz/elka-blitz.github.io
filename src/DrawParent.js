@@ -10,7 +10,7 @@ export default class DrawParent {
 				color: '#f0f0f0',
 				side: THREE.DoubleSide, // optional, shows both sides
 				transparent: true,
-				opacity: 1,
+				opacity: 0,
 				visible: false,
 			}),
 		);
