@@ -132,12 +132,24 @@ export default class DeskButton {
 
 			return false; // Return is used to fix desk
 		} else {
+			this.cylinder.position.y = this.inititial_height
 			return null;
+		}
+	}
+
+	forceButtonUp(stylus_position) {
+		// Call onframe
+		if (!this.cylinder_bb.containsPoint(stylus_position)) {
+			this.cylinder.position.y = this.inititial_height
+			console.log('forced button up')
 		}
 	}
 
 	pressCheckReusable(stylus_position_vector, scene, color) {
 		// same as pressCheck method except it doesn't make the button invisible after it is pressed
+
+		this.forceButtonUp(stylus_position_vector)
+
 		this.cylinder_bb.setFromObject(this.cylinder);
 		if (
 			this.cylinder_bb.containsPoint(stylus_position_vector) &&
