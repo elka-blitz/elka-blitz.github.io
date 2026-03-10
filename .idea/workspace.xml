@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0efd67f5-7ad6-4dce-87f7-bd915c263742" name="Changes" comment="Add exclamation mark">
-      <change afterPath="$PROJECT_DIR$/src/assets/hdri.exr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,7 +55,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "lights",
+    "git-widget-placeholder": "#79 on lights",
     "last_opened_file_path": "/Users/venuszheng/elka-blitz.github.io",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -97,7 +97,8 @@
       <workItem from="1770986792231" duration="862000" />
       <workItem from="1771335427634" duration="17576000" />
       <workItem from="1771516213472" duration="28874000" />
-      <workItem from="1773100358401" duration="9613000" />
+      <workItem from="1773100358401" duration="10729000" />
+      <workItem from="1773162173067" duration="177000" />
     </task>
     <task id="LOCAL-00001" summary="Add exclamation marks">
       <option name="closed" value="true" />
