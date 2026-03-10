@@ -36,7 +36,9 @@ export default class DrawParent {
 		this.drawingBox.position.set(x, y, z)
 
 		if (isHorizontalSurface) {
-			this.drawingBox.rotateY(THREE.MathUtils.degToRad(180))
+			// this.drawingBox.rotateY(THREE.MathUtils.degToRad(180))
+			// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+
 			this.drawingBox.rotateX(-degreesObj.horizontal)
 		} else {
 			this.drawingBox.rotateX(-degreesObj.vertical)
