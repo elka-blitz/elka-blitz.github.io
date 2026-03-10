@@ -39,7 +39,7 @@ export default class DrawParent {
 			? this.drawingBox.rotateX(-degreesObj.horizontal)
 			: this.drawingBox.rotateX(-degreesObj.vertical)
 
-		// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
 	}
 
 	makeInvisible() {

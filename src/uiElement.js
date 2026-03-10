@@ -187,6 +187,22 @@ export class StoryUI {
 
 export class ResultsUI {
     constructor() {
+        const containerLow = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 0,
+        });
+        const containerMedium = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 0,
+        });
+        const containerHigh = new ThreeMeshUI.Block({
+            width: 1.3,
+            height: 0.22,
+            backgroundOpacity: 0,
+        });
+
         this.textContainerLow = new ThreeMeshUI.Block({
             width: 1.1077,
             height: 0.218,
@@ -200,7 +216,15 @@ export class ResultsUI {
             height: 0.218,
         });
 
-        this.containerArray = [this.textContainerLow, this.textContainerMedium, this.textContainerHigh];
+        containerHigh.add(this.textContainerHigh);
+        containerMedium.add(this.textContainerMedium);
+        containerLow.add(this.textContainerLow);
+
+        this.containerArray = [
+            containerHigh,
+            containerMedium,
+            containerLow
+        ];
 
         this.containerArray.forEach((container) => {
             container.position.set(0, 1.3, -1);
