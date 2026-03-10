@@ -1272,6 +1272,7 @@ const ShowResultsMode = () => {
 	desk_manager.makeSurfaceInvisible();
 	taskTextPanel.makeInvisible();
 
+	currentAccuracy = 55;
 	if (currentAccuracy > 84) {
 		resultsUIManager.highAccuracy()
 	} else if  (currentAccuracy < 51) {
