@@ -662,9 +662,9 @@ function onFrame(time, frame) {
 				isPracticeMode = true;
 				practiceShapeIndex = 0;
 				desk_manager.spawnDrawingSurface();
+				uiManager.practiceMode(deskCoords);
 
-				loadSVG(practiceSvgArray[0], CENTER_POSITION);
-				stylus.userData.painter = practicePaints[0];
+				// loadSVG(practiceSvgArray[0], CENTER_POSITION);
 				repeatPracticeButton.makeInvisible();
 
 				practicePaints.forEach((paint, i) => {
@@ -676,6 +676,7 @@ function onFrame(time, frame) {
 					practicePaints[i].setSize(0.2);
 					pracBox.add(practicePaints[i].mesh);
 				});
+				stylus.userData.painter = practicePaints[0];
 
 				PracticeMode();
 			}
