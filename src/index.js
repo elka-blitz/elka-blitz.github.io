@@ -1266,7 +1266,6 @@ const ShowResultsMode = () => {
 	originalSvgManager.makeSurfaceVisible();
 	const original = originalSvgManager.getSurface();
 	desk_manager.addMesh(original);
-	original.rotateY(-Math.PI / 2) // rotating 90deg because added to table
 	original.position.set(
 		deskCoords.x + 0.5, // on desk, this is basically z
 		deskCoords.y +0.2 ,
@@ -1284,8 +1283,8 @@ const ShowResultsMode = () => {
 	switch (taskNum) {
 		case 1:
 			event_logger.logEventData('task1_loaded')
-			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
-			original.rotateY(Math.PI); // flip it only the first time
+
+			original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1294,7 +1293,6 @@ const ShowResultsMode = () => {
 			break;
 		case 2:
 			event_logger.logEventData('task2_loaded')
-			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1317,7 +1315,7 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
 		svgPaintsArray[i].mesh.position.z -= 0.02;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
-		// svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
+		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
@@ -1379,8 +1377,6 @@ const SetupNextTask = () => {
 	vrControl.makeRayInvisible()
 	desk_manager.makeSurfaceInvisible();
 
-	// todo export, task check
-	console.log(questionnaire1.getAnswers())
 	surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env

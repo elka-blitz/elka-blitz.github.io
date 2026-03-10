@@ -252,7 +252,7 @@ export class ResultsUI {
 
     highAccuracy() {
         this.containerHigh.visible = true;
-        this.containerHigh.position.z += 1 // center
+        this.containerHigh.position.z = 0.09 // center
     }
     mediumAccuracy() {
         this.containerMedium.visible = true;
@@ -266,8 +266,8 @@ export class ResultsUI {
         this.containerArray.forEach((container) => {
             desk.add(container);
             container.rotateY(-Math.PI/2) // because desk orients weird
-            container.position.x += 0.49; // move further back
-            container.position.y += 0.2; // move up
+            container.position.x = 0.3; // move further back
+            container.position.y = 0.90; // move up
 
         })
     }
