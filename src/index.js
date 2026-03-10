@@ -189,7 +189,7 @@ let envMap
 
 const speed_meter = new speedMeter()
 
-let accuracy_helper
+let accuracy_helper, currentAccuracy;
 let svg_points = []
 let running_mean
 
@@ -1233,11 +1233,14 @@ const TaskMode = () => {
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()} %`)
 
+		currentAccuracy = accuracy_helper.getMeanAccuracy();
+
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
+		);
 
 		event_logger.logEventData('task1_complete')
-		);
+
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
@@ -1251,9 +1254,19 @@ const ShowResultsMode = () => {
 
 	desk_manager.clearSurface();
 	desk_manager.makeSurfaceInvisible();
-	taskTextPanel.makeInvisible();
+	// taskTextPanel.makeInvisible();
 
-	resultsUIManager.highAccuracy()
+	taskTextPanel.updateText(
+		`Accuracy: ${accuracy_helper.getMeanAccuracy().toString()}`,
+	);
+
+	if (currentAccuracy > 84) {
+		resultsUIManager.highAccuracy()
+	} else if  (currentAccuracy < 51) {
+		resultsUIManager.lowAccuracy()
+	} else {
+		resultsUIManager.highAccuracy()
+	}
 
 	// original svg
 	originalSvgManager.clearSurface();
