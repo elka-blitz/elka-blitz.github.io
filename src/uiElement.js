@@ -228,7 +228,7 @@ export class ResultsUI {
         ];
 
         this.containerArray.forEach((container) => {
-            container.position.set(0, 1, -1);
+            container.position.set(0, 1.1, -1);
             container.visible = false;
             scene.add(container);
         })
