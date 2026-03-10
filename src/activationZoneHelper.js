@@ -105,4 +105,11 @@ export default class activationZone {
         this.start_object.visible = false
         this.end_object.visible = false
     }
+
+    spinFrame() {
+        this.start_object.rotateX(0.1)
+        this.start_object.rotateY(0.1)
+        this.end_object.rotateX(0.1)
+        this.end_object.rotateY(0.1)
+    }
 }
