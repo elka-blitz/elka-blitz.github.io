@@ -1207,7 +1207,6 @@ const TaskMode = () => {
 
 	}
 	else if (shapeIndex < svgWithPositionsArray.length - 1) {
-		console.log(shapeIndex)
 		desk_manager.makeSurfaceVisible();
 		storyUIManager.makeInvisible();
 

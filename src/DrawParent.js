@@ -31,21 +31,16 @@ export default class DrawParent {
 		return this.drawingBox;
 	}
 
-	makeVertical(x, y, z) {
+	makeVertical() {
 		this.drawingBox.material.visible = true;
-		this.drawingBox.position.set(x, y, z)
+		degreesObj.isHorizontal
+			? this.drawingBox.rotateX(-degreesObj.horizontal)
+			: this.drawingBox.rotateX(-degreesObj.vertical)
 
-		if (isHorizontalSurface) {
-			// this.drawingBox.rotateY(THREE.MathUtils.degToRad(180))
-			// this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-
-			this.drawingBox.rotateX(-degreesObj.horizontal)
-		} else {
-			this.drawingBox.rotateX(-degreesObj.vertical)
-			this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
-
-
-		}
+		this.drawingBox.rotateZ(THREE.MathUtils.degToRad(180));
+		this.drawingBox.position.x += 0.5; // x and z are flipped
+		this.drawingBox.position.z += 0.5;
+		this.drawingBox.position.y += 0.35;
 	}
 
 	makeInvisible() {
