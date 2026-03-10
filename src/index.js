@@ -661,6 +661,8 @@ function onFrame(time, frame) {
 				buttonFeedback();
 				isPracticeMode = true;
 				practiceShapeIndex = 0;
+				desk_manager.spawnDrawingSurface();
+
 				loadSVG(practiceSvgArray[0], CENTER_POSITION);
 				stylus.userData.painter = practicePaints[0];
 				repeatPracticeButton.makeInvisible();
