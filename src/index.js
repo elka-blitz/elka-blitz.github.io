@@ -669,6 +669,8 @@ function onFrame(time, frame) {
 
 				const pracParent = new DrawParent(surfaceDimensions);
 				pracBox = pracParent.getParent();
+				pracBox.visible = true;
+
 
 
 				practicePaints.forEach((paint, i) => {
