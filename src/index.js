@@ -19,9 +19,6 @@ window.addEventListener('resize', () => {
 	// Animation method cleanup
 	gsap.ticker.remove(gsap.updateRoot);
 
-	interface_text.updateText(
-		'Resized window to: ' + sizes.width + 'x' + sizes.height,
-	);
 });
 
 import * as THREE from "three";
@@ -125,8 +122,6 @@ let deskCoords = CENTER_POSITION;
 let isPracticeMode = false;
 let isQuestionnaireMode = false;
 
-// Debugging stuff
-let interface_text;
 
 // Desk declarations
 let isMovingDesk = false;
@@ -410,9 +405,6 @@ function init() {
 	right_hand_container.add(hand2);
 	scene.add(right_hand_container);
 
-	// MARK: UI Elements
-	interface_text = new UIText(scene);
-
 
 	const taskTextPanelStr = `Task 1: The ${taskOrder[taskNum - 1].name}`;
 
@@ -556,8 +548,6 @@ function onFrame(time, frame) {
 			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
 				0,0.3);
 			deskCoords = desk_manager.getDeskCoordinates();
-			interface_text.animateTextToCamera(camera);
-			// question_panel.spawnBoundingBoxes()
 		}
 	}
 
@@ -583,20 +573,14 @@ function onFrame(time, frame) {
 	desk_locked = desk_manager.getLock(); // Run once and used variable for desklock check, avoids running method multiple times
 	if (!desk_locked) {
 		// Smooth text animation to camera, prompting user to lock desk
-		// interface_text.updateText('Tap desk with stylus to lock')
-		interface_text.animateTextToCamera(camera);
 	} else if (desk_locked && !prev_desk_locked) {
 		// Desk has just been locked, run fly-in animation and text update
 		// This code runs once when the desk is locked, and uses the prev_desk_locked variable to check if the desk lock state has just changed
-		interface_text.updateText('');
 
-		// Locate text permanently above desk for remainder of session
-		interface_text.positionTextRelativeToDesk(desk_manager.getDesk());
 	}
 
 	prev_desk_locked = desk_locked; // Framediff for desk lock check
 
-	interface_text.sync();
 
 	// MARK: Gamepad Condition
 	if (gamepad1) {
@@ -608,7 +592,6 @@ function onFrame(time, frame) {
 		*/
 
 		// let speed = speed_meter.getSpeed(stylusPos)
-		// interface_text.updateText('▮'.repeat(speed))
 
 		// MARK: Desk Moving button
 		if (!desk_set) {
@@ -774,7 +757,6 @@ function onFrame(time, frame) {
 			// Back button on controller
 			// TODO: Add commented framediff for every button on controller
 			clickSound.play();
-			interface_text.flashText('#ff0000', 100);
 
 			// Generate CSV and trigger download
 			// This is currently done on controller button press, but can be triggered prgrammattically
@@ -1035,7 +1017,6 @@ function updateButtons() {
 
 // MARK: Button Feedback
 function buttonFeedback() {
-	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 	clickSound.play(); // Sound effect for button press
 
 	try {
@@ -1146,7 +1127,6 @@ const Calibrate = () => {
 	red_button.makeInvisible();
 	nextButton.makeVisible();
 	desk_set = true;
-	interface_text.updateText('Draw on the outline!');
 
 	uiManager.practiceMode(deskCoords);
 	loadSVG(practiceSvgArray[0], CENTER_POSITION);
@@ -1183,7 +1163,9 @@ const PracticeMode = () => {
 		practicePaints.forEach((paint) => {
 			paint.mesh.visible = false;
 		});
-		interface_text.updateText('Ready to begin the task?');
+		storyUIManager.practicePromptVisible();
+		desk_manager.clearSurface();
+		desk_manager.makeSurfaceInvisible();
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Tasks");
