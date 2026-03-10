@@ -1298,8 +1298,6 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			event_logger.logEventData('task1_loaded')
-
 			original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1308,7 +1306,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 2:
-			event_logger.logEventData('task2_loaded')
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1316,7 +1313,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 3:
-			event_logger.logEventData('task3_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical(
 				taskRevealPos.x,
