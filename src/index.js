@@ -1475,10 +1475,10 @@ const FinishMode = () => {
 				p.position.z -= 1;
 				break;
 			case 1:
+				p.position.z -= 0.5;
 				break;
 
 			case 2:
-				p.position.z += 1;
 				break;
 		}
 	})
