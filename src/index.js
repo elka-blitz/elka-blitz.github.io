@@ -903,6 +903,7 @@ function onSelectStart(e) {
 	this.userData.isSelecting = true;
 
 	accuracy_helper.startAccuracyTracking()
+	event_logger.logEventData('stylus_draw_button_pressed')
 }
 
 // MARK: Front Button Release
@@ -917,6 +918,8 @@ function onSelectEnd() {
 		console.error("Error saving painting array:", error);
 	}
 	accuracy_helper.stopAccuracyTracking()
+
+	event_logger.logEventData('stylus_draw_button_released')
 }
 
 // MARK: HandleDrawing
@@ -1214,6 +1217,9 @@ const TaskMode = () => {
 
 		isDrawingDisabled = false;
 		shapeIndex += 1;
+
+		event_logger.logEventData(`${taskOrder[taskNum -1].name}_#${shapeIndex}_begin`)
+
 		desk_manager.clearSurface();
 		loadSVG(svgWithPositionsArray[shapeIndex].url, CENTER_POSITION);
 		nextButton.updateLabel(
@@ -1242,13 +1248,14 @@ const TaskMode = () => {
 		// TODO: Please find enclosed the accuracy percentage:
 		console.log(`Accuracy: ${currentAccuracy.toString()} %`)
 
+		event_logger.logEventData(`Accuracy_task_${taskNum}:${currentAccuracy}%`)
 
 		taskTextPanel.updateText(
 			`Task ${taskNum} complete` + '\nAre you ready to see your drawing?',
 		);
 
-		event_logger.logEventData('task1_complete')
 
+		event_logger.logEventData(`task${taskNum}_complete`);
 		if (!mx_ink_connected) {
 			showControllerModel(controller1)
 		}
@@ -1293,8 +1300,6 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			event_logger.logEventData('task1_loaded')
-
 			original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
@@ -1303,7 +1308,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 2:
-			event_logger.logEventData('task2_loaded')
 			task2ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
@@ -1311,7 +1315,6 @@ const ShowResultsMode = () => {
 			);
 			break;
 		case 3:
-			event_logger.logEventData('task3_loaded')
 			// event_logger.logEventData('Environment Changed: ' + environment_switcher.loadNextEnvironmentCondition())
 			task3ParentManager.makeVertical(
 				taskRevealPos.x,
