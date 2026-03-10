@@ -141,7 +141,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton, surveyButton;
+let red_button, nextButton, resultButton, nextTaskButton, surveyButton, repeatSurveyButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -448,6 +448,15 @@ function init() {
 	);
 	nextButton.makeInvisible();
 
+	repeatSurveyButton = new DeskButton(scene);
+	repeatSurveyButton.createButton(
+		new THREE.Vector3(0, 0, 0),
+		'#ff7300',
+		'Practice 1/3',
+		0.07,
+	);
+	repeatSurveyButton.makeInvisible();
+
 	resultButton = new DeskButton(scene);
 	resultButton.createButton(
 		new THREE.Vector3(0, 0, 0),
@@ -545,6 +554,13 @@ function onFrame(time, frame) {
 				0.3,
 				0.2,
 			);
+			repeatSurveyButton.hoverButtonByDesk(
+				camera,
+				desk_manager.getDesk(),
+				scene,
+				-0.3,
+				0.2,
+			);
 			resultButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			nextTaskButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 
 				0,0.3);
@@ -633,6 +649,19 @@ function onFrame(time, frame) {
 				scene,
 				'white',
 			);
+		}
+
+		// MARK: Repeat Practice
+		if (repeatSurveyButton.returnExists() === true) {
+			if (
+				repeatSurveyButton.pressCheck(stylus.position, scene, 'white') ===
+					true &&
+				!wasChangeButton
+			) {
+				buttonFeedback();
+				isPracticeMode = true;
+				PracticeMode();
+			}
 		}
 
 		// MARK: Show result button
@@ -994,10 +1023,14 @@ function buttonFeedback() {
 	interface_text.flashText('#059400', 100); // Flash text briefly #user feedback
 	clickSound.play(); // Sound effect for button press
 
-	// checks if gamepad has haptics (breaks on hand)
-	const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
-	if (actuator && typeof actuator.pulse === 'function') {
-		actuator.pulse(1.0, 200);
+	try {
+		// checks if gamepad has haptics (breaks on hand)
+		const actuator = gamepadInterface.getHapticActuator && gamepadInterface.getHapticActuator(0);
+		if (actuator && typeof actuator.pulse === 'function') {
+			actuator.pulse(1.0, 200);
+		}
+	} catch (e) {
+		console.error(e)
 	}
 }
 
@@ -1139,8 +1172,9 @@ const PracticeMode = () => {
 
 		nextButton.changeColor('#359743');
 		nextButton.updateLabel("Tasks");
-		// taskTextPanel.setPosition(deskCoords.x, deskCoords.y + 0.9, deskCoords.z + 0.8);
-		// taskTextPanel.makeVisible();
+		surveyButton.makeVisible();
+		surveyButton.updateLabel("Repeat");
+
 		uiManager.taskMode();
 		desk_manager.makeSurfaceInvisible();
 		storyUIManager.practicePromptVisible();
