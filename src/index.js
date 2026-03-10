@@ -1312,7 +1312,7 @@ const ShowResultsMode = () => {
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.position.y = obj.position.y;
 		svgPaintsArray[i].mesh.position.x = obj.position.x;
-		svgPaintsArray[i].mesh.position.z -= 0.1;
+		svgPaintsArray[i].mesh.position.z -=  isHorizontalSurface ? 0.1 : 0.02;
 		svgPaintsArray[i].mesh.rotateX(Math.PI); // flip each because they're upside down for some reason
 		svgPaintsArray[i].mesh.rotateY(Math.PI); // flip each because they're flipped as well
 		svgPaintsArray[i].mesh.visible = true;
