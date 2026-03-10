@@ -1,10 +1,11 @@
 import * as THREE from 'three';
+import {degreesObj, taskOrder} from "./experimentConfig";
 
-import { gsap } from 'gsap';   
+import { gsap } from 'gsap';
 
 export default class DeskManager {
 	// Class to manage desk movement, drawzone spawning and interaction
-	constructor(scene, desk_asset_instance) {
+	constructor(scene, desk_asset_instance, surfaceDimensions) {
 		this.coordinates;
 		this.scene = scene;
 
@@ -24,7 +25,6 @@ export default class DeskManager {
 		// 3D drawing zone instance variables
 		this.drawingzone_identifier = '';
 		this.current_desk_quaternion = new THREE.Quaternion();
-		this.spawnDrawingAreaOnDesk(0.5, 0.5, 0.5, '#ffffff', desk_asset_instance);
 
 		// Sequence control variables
 		this.desk_positioned = false;
@@ -32,26 +32,33 @@ export default class DeskManager {
 		this.desk_locked_in_place = false;
 
 		// drawing surface
-		const rectGeometry = new THREE.PlaneGeometry(0.5, 0.2);
+		const rectGeometry = new THREE.PlaneGeometry(surfaceDimensions.width, surfaceDimensions.height);
+
 		const rectMaterial = new THREE.MeshBasicMaterial({
-			color: '#B3B3B3',
+			color: '#f0f0f0',
 			side: THREE.DoubleSide, // optional, shows both sides
 			transparent: true,
-			opacity: 0.3,
+			opacity: 1,
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
-		drawingSurface.position.y = 0.82; // slightly above model
 		drawingSurface.rotateY(Math.PI / 2);
-		drawingSurface.rotateX(Math.PI / 3);	// angle towards
+
+		if (degreesObj.isHorizontal) {
+			drawingSurface.rotateX(degreesObj.horizontal) 		// 5 degrees
+			drawingSurface.position.y = 0.764; // slightly above model
+
+		} else {
+			drawingSurface.rotateX(degreesObj.vertical) 		// 85 degrees
+			drawingSurface.position.y = 1.1;
+
+		}
 
 
 		desk_asset_instance.add(drawingSurface);
 		drawingSurface.visible = false;
 
 		this.surface = drawingSurface;
-
-		this.dash_positions = []
 	}
 
 	lock() {
@@ -180,43 +187,11 @@ export default class DeskManager {
 		});
 	}
 
-	spawnDrawingAreaOnDesk(width, height, depth, colour, desk_model) {
-		// Spawn a 3D area on desk wherein the user may draw
-		// Possibly follow with the object to trace within the drawing zone
-
-		// Transparent cube
-		// const drawing_zone = new THREE.Mesh(
-		// 	new THREE.BoxGeometry(width, height, depth),
-		// 	new THREE.MeshStandardMaterial({
-		// 		color: colour,
-		// 		transparent: true,
-		// 		opacity: 0.3,
-		// 	}),
-		// );
-		//
-		// // Store uuid of drawing zone for visibility toggle
-		// this.drawingzone_identifier = drawing_zone.uuid;
-		//
-		// this.scene.add(drawing_zone);
-		// drawing_zone.position.set(
-		// 	desk_model.position.x,
-		// 	desk_model.position.y + 1,
-		// 	desk_model.position.z - 3,
-		// );
-		//
-		// // Rotate the cube in accordance with the desk's rotation
-		// drawing_zone.quaternion.copy(this.current_desk_quaternion);
-		// drawing_zone.visible = false;
-
-	}
 	spawnDrawingSurface() {
 		this.surface.visible = true;
 	}
 
 	placeSVG(svgGroup, position) {
-
-		let dash_positions = [] // Clears per shapeload
-
 		const box = new THREE.Box3().setFromObject(svgGroup);
 		const size = box.getSize(new THREE.Vector3());
 
@@ -237,53 +212,6 @@ export default class DeskManager {
 
 		this.surface.add(svgGroup);
 
-		this.dash_positions = []
-
-			for (const dash in this.surface.children[0].children) {
-				let dash_details = this.surface.children[0].children[dash]
-				// console.log(dash_details)
-
-				this.scene.updateMatrixWorld(true)
-
-				const dashBoundingBox = new THREE.Box3().setFromObject(dash_details)
-				
-				const center_of_focus_dash = new THREE.Vector3()
-
-				dashBoundingBox.getCenter(center_of_focus_dash)
-			
-				let world_pos = new THREE.Vector3()
-				dash_details.getWorldPosition(world_pos)
-
-				// console.log(center_of_focus_dash)			// Create a BufferGeometry with a single point
-
-				// const dotGeometry = new THREE.BufferGeometry();
-				// dotGeometry.setAttribute('position', new THREE.BufferAttribute(
-				// 	new Float32Array([center_of_focus_dash.x, center_of_focus_dash.y, center_of_focus_dash.z]),
-				// 	3 // 3 components per vertex (x, y, z)
-				// ));
-
-				// // Set up a point material (adjust size and color as needed)
-				// const dotMaterial = new THREE.PointsMaterial({
-				// 	size: 0.5,
-				// 	color: 0xff0000, // Red color
-				// 	sizeAttenuation: false // Keeps size consistent regardless of distance
-				// });
-
-				// // Create the Points object and add it to the scene
-				// const debugPoint = new THREE.Points(dotGeometry, dotMaterial);
-				// this.scene.add(debugPoint);
-
-				this.dash_positions.push(center_of_focus_dash)
-			}
-
-		// Remove last value, it is the overall centrepoint and not useful
-		this.dash_positions.pop()
-		this.dash_positions.pop()
-
-	}
-
-	getDashPoints() {
-		return this.dash_positions
 	}
 
 	clearSurface() {
@@ -302,3 +230,4 @@ export default class DeskManager {
 	}
 
 }
+
