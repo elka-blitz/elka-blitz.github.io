@@ -108,7 +108,6 @@ export class StoryUI {
             height: 0.218,
         });
 
-        // this.questionText.position.y += 0.8;
 
         this.container.position.set(0, 1.2,  -1);
         scene.add(this.container);
@@ -142,6 +141,38 @@ export class StoryUI {
         });
         this.practiceContainer.visible = false;
 
+        // MARK: Finish
+        this.finishContainer = new ThreeMeshUI.Block({
+            height: 2,
+            width: 1.2,
+            backgroundOpacity: 0,
+        });
+        this.finishText = new ThreeMeshUI.Block({
+            width: 1.913,
+            height: 0.329,
+        });
+
+        this.resultsImages = new ThreeMeshUI.Block({
+            width: 1,
+            height: 0.396,
+        })
+
+        this.textureLoader.load("assets/finished.png", (texture) => {
+            this.finishText.set({ backgroundTexture: texture });
+        });
+        this.textureLoader.load("assets/results.png", (texture) => {
+            this.resultsImages.set({ backgroundTexture: texture });
+        });
+
+        scene.add(this.finishContainer);
+        this.finishContainer.position.set(0, 1.5,  -1)
+        this.resultsImages.position.set(0, 1,  -1)
+
+        this.finishContainer.add(this.finishText)
+        this.finishContainer.add(this.resultsImages)
+        this.finishContainer.visible = false;
+
+
 
     }
 
@@ -157,6 +188,10 @@ export class StoryUI {
 
     makeVisible() {
         this.container.visible = true;
+    }
+
+    finishVisible() {
+        this.finishContainer.visible = true;
     }
 
 
