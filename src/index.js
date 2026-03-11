@@ -227,7 +227,7 @@ function init() {
 		50,
 	);
 
-	camera.position.set(0, 1.6, 3);
+	camera.position.set(0, 1, 0);
 
 	const player = new THREE.Group();
 	scene.add(player);
@@ -294,7 +294,7 @@ function init() {
 
 	// MARK: Model setup
 
-	environmentModel.position.set(0,0.5,0)
+	environmentModel.position.set(0.2,0.5,-0.8)
 
 	scene.add(tableGroup);
 
@@ -329,17 +329,17 @@ function init() {
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.xr.enabled = true;
 
-	// HDRI
+// HDRI
 	const pmrem = new THREE.PMREMGenerator(renderer);
 	pmrem.compileEquirectangularShader();
 
-	new EXRLoader().load('/assets/hdri.exr', (exrTex) => {
-		exrTex.mapping = THREE.EquirectangularReflectionMapping;
+	new RGBELoader().load('/assets/skyEnvMap.hdr', (hdrTex) => {
+		hdrTex.mapping = THREE.EquirectangularReflectionMapping;
 
-		envMap = pmrem.fromEquirectangular(exrTex).texture;
+		const envMap = pmrem.fromEquirectangular(hdrTex).texture;
 
 		scene.environment = envMap;
-		scene.background = exrTex;
+		scene.background = hdrTex;
 
 		// rotate lighting and bg image
 		scene.environmentRotation.y = Math.PI / 2;
@@ -348,6 +348,7 @@ function init() {
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		renderer.toneMappingExposure = 0.35;
 
+		hdrTex.dispose();
 		pmrem.dispose();
 	});
 
