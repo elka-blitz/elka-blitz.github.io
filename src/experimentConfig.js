@@ -6,25 +6,25 @@ const controllerType = {
     stylus: {
         calibrate: "assets/stylus_desk_calib.png",
         instructions: "assets/stylus_instructions.png",
-        instructionsDimensions: [0.842, 0.629],
+        instructionsDimensions: [0.840, 0.374],
 
     },
     l_controller: {
         calibrate: "assets/left_controller_desk_calib.png",
         instructions: "assets/controller_instructions.png",
-        instructionsDimensions: [0.844, 0.875],
+        instructionsDimensions: [0.844, 0.623],
 
     },
     r_controller: {
         calibrate: "assets/right_controller_desk_calib.png",
         instructions: "assets/controller_instructions.png",
-        instructionsDimensions: [0.844, 0.875],
+        instructionsDimensions: [0.844, 0.623],
 
     },
 }
 
 // MARK: Change controller type
-export const controllerObj = controllerType.r_controller;
+export const controllerObj = controllerType.stylus;
 
 // task will follow order of this array
 export const taskOrder = [
