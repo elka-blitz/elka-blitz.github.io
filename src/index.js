@@ -259,7 +259,7 @@ function init() {
 	});
 
 	gltfLoader.load(
-		'./assets/finalSceneComp.glb',
+		'./assets/finalSceneWindowNew.glb',
 		function (gltf) {
 			gltf.scene.traverse((child) => {
 				if (child.isMesh) {
