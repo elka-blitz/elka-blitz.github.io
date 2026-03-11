@@ -59,9 +59,9 @@ export default class accuracyHelper {
 
         let mean_percentage = Math.round(this.mean_accuracy_percentage * 10000)
         // let adjusted_percentage = 100 - (mean_percentage - 10)
-        this.mean_accuracy_percentage = 0
+        this.mean_accuracy_percentage = false
         this.realtime_accuracy_percentage = 0
-        this.sample_no = 0
+        this.sample_no = 2
 
         return mean_percentage
     }
