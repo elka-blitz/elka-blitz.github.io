@@ -259,7 +259,7 @@ function init() {
 	});
 
 	gltfLoader.load(
-		'./assets/finalSceneWindowNew.glb',
+		'./assets/finalSceneDO.glb',
 		function (gltf) {
 			gltf.scene.traverse((child) => {
 				if (child.isMesh) {
@@ -311,7 +311,7 @@ function init() {
 	scene.add(directionalLight);
 	scene.add(directionalLight.target);
 
-	directionalLight.target.position.set(1.5, 1.8, -2);
+	directionalLight.target.position.set(1.2, 1.8, -2);
 
 	directionalLight.shadow.mapSize.set(1024, 1024);
 	directionalLight.shadow.bias = -0.0001;
@@ -326,7 +326,7 @@ function init() {
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
 	renderer.xr.enabled = true;
 
 // HDRI
