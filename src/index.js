@@ -247,7 +247,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/finalDesk.glb', (gltf) => {
+	gltfLoader.load('./assets/deskModel.glb', (gltf) => {
 		gltf.scene.traverse((child) => {
 			if (child.isMesh) {
 				child.castShadow = true;

@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0efd67f5-7ad6-4dce-87f7-bd915c263742" name="Changes" comment="Add exclamation mark">
-      <change afterPath="$PROJECT_DIR$/src/assets/finalDesk.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/assets/roomModel.glb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/assets/deskModel.glb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
     </list>
@@ -103,7 +102,7 @@
       <workItem from="1773162173067" duration="1011000" />
       <workItem from="1773220882304" duration="1180000" />
       <workItem from="1773228891576" duration="5046000" />
-      <workItem from="1773236972338" duration="4810000" />
+      <workItem from="1773236972338" duration="5112000" />
     </task>
     <task id="LOCAL-00001" summary="Add exclamation marks">
       <option name="closed" value="true" />
