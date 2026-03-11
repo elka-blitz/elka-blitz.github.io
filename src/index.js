@@ -247,7 +247,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+	gltfLoader.load('./assets/finalDesk.glb', (gltf) => {
 		gltf.scene.traverse((child) => {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -259,7 +259,7 @@ function init() {
 	});
 
 	gltfLoader.load(
-		'./assets/finalSceneDO.glb',
+		'./assets/roomModel.glb',
 		function (gltf) {
 			gltf.scene.traverse((child) => {
 				if (child.isMesh) {
@@ -306,12 +306,12 @@ function init() {
 	scene.add(ambientLight);
 
 	const directionalLight = new THREE.DirectionalLight(0xFFE7CE, 10);
-	directionalLight.position.set(1, 1.8, 1);
+	directionalLight.position.set(0.7, 1.8, 1);
 	directionalLight.castShadow = true;
 	scene.add(directionalLight);
 	scene.add(directionalLight.target);
 
-	directionalLight.target.position.set(1.2, 1.8, -2);
+	directionalLight.target.position.set(0.45, 1.67, -1);
 
 	directionalLight.shadow.mapSize.set(1024, 1024);
 	directionalLight.shadow.bias = -0.0001;
@@ -326,7 +326,7 @@ function init() {
 	renderer.setPixelRatio(window.devicePixelRatio, 2);
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.type = THREE.BasicShadowMap;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	renderer.xr.enabled = true;
 
 // HDRI
