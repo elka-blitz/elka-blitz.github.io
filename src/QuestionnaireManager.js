@@ -511,8 +511,8 @@ export default class QuestionnaireManager {
             "Strongly Agree",
             "Agree",
             "Somewhat Agree",
-            "Somewhat Disagree",
             "Neither Agree nor Disagree",
+            "Somewhat Disagree",
             "Disagree",
             "Strongly Disagree",
         ]
