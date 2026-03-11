@@ -194,6 +194,10 @@ let svg_points = []
 let running_mean
 let user_is_drawing_track_accuracy_now = false
 
+// Button cooldown
+let button_cooled_down = true
+let button_cooldown_count = 0
+
 
 init();
 
@@ -805,6 +809,15 @@ function animate(time, frame) {
 			accuracy_helper.calculateAccuracy()
 		} catch {
 
+		}
+
+		if (!button_cooled_down && button_cooldown_count >= 15) { // 3 second cooldown
+			button_cooled_down = true	
+			button_cooldown_count = 0
+		}
+
+		if (!button_cooled_down) {
+			button_cooldown_count += 1	
 		}
 
 
