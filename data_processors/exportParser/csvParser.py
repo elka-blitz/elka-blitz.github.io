@@ -159,7 +159,7 @@ class textToCsv:
                         stylus_quaternion]
             
                 self.export_stylus_data_lines.append(line)
-                print(self.export_stylus_data_lines)
+                #  print(self.export_stylus_data_lines)
             
             stylus_data_writer.writerows(data_to_write)
             stylus_data_writer.writerows(self.export_stylus_data_lines)
@@ -176,7 +176,7 @@ class textToCsv:
             # Convert to JSON
             self.task_events_json = json.loads(self.task_events)
 
-            print(self.task_events)
+            #  print(self.task_events)
                 
             # Categorise every event
             # TODO Replace magic strings, or optimise
@@ -214,7 +214,7 @@ class textToCsv:
 
                     elif col == 'Questionnaire Answers':
                         if '[' in str(event):
-                            print(event['event'])
+                            #  print(event['event'])
                             self.convert_line.append(event['event'])
                         else:
                             self.convert_line.append('NA')
