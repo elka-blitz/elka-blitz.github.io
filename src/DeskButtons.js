@@ -73,7 +73,7 @@ export default class DeskButton {
 		this.cylinder.position.copy(desk.position);
 		this.cylinder.quaternion.copy(desk.quaternion);
 
-		const offset = new THREE.Vector3(xOffset || 0, 0.8, zOffset || 0);
+		const offset = new THREE.Vector3(xOffset || 0, 0.35, zOffset || 0);
 		this.cylinder.position.add(offset);
 
 		const target = new THREE.Vector3();
