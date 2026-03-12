@@ -1421,12 +1421,12 @@ const SetupNextTask = () => {
 		case 1:
 			break;
 		case 2:
-			event_logger.logEventData(questionnaire1.getAnswers())
+			event_logger.logEventData('questionnaire1_' + questionnaire1.getAnswers())
 			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
-			event_logger.logEventData(questionnaire2.getAnswers())
+			event_logger.logEventData('questionnaire2_'+ questionnaire2.getAnswers())
 			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;
@@ -1435,7 +1435,7 @@ const SetupNextTask = () => {
 }
 // MARK: MODE:  Finish
 const FinishMode = () => {
-	event_logger.logEventData(questionnaire3.getAnswers())
+	event_logger.logEventData('questionnaire3_' + questionnaire3.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
