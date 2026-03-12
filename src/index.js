@@ -221,7 +221,7 @@ const saveBlob = (function() {
 // MARK: INIT FUNC
 function init() {
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color('#38a3a5');
+	// scene.background = new THREE.Color('#38a3a5');
 	camera = new THREE.PerspectiveCamera(
 		50,
 		window.innerWidth / window.innerHeight,
@@ -1196,9 +1196,9 @@ const Calibrate = () => {
 	
 	// Flash the sky by changing its color to the specified color and then back to white after the duration
 
-	setTimeout(() => {
-		scene.background = envMap
-	}, 500); 
+	// setTimeout(() => {
+		// scene.background = envMap
+	// }, 500); 
 
 	red_button.makeInvisible();
 	nextButton.makeVisible();
