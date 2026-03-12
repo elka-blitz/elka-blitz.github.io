@@ -122,7 +122,7 @@ export default class DeskManager {
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
 			x: stylus.position.x,
-			y: stylus.position.y - 0.75, // Model height
+			y: stylus.position.y - 0.30, // Model height
 			z: stylus.position.z - 0.25,
 			duration: 1,
 		});
