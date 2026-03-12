@@ -195,10 +195,9 @@ let svg_points = []
 let running_mean
 let user_is_drawing_track_accuracy_now = false
 
-// Button cooldown
+// Button Cooldown
 let button_cooled_down = true
 let button_cooldown_count = 0
-
 
 init();
 
@@ -249,7 +248,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/deskModel.glb', (gltf) => {
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
 		gltf.scene.traverse((child) => {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -394,9 +393,9 @@ function init() {
 				
 				// Flash the sky by changing its color to the specified color and then back to white after the duration
 
-				setTimeout(() => {
-					scene.background = envMap
-				}, 500); 
+				// setTimeout(() => {
+					// scene.background = envMap
+				// }, 500); 
 
 				break;
 			case 65: // A
@@ -655,7 +654,7 @@ function onFrame(time, frame) {
 			if (
 				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
 					true &&
-				!wasChangeButton && button_cooled_down == true
+				!wasChangeButton && button_cooled_down
 			) {
 				buttonFeedback();
 				isPracticeMode ? PracticeMode() : TaskMode();
@@ -757,6 +756,7 @@ function onFrame(time, frame) {
 				}
 				button_cooled_down = false
 
+
 			}
 			wasNextTaskButton = nextTaskButton.pressCheck(
 				stylus.position,
@@ -852,7 +852,7 @@ function animate(time, frame) {
 
 		// Reset button cooldown
 		if (!button_cooled_down && button_cooldown_count >= 15) { // 3 second cooldown
-			button_cooled_down = true	
+			button_cooled_down = true
 			button_cooldown_count = 0
 		}
 
@@ -860,9 +860,8 @@ function animate(time, frame) {
 		// After buttonpress, set button_cooldown to false
 		// Adding button cooldown false to buttonpress logic
 		if (!button_cooled_down) {
-			button_cooldown_count += 1	
+			button_cooldown_count += 1
 		}
-
 
 		accumulatedTime -= logInterval;
 		
@@ -1482,7 +1481,8 @@ const SetupNextTask = () => {
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
-			event_logger.logEventData('questionnaire2_'+ questionnaire2.getAnswers())
+			event_logger.logEventData('questionnaire2_' + questionnaire1.getAnswers())
+			event_logger.logEventData(questionnaire2.getAnswers())
 			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(3, task3Box);
 			break;

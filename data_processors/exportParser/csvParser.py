@@ -46,19 +46,19 @@ class textToCsv:
             print(f'\nItems loaded: {len(self.json_contents)}\n')
             
         for data_object in self.json_contents:
-            print(data_object)
+            #  print(data_object)
             if 'stylus' in data_object:
                 self.stylus_data = self.json_contents[data_object]
-                print('Stylus data read')
+                #  print('Stylus data read')
             elif 'task' in data_object:
                 self.task_events = self.json_contents[data_object]
-                print('Task events read')
+                #  print('Task events read')
 
         fin.close()
 
     def checkForKey(self, key, event):
         try:
-            print(event[key.lower()])
+            #  print(event[key.lower()])
             self.convert_line.append(event[key.lower()])
             print('\033[92mONLINE\033[0m\n')
             return
@@ -70,7 +70,7 @@ class textToCsv:
             #  print('failed to find' + event[key.lower()])
             try:
                 event_raw =  event['event']
-                print('rawconversion:', event_raw)
+                #  print('rawconversion:', event_raw)
                 event_translate = ''
                 if 'ControllerConnected' in event_raw:
                     self.convert_line.append('controller_connected')
@@ -102,8 +102,8 @@ class textToCsv:
             stylus_data_fout = open(self.input_file[:-3] + 'extracted.csv', 'w', newline='')
             stylus_data_writer = csv.writer(stylus_data_fout)
 
-            print('Stylus data found')
-            print(len(self.stylus_data))
+            #  print('Stylus data found')
+            #  print(len(self.stylus_data))
             
             data_to_write = [['time', 'x', 'y', 'z', 'ang_vel_x', 'ang_vel_y', 'ang_vel_z',
                                 'lin_vel_x', 'lin_vel_y', 'lin_vel_z',
@@ -164,7 +164,7 @@ class textToCsv:
             stylus_data_writer.writerows(data_to_write)
             stylus_data_writer.writerows(self.export_stylus_data_lines)
             stylus_data_fout.close() 
-            print(len(data_to_write) - 1)
+            #  print(len(data_to_write) - 1)
             print('Done!' + sys.argv[1][:-3] + 'csv')
 
         if self.task_events:

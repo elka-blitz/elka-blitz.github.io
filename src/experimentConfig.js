@@ -1,6 +1,6 @@
 // true: 5deg surface, false: 85 deg surface in air
 // MARK: Change surface type
-export const isHorizontalSurface = false;
+export const isHorizontalSurface = true;
 
 const controllerType = {
     stylus: {
@@ -28,8 +28,8 @@ export const controllerObj = controllerType.stylus;
 
 // task will follow order of this array
 export const taskOrder = [
-    {name: "Cup of Tea", url: "assets/task2/task2.svg", frame: "assets/cupFrame.png"},
     {name: "Storefront", url: "assets/task1/task1.svg", frame: "assets/storefrontFrame.png"},
+    {name: "Cup of Tea", url: "assets/task2/task2.svg", frame: "assets/cupFrame.png"},
     {name: "Cake", url: "assets/task3/task3.svg", frame: "assets/cakeFrame.png"},
 ]
 
