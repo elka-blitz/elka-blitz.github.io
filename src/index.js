@@ -788,7 +788,8 @@ function onFrame(time, frame) {
 			}
 			if (gamepad1.buttons[3].pressed && !BROWSER_buttonPressed3) {
 				// joystick
-				storyUIManager.finishVisible();
+				// storyUIManager.finishVisible();
+				ShowResultsMode();
 
 			}
 			BROWSER_buttonPressed = gamepad1.buttons[4].pressed;
@@ -1358,7 +1359,7 @@ const ShowResultsMode = () => {
 
 	switch (taskNum) {
 		case 1:
-			original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
+			// original.rotateY(Math.PI / 2) // rotating 90deg because added to table, flip only once
 			task1ParentManager.makeVertical(
 				taskRevealPos.x,
 				taskRevealPos.y,
