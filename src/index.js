@@ -248,7 +248,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+	gltfLoader.load('./assets/deskModel.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
 
