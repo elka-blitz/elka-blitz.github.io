@@ -195,6 +195,9 @@ let svg_points = []
 let running_mean
 let user_is_drawing_track_accuracy_now = false
 
+// Button Cooldown
+let button_cooled_down = true
+let button_cooldown_count = 0
 
 init();
 
@@ -245,7 +248,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/deskModel.glb', (gltf) => {
+	gltfLoader.load('./assets/Desk.glb', (gltf) => {
 		gltf.scene.traverse((child) => {
 			if (child.isMesh) {
 				child.castShadow = true;
@@ -651,10 +654,11 @@ function onFrame(time, frame) {
 			if (
 				nextButton.pressCheckReusable(stylus.position, scene, 'white') ===
 					true &&
-				!wasChangeButton
+				!wasChangeButton && button_cooled_down
 			) {
 				buttonFeedback();
 				isPracticeMode ? PracticeMode() : TaskMode();
+				button_cooled_down = false
 			}
 			wasChangeButton = nextButton.pressCheckReusable(
 				stylus.position,
@@ -740,7 +744,7 @@ function onFrame(time, frame) {
 		if (nextTaskButton.returnExists() === true) {
 			if (
 				nextTaskButton.pressCheck(stylus.position, scene, 'white') === true &&
-				!wasNextTaskButton
+				!wasNextTaskButton && button_cooled_down
 			) {
 				buttonFeedback();
 
@@ -750,6 +754,7 @@ function onFrame(time, frame) {
 				} else {
 					FinishMode();
 				}
+				button_cooled_down = false
 
 
 			}
@@ -845,6 +850,18 @@ function animate(time, frame) {
 
 		}
 
+		// Reset button cooldown
+		if (!button_cooled_down && button_cooldown_count >= 15) { // 3 second cooldown
+			button_cooled_down = true
+			button_cooldown_count = 0
+		}
+
+		// Increment if button not cooled down
+		// After buttonpress, set button_cooldown to false
+		// Adding button cooldown false to buttonpress logic
+		if (!button_cooled_down) {
+			button_cooldown_count += 1
+		}
 
 		accumulatedTime -= logInterval;
 		
