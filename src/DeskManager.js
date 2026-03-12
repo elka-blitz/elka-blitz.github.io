@@ -98,26 +98,26 @@ export default class DeskManager {
 
 		camera.matrixWorld.decompose(position, rotation, scale);
 
-		// Need to rotate glb model 90deg
-		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
-			new THREE.Vector3(0, 1, 0),
-			Math.PI / 2, // 90 degrees in radians
-		);
+		// // Need to rotate glb model 90deg
+		// const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+			// new THREE.Vector3(0, 1, 0),
+			// Math.PI / 2, // 90 degrees in radians
+		// );
 
-		// Quaternion modify according to hmd position
-		const quaternion_mod = new THREE.Quaternion();
-		const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-		const yOnlyQuaternion = new THREE.Quaternion();
+       /*          // Quaternion modify according to hmd position */
+		/* const quaternion_mod = new THREE.Quaternion(); */
+		/* const euler = new THREE.Euler(0, 0, 0, 'YXZ'); */
+		/* const yOnlyQuaternion = new THREE.Quaternion(); */
 
-		quaternion_mod.copy(rotation);
+		/* quaternion_mod.copy(rotation); */
 
-		euler.setFromQuaternion(quaternion_mod);
+		/* euler.setFromQuaternion(quaternion_mod); */
 
-		euler.x = 0;
-		euler.z = 0;
+		/* euler.x = 0; */
+		/* euler.z = 0; */
 
-		yOnlyQuaternion.setFromEuler(euler);
-		yOnlyQuaternion.multiply(offsetQuaternion);
+		/* yOnlyQuaternion.setFromEuler(euler); */
+		/* yOnlyQuaternion.multiply(offsetQuaternion); */
 
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
@@ -127,10 +127,10 @@ export default class DeskManager {
 			duration: 1,
 		});
 
-		// Apply modified quaternion to the table
-		this.current_desk_quaternion = yOnlyQuaternion;
-		table_group.quaternion.copy(yOnlyQuaternion);
-		this.desk_asset_instance = table_group; // Update instance
+		// // Apply modified quaternion to the table
+		// this.current_desk_quaternion = yOnlyQuaternion;
+		// table_group.quaternion.copy(yOnlyQuaternion);
+		// this.desk_asset_instance = table_group; // Update instance
 	}
 
 	slideToFront(camera, stylus, table_group) {
