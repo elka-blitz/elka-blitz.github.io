@@ -42,15 +42,15 @@ export default class DeskManager {
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
-		drawingSurface.rotateY(Math.PI / 2);
+		drawingSurface.rotateY(Math.PI);
 
 		if (degreesObj.isHorizontal) {
 			drawingSurface.rotateX(degreesObj.horizontal) 		// 5 degrees
-			drawingSurface.position.y = 0.764; // slightly above model
+			drawingSurface.position.y = 0.364; // slightly above model
 
 		} else {
 			drawingSurface.rotateX(degreesObj.vertical) 		// 85 degrees
-			drawingSurface.position.y = 1.1;
+			drawingSurface.position.y = 0.7;
 
 		}
 
@@ -80,7 +80,7 @@ export default class DeskManager {
 	getDeskCoordinates() {
 		return {
 			x:  this.desk_asset_instance.position.x,
-			y:  this.desk_asset_instance.position.y + 0.75, // todo make sure this is right
+			y:  this.desk_asset_instance.position.y + 0.3, // todo make sure this is right
 			z:  this.desk_asset_instance.position.z,
 		};
 	}
