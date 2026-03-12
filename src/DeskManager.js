@@ -42,15 +42,15 @@ export default class DeskManager {
 		});
 
 		const drawingSurface = new THREE.Mesh(rectGeometry, rectMaterial);
-		drawingSurface.rotateY(Math.PI / 2);
+		drawingSurface.rotateY(Math.PI);
 
 		if (degreesObj.isHorizontal) {
 			drawingSurface.rotateX(degreesObj.horizontal) 		// 5 degrees
-			drawingSurface.position.y = 0.764; // slightly above model
+			drawingSurface.position.y = 0.364; // slightly above model
 
 		} else {
 			drawingSurface.rotateX(degreesObj.vertical) 		// 85 degrees
-			drawingSurface.position.y = 1.1;
+			drawingSurface.position.y = 0.7;
 
 		}
 
@@ -80,7 +80,7 @@ export default class DeskManager {
 	getDeskCoordinates() {
 		return {
 			x:  this.desk_asset_instance.position.x,
-			y:  this.desk_asset_instance.position.y + 0.75, // todo make sure this is right
+			y:  this.desk_asset_instance.position.y + 0.3, // todo make sure this is right
 			z:  this.desk_asset_instance.position.z,
 		};
 	}
@@ -98,39 +98,39 @@ export default class DeskManager {
 
 		camera.matrixWorld.decompose(position, rotation, scale);
 
-		// Need to rotate glb model 90deg
-		const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
-			new THREE.Vector3(0, 1, 0),
-			Math.PI / 2, // 90 degrees in radians
-		);
+		// // Need to rotate glb model 90deg
+		// const offsetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+			// new THREE.Vector3(0, 1, 0),
+			// Math.PI / 2, // 90 degrees in radians
+		// );
 
-		// Quaternion modify according to hmd position
-		const quaternion_mod = new THREE.Quaternion();
-		const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-		const yOnlyQuaternion = new THREE.Quaternion();
+       /*          // Quaternion modify according to hmd position */
+		/* const quaternion_mod = new THREE.Quaternion(); */
+		/* const euler = new THREE.Euler(0, 0, 0, 'YXZ'); */
+		/* const yOnlyQuaternion = new THREE.Quaternion(); */
 
-		quaternion_mod.copy(rotation);
+		/* quaternion_mod.copy(rotation); */
 
-		euler.setFromQuaternion(quaternion_mod);
+		/* euler.setFromQuaternion(quaternion_mod); */
 
-		euler.x = 0;
-		euler.z = 0;
+		/* euler.x = 0; */
+		/* euler.z = 0; */
 
-		yOnlyQuaternion.setFromEuler(euler);
-		yOnlyQuaternion.multiply(offsetQuaternion);
+		/* yOnlyQuaternion.setFromEuler(euler); */
+		/* yOnlyQuaternion.multiply(offsetQuaternion); */
 
 		// Animate move to stylus position
 		gsap.to(table_group.position, {
 			x: stylus.position.x,
-			y: stylus.position.y - 0.75, // Model height
+			y: stylus.position.y - 0.30, // Model height
 			z: stylus.position.z - 0.25,
 			duration: 1,
 		});
 
-		// Apply modified quaternion to the table
-		this.current_desk_quaternion = yOnlyQuaternion;
-		table_group.quaternion.copy(yOnlyQuaternion);
-		this.desk_asset_instance = table_group; // Update instance
+		// // Apply modified quaternion to the table
+		// this.current_desk_quaternion = yOnlyQuaternion;
+		// table_group.quaternion.copy(yOnlyQuaternion);
+		// this.desk_asset_instance = table_group; // Update instance
 	}
 
 	slideToFront(camera, stylus, table_group) {

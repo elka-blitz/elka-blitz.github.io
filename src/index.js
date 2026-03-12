@@ -248,7 +248,7 @@ function init() {
 	const gltfLoader = new GLTFLoader();
 	gltfLoader.setDRACOLoader(dracoLoader);
 
-	gltfLoader.load('./assets/Desk.glb', (gltf) => {
+	gltfLoader.load('./assets/deskModel.glb', (gltf) => {
 		tableGroup.add(gltf.scene);
 	});
 
@@ -533,7 +533,7 @@ function onFrame(time, frame) {
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
 			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3,
-				0.2,);
+				0,);
 			nextButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
