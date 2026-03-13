@@ -24,7 +24,7 @@ const controllerType = {
 }
 
 // MARK: Change controller type
-export const controllerObj = controllerType.r_controller;
+export const controllerObj = controllerType.l_controller;
 
 // task will follow order of this array
 export const taskOrder = [
