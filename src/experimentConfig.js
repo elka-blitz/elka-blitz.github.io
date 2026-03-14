@@ -28,8 +28,8 @@ export const controllerObj = controllerType.stylus;
 
 // task will follow order of this array
 export const taskOrder = [
-    {name: "Cake", url: "assets/task3/task3.svg", frame: "assets/cakeFrame.png"},
     {name: "Cup of Tea", url: "assets/task2/task2.svg", frame: "assets/cupFrame.png"},
+    {name: "Cake", url: "assets/task3/task3.svg", frame: "assets/cakeFrame.png"},
     {name: "Storefront", url: "assets/task1/task1.svg", frame: "assets/storefrontFrame.png"},
 ]
 
