@@ -2,7 +2,7 @@
 
 *Investigating flow using a VR stylus, a game and psychometrics!*
 
-<img width=70% alt="image" src="https://github.com/user-attachments/assets/e349dbf4-6aec-4f28-b19d-7725219cea4e" />
+<img width="411" height="222" alt="inspire studio logo" src="https://github.com/user-attachments/assets/1a82c761-e74c-4f0e-bec2-58e855a97141" />
 
 
 ## Building and Deploying
