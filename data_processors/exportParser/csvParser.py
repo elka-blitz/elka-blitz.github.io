@@ -210,15 +210,21 @@ class textToCsv:
                         self.convert_line.append('NA') # Not implemented yet
                         # TODO TTC calculation
                     elif col == 'ACC':
-                        self.convert_line.append('NA') # Not present in export yet
+                        if 'Accuracy' in event['event']:
+                            self.convert_line.append(event['event'].split(':')[1])
+                        else:
+                            self.convert_line.append('NA') # Not present in export yet
 
                     elif col == 'Questionnaire Answers':
                         if '[' in str(event):
                             #  print(event['event'])
                             self.convert_line.append(event['event'])
+                        elif 'questionnaire' in str(event):
+                            # print(str(event))
+                            # print(event['event'].split('_')[1])
+                            self.convert_line.append(event['event'].split('_')[1])
                         else:
                             self.convert_line.append('NA')
-                    
 
                 self.data_to_write.append(self.convert_line)
                 self.convert_line = [] # Clear
@@ -229,4 +235,21 @@ class textToCsv:
 
             print('Done!' + sys.argv[1][:-3] + 'csv')
 
-             
+    def get_filepath(self):
+        return self.out_file
+
+    def extract_questionnaire_answers(self, parsed_filepath):
+        print(parsed_filepath.name)
+
+        fin = open(self.input_file[:-3] + 'csv', 'r')
+
+        content = fin.read()
+
+        print(content)
+        # print(fin)
+        # csv_reader = csv.DictReader(fin)
+        # for row in csv_reader:
+        #     if row['Questionnaire Answers'] != 'NA':
+        #         print(row['Questionnaire Answers'])
+
+        
