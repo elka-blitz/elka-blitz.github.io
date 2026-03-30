@@ -1485,16 +1485,20 @@ const SetupNextTask = () => {
 
 	switch (taskNum) {
 		case 1:
+			task1ParentManager.makeInvisible();
+
 			break;
 		case 2:
 			// event_logger.logEventData('questionnaire1_' + questionnaire1.getAnswers())
 			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
+			task2ParentManager.makeInvisible();
+
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			// event_logger.logEventData('questionnaire2_' + questionnaire1.getAnswers())
 			// event_logger.logEventData(questionnaire2.getAnswers())
-			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
+			task3ParentManager.makeInvisible();
 			svgManager.setupPaints(3, task3Box);
 			break;
 
