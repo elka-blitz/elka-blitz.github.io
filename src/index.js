@@ -112,7 +112,7 @@ let svgWithPositionsArray = [];
 let wasChangeButton = false;
 let wasResultButton = false;
 let wasNextTaskButton = false;
-let wasSurveyButton = false;
+// let wasSurveyButton = false;
 let isPreTask = true;
 let shapeIndex = -1;	// workaround for the way i've done the task flow
 let taskNum = 1;
@@ -138,7 +138,7 @@ let prev_desk_locked = false
 
 // MARK: Buttons
 // if adding button to table, don't forget to call hoverButtonByDesk and use offset parameters to move relative to it
-let red_button, nextButton, resultButton, nextTaskButton, surveyButton, repeatPracticeButton;
+let red_button, nextButton, resultButton, nextTaskButton, repeatPracticeButton;
 
 // MARK: Sounds
 const listener = new THREE.AudioListener();
@@ -498,14 +498,14 @@ function init() {
 	);
 	nextTaskButton.makeInvisible();
 
-	surveyButton = new DeskButton(scene);
-	surveyButton.createButton(
-		new THREE.Vector3(0, 0, 0),
-		'#900fe6',
-		'Survey',
-		0.09,
-	);
-	surveyButton.makeInvisible();
+	// surveyButton = new DeskButton(scene);
+	// surveyButton.createButton(
+	// 	new THREE.Vector3(0, 0, 0),
+	// 	'#900fe6',
+	// 	'Survey',
+	// 	0.09,
+	// );
+	// surveyButton.makeInvisible();
 
 	// MARK: Drawing and paints setup
 	const pracParent = new DrawParent(surfaceDimensions);
@@ -549,10 +549,10 @@ function init() {
 	task3Box.position.y = 0.82;
 	pracBox.position.y = 0.82;
 
-	// MARK: Questionnaire
-	questionnaire1 = new QuestionnaireManager(scene, objsToTest1);
-	questionnaire2 = new QuestionnaireManager(scene, objsToTest2);
-	questionnaire3 = new QuestionnaireManager(scene, objsToTest3);
+	// // MARK: Questionnaire
+	// questionnaire1 = new QuestionnaireManager(scene, objsToTest1);
+	// questionnaire2 = new QuestionnaireManager(scene, objsToTest2);
+	// questionnaire3 = new QuestionnaireManager(scene, objsToTest3);
 
 }
 
@@ -569,8 +569,7 @@ function onFrame(time, frame) {
 			// Hover button in front of user instead of doing offset
 			red_button.makeVisible();
 			red_button.hoverButtonByDesk(camera, desk_manager.getDesk(), scene);
-			surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3,
-				0.2,);
+			// surveyButton.hoverButtonByDesk(camera, desk_manager.getDesk(), scene, 0.3, 0.2,);
 			nextButton.hoverButtonByDesk(
 				camera,
 				desk_manager.getDesk(),
@@ -723,21 +722,21 @@ function onFrame(time, frame) {
 		}
 
 		// MARK: Start survey button
-		if (surveyButton.returnExists() === true) {
-			if (
-				surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
-				!wasSurveyButton
-			) {
-				buttonFeedback();
-
-				QuestionnaireMode();
-			}
-			wasSurveyButton = surveyButton.pressCheck(
-				stylus.position,
-				scene,
-				'white',
-			);
-		}
+		// if (surveyButton.returnExists() === true) {
+		// 	if (
+		// 		surveyButton.pressCheck(stylus.position, scene, 'white') === true &&
+		// 		!wasSurveyButton
+		// 	) {
+		// 		buttonFeedback();
+		//
+		// 		QuestionnaireMode();
+		// 	}
+		// 	wasSurveyButton = surveyButton.pressCheck(
+		// 		stylus.position,
+		// 		scene,
+		// 		'white',
+		// 	);
+		// }
 
 
 		// MARK: Next task button
@@ -1322,6 +1321,7 @@ const TaskMode = () => {
 // MARK: MODE: Show Results
 const ShowResultsMode = () => {
 	isDrawingDisabled = true;
+	nextTaskButton.makeVisible();
 
 	desk_manager.clearSurface();
 	desk_manager.makeSurfaceInvisible();
@@ -1390,11 +1390,12 @@ const ShowResultsMode = () => {
 		svgPaintsArray[i].mesh.visible = true;
 	});
 
-	surveyButton.makeVisible();
+	// surveyButton.makeVisible();
 	nextButton.makeInvisible();
 }
 
 // MARK: MODE: Questionnaire
+/*
 const QuestionnaireMode = () => {
 
 	isQuestionnaireMode = true;
@@ -1442,13 +1443,39 @@ const QuestionnaireMode = () => {
 	questionnaire1.setPosition(deskCoords);
 	questionnaire1.makeQuestionnaireVisible(nextTaskButton);
 }
+*/
 
 const SetupNextTask = () => {
 	isQuestionnaireMode = false;
+	resultsUIManager.makeInvisible()
+
+	originalSvgManager.makeSurfaceInvisible();
+
+	scene.remove(svgManager.getSurface());
+
+	svgWithPositionsArray.forEach((obj, i) => {
+		svgPaintsArray[i].mesh.visible = false;
+	});
 	vrControl.makeRayInvisible()
 	desk_manager.makeSurfaceInvisible();
+	switch (taskNum) {
+		case 1:
 
-	surveyButton.makeInvisible();
+			task1ParentManager.makeInvisible();
+
+			break;
+		case 2:
+
+			task2ParentManager.makeInvisible();
+
+			break;
+		case 3:
+
+			task3ParentManager.makeInvisible();
+			break;
+	}
+
+	// surveyButton.makeInvisible();
 	
 	// In some cases the initially loaded env is the same as the next env
 	// TODO: After pilot study - use skyboxvoidfloorenv as an initial menu/splash screen 
@@ -1472,18 +1499,20 @@ const SetupNextTask = () => {
 		hideControllerModel(controller1)
 	}
 
+
+
 	switch (taskNum) {
 		case 1:
 			break;
 		case 2:
-			event_logger.logEventData('questionnaire1_' + questionnaire1.getAnswers())
+			// event_logger.logEventData('questionnaire1_' + questionnaire1.getAnswers())
 			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
-			event_logger.logEventData('questionnaire2_' + questionnaire1.getAnswers())
-			event_logger.logEventData(questionnaire2.getAnswers())
-			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);
+			// event_logger.logEventData('questionnaire2_' + questionnaire1.getAnswers())
+			// event_logger.logEventData(questionnaire2.getAnswers())
+			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);4
 			svgManager.setupPaints(3, task3Box);
 			break;
 
@@ -1491,7 +1520,7 @@ const SetupNextTask = () => {
 }
 // MARK: MODE:  Finish
 const FinishMode = () => {
-	event_logger.logEventData('questionnaire3_' + questionnaire3.getAnswers())
+	// event_logger.logEventData('questionnaire3_' + questionnaire3.getAnswers())
 	svgWithPositionsArray.forEach((obj, i) => {
 		svgPaintsArray[i].mesh.visible = false;
 	});
