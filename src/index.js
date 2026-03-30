@@ -1321,6 +1321,7 @@ const TaskMode = () => {
 // MARK: MODE: Show Results
 const ShowResultsMode = () => {
 	isDrawingDisabled = true;
+	nextTaskButton.makeVisible();
 
 	desk_manager.clearSurface();
 	desk_manager.makeSurfaceInvisible();
