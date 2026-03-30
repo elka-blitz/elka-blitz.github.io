@@ -1458,6 +1458,22 @@ const SetupNextTask = () => {
 	});
 	vrControl.makeRayInvisible()
 	desk_manager.makeSurfaceInvisible();
+	switch (taskNum) {
+		case 1:
+
+			task1ParentManager.makeInvisible();
+
+			break;
+		case 2:
+
+			task2ParentManager.makeInvisible();
+
+			break;
+		case 3:
+
+			task3ParentManager.makeInvisible();
+			break;
+	}
 
 	// surveyButton.makeInvisible();
 	
@@ -1483,22 +1499,20 @@ const SetupNextTask = () => {
 		hideControllerModel(controller1)
 	}
 
+
+
 	switch (taskNum) {
 		case 1:
-			task1ParentManager.makeInvisible();
-
 			break;
 		case 2:
 			// event_logger.logEventData('questionnaire1_' + questionnaire1.getAnswers())
 			// taskTextPanel.updateText(`Task 2: ${taskOrder[taskNum - 1].name}`);
-			task2ParentManager.makeInvisible();
-
 			svgManager.setupPaints(2, task2Box);
 			break;
 		case 3:
 			// event_logger.logEventData('questionnaire2_' + questionnaire1.getAnswers())
 			// event_logger.logEventData(questionnaire2.getAnswers())
-			task3ParentManager.makeInvisible();
+			// taskTextPanel.updateText(`Task 3: ${taskOrder[taskNum - 1].name}`);4
 			svgManager.setupPaints(3, task3Box);
 			break;
 
